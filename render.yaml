@@ -2,12 +2,13 @@ services:
   - type: web
     name: school-management-system
     runtime: python
-    pythonVersion: 3.11
+    pythonVersion: 3.11.9
     buildCommand: |
+      pip install --upgrade pip setuptools wheel
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
       python manage.py migrate
-    startCommand: gunicorn workplace_system.wsgi:application --bind 0.0.0.0:$PORT
+    startCommand: gunicorn workplace_system.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --worker-class sync --timeout 60
     envVars:
       - key: DEBUG
         value: "False"
