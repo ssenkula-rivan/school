@@ -159,26 +159,20 @@ TEMPLATES = [
 WSGI_APPLICATION = 'workplace_system.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-# Database Configuration
+# Database Configuration - PostgreSQL ONLY
 DATABASES = {
     'default': EnvironmentConfig.get_database_config()
 }
 
-# Validate database configuration for production
-if EnvironmentConfig.IS_PRODUCTION:
-    # Check if we have a valid database configuration
-    db_config = DATABASES['default']
-    if not EnvironmentConfig.DATABASE_URL and not db_config.get('PASSWORD'):
-        print("WARNING: No database configuration found. Using SQLite fallback.")
-        # Fallback to SQLite for now to prevent deployment failure
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-            'ATOMIC_REQUESTS': True,
-        }
+# Validate PostgreSQL is configured
+db_config = DATABASES['default']
+print(f"Database config: ENGINE={db_config.get('ENGINE')}, NAME={db_config.get('NAME')}")
+if db_config.get('ENGINE') != 'django.db.backends.postgresql':
+    print(f"ERROR: Wrong database engine: {db_config.get('ENGINE')}")
+    raise ValueError(
+        'PostgreSQL is required. '
+        'Set DATABASE_URL or DB_* environment variables.'
+    )
 
 
 # Password validation

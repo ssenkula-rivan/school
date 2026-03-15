@@ -131,14 +131,23 @@ class EnvironmentConfig:
         2. Individual DB_* settings
         """
         if cls.DATABASE_URL:
-            return dj_database_url.parse(
+            print(f"Using DATABASE_URL for database configuration")
+            config = dj_database_url.parse(
                 cls.DATABASE_URL,
                 conn_max_age=600,
-                ssl_require=cls.IS_PRODUCTION,
             )
+            # Add SSL mode for production if not already in URL
+            if cls.IS_PRODUCTION and 'OPTIONS' not in config:
+                config['OPTIONS'] = {}
+            if cls.IS_PRODUCTION and 'sslmode' not in config.get('OPTIONS', {}):
+                config['OPTIONS']['sslmode'] = 'require'
+            
+            print(f"Parsed database config: ENGINE={config.get('ENGINE')}, NAME={config.get('NAME')}")
+            return config
 
         # Use explicit settings
-        return {
+        print(f"Using explicit DB_* settings for database configuration")
+        config = {
             'ENGINE': cls.DB_ENGINE,
             'NAME': cls.DB_NAME,
             'USER': cls.DB_USER,
@@ -151,6 +160,8 @@ class EnvironmentConfig:
                 'connect_timeout': 10,
             },
         }
+        print(f"Database config: ENGINE={config.get('ENGINE')}, NAME={config.get('NAME')}")
+        return config
     
     @classmethod
     def get_cache_config(cls):
