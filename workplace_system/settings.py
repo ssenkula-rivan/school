@@ -350,12 +350,10 @@ logs_dir.mkdir(exist_ok=True)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
 
-# Database Connection Pooling (for production with PostgreSQL)
-if EnvironmentConfig.USE_POSTGRES:
-    # Values are already set in EnvironmentConfig.get_database_config()
-    # This block is kept for backward compatibility and clarity.
-    DATABASES['default']['CONN_MAX_AGE'] = DATABASES['default'].get('CONN_MAX_AGE', 600)
-    DATABASES['default']['ATOMIC_REQUESTS'] = DATABASES['default'].get('ATOMIC_REQUESTS', True)
+# Database Connection Pooling (PostgreSQL only)
+# Values are already set in EnvironmentConfig.get_database_config()
+DATABASES['default']['CONN_MAX_AGE'] = DATABASES['default'].get('CONN_MAX_AGE', 600)
+DATABASES['default']['ATOMIC_REQUESTS'] = DATABASES['default'].get('ATOMIC_REQUESTS', True)
 
 # Template Caching (for production)
 if not DEBUG:
