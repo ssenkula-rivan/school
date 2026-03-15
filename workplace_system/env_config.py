@@ -30,7 +30,7 @@ class EnvironmentConfig:
     # Django Core Settings
     DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
     SECRET_KEY = os.environ.get('SECRET_KEY')
-    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')]
     
     # Security Settings
     SECURE_SSL_REDIRECT = IS_PRODUCTION
