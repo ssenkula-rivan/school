@@ -13,34 +13,16 @@ services:
         value: "False"
       - key: ENVIRONMENT
         value: "production"
-      - key: ALLOWED_HOSTS
-        fromDatabase:
-          name: school_db
-          property: host
       - key: SECRET_KEY
         generateValue: true
       - key: USE_POSTGRES
         value: "True"
-      - key: DB_NAME
+      - key: DATABASE_URL
         fromDatabase:
           name: school_db
-          property: database
-      - key: DB_USER
-        fromDatabase:
-          name: school_db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: school_db
-          property: password
-      - key: DB_HOST
-        fromDatabase:
-          name: school_db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: school_db
-          property: port
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: "*.onrender.com,yourdomain.com"
       - key: EMAIL_BACKEND
         value: "django.core.mail.backends.smtp.EmailBackend"
       - key: EMAIL_HOST
@@ -54,14 +36,12 @@ services:
       - key: EMAIL_HOST_PASSWORD
         sync: false
       - key: DEFAULT_FROM_EMAIL
-        value: "noreply@yourdomain.com"
-      - key: SITE_URL
-        value: "https://yourdomain.com"
-      - key: SITE_NAME
-        value: "School Management System"
+        value: "noreply@school.com"
+      - key: USE_REDIS
+        value: "False"
 
 databases:
   - name: school_db
-    databaseName: school_management
+    databaseName: school_management_saas
     user: postgres
     region: oregon

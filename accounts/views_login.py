@@ -1,10 +1,17 @@
 from django.contrib.auth import views as auth_views, authenticate, login
 from django.shortcuts import redirect, render
 from django.contrib import messages
+from django.urls import reverse_lazy
 from core.models import School
 
 class CustomLoginView(auth_views.LoginView):
     """Custom login view that identifies school by email domain"""
+    template_name = 'accounts/login.html'
+    redirect_authenticated_user = True
+    
+    def get_success_url(self):
+        """Redirect to dashboard after login"""
+        return reverse_lazy('accounts:dashboard')
     
     def post(self, request, *args, **kwargs):
         username = request.POST.get('username', '').lower().strip()
@@ -31,36 +38,30 @@ class CustomLoginView(auth_views.LoginView):
                 # Store school in session for tenant middleware
                 request.session['school_id'] = school.id
                 request.session['school_name'] = school.name
-                messages.info(request, f'🏫 Logging into {school.name}')
             except School.DoesNotExist:
                 messages.error(request, f'❌ No active school found for email domain: @{email_domain}. Please contact your administrator.')
                 return render(request, self.template_name, self.get_context_data())
         
-        # Attempt authentication
+        # Authenticate user
         user = authenticate(request, username=username, password=password)
         
-        if user is None:
-            # Generic error to avoid leaking which usernames exist
+        if user is not None:
+            # Login successful
+            login(request, user)
+            
+            # Set school context from email domain
+            if user.email and '@' in user.email:
+                email_domain = user.email.split('@')[1]
+                try:
+                    school = School.objects.get(email_domain=email_domain, is_active=True)
+                    request.session['school_id'] = school.id
+                    request.session['school_name'] = school.name
+                except School.DoesNotExist:
+                    pass
+            
+            messages.success(request, f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.')
+            return redirect(self.get_success_url())
+        else:
+            # Authentication failed
             messages.error(request, '❌ Invalid username or password. Please try again.')
             return render(request, self.template_name, self.get_context_data())
-        
-        # Proceed with normal login
-        return super().post(request, *args, **kwargs)
-    
-    def form_valid(self, form):
-        """After successful login, ensure school context is set"""
-        response = super().form_valid(form)
-        
-        # If user has email, try to set school from email domain
-        user = form.get_user()
-        if user.email and '@' in user.email:
-            email_domain = user.email.split('@')[1]
-            try:
-                school = School.objects.get(email_domain=email_domain, is_active=True)
-                self.request.session['school_id'] = school.id
-                self.request.session['school_name'] = school.name
-            except School.DoesNotExist:
-                pass
-        
-        messages.success(request, f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.')
-        return response

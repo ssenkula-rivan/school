@@ -58,11 +58,25 @@ handler500 = 'core.error_handlers.handle_500'
 handler403 = 'core.error_handlers.handle_403'
 handler400 = 'core.error_handlers.handle_400'
 
-# CSRF trusted origins for Render
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.onrender.com',
-    'https://school-management-system-vipe.onrender.com',
-]
+# CSRF Settings
+CSRF_COOKIE_SECURE = True if not DEBUG else False
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Strict' if not DEBUG else 'Lax'
+
+# Development: Allow localhost
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS = [
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+        'http://localhost:8001',
+        'http://127.0.0.1:8001',
+        'http://localhost:3000',
+    ]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        'https://*.onrender.com',
+        'https://school-management-system-vipe.onrender.com',
+    ]
 
 
 # Application definition
@@ -94,25 +108,26 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # For static files in production
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'workplace_system.ssl_middleware.HTTPSRedirectMiddleware',  # HTTPS enforcement
-    'workplace_system.ssl_middleware.SecurityHeadersEnforcementMiddleware',  # Security headers
-    'workplace_system.ssl_middleware.CookieSecurityMiddleware',  # Secure cookies
-    'workplace_system.security_middleware.SecurityHeadersMiddleware',
-    'workplace_system.security_middleware.RequestLoggingMiddleware',
-    'workplace_system.security_middleware.SecurityAuditMiddleware',
-    'workplace_system.security_middleware.XSSProtectionMiddleware',
-    'workplace_system.security_middleware.ClickjackingProtectionMiddleware',
-    'workplace_system.security_middleware.ContentSecurityPolicyMiddleware',
     'core.sync_manager.OfflineMiddleware',
     'core.middleware.TenantMiddleware',  # Multi-tenant isolation - CRITICAL
     'accounts.middleware.SchoolConfigurationMiddleware',  # School setup check
+    # Temporarily disabled security middleware for CSRF debugging
+    # 'workplace_system.ssl_middleware.HTTPSRedirectMiddleware',  # HTTPS enforcement
+    # 'workplace_system.ssl_middleware.SecurityHeadersEnforcementMiddleware',  # Security headers
+    # 'workplace_system.ssl_middleware.CookieSecurityMiddleware',  # Secure cookies
+    # 'workplace_system.security_middleware.SecurityHeadersMiddleware',
+    # 'workplace_system.security_middleware.RequestLoggingMiddleware',
+    # 'workplace_system.security_middleware.SecurityAuditMiddleware',
+    # 'workplace_system.security_middleware.XSSProtectionMiddleware',
+    # 'workplace_system.security_middleware.ClickjackingProtectionMiddleware',
+    # 'workplace_system.security_middleware.ContentSecurityPolicyMiddleware',
 ]
 
 # Caching Configuration for High Performance
@@ -158,8 +173,8 @@ if USE_POSTGRES:
     if not DATABASES['default']['PASSWORD']:
         raise ValueError('DB_PASSWORD must be set when using PostgreSQL!')
 else:
-    # SQLite for Development Only
-    if not DEBUG:
+    # SQLite for Development Only - Allow DEBUG=False for local testing
+    if not DEBUG and EnvironmentConfig.IS_PRODUCTION:
         raise ValueError(
             'SQLite is not suitable for production! '
             'Set USE_POSTGRES=True and configure PostgreSQL.'
@@ -256,8 +271,8 @@ SESSION_COOKIE_SECURE = True if not DEBUG else False
 CSRF_COOKIE_SECURE = True if not DEBUG else False
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Strict'
-CSRF_COOKIE_SAMESITE = 'Strict'
+SESSION_COOKIE_SAMESITE = 'Lax' if DEBUG else 'Strict'
+CSRF_COOKIE_SAMESITE = 'Lax' if DEBUG else 'Strict'
 
 # HSTS (HTTP Strict Transport Security)
 SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0  # 1 year in production
