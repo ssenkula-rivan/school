@@ -16,11 +16,16 @@ load_dotenv(BASE_DIR / '.env')
 class EnvironmentConfig:
     """Centralized environment configuration with validation"""
     
-    # Environment detection
+    # Environment detection - Handle Render and other hosting platforms
     ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development').lower()
-    IS_PRODUCTION = ENVIRONMENT in ['production', 'prod']
-    IS_DEVELOPMENT = ENVIRONMENT in ['development', 'dev', 'local']
-    IS_STAGING = ENVIRONMENT in ['staging', 'stage']
+    # Detect production environment (Render sets ENVIRONMENT=production, but also check other indicators)
+    IS_PRODUCTION = (
+        ENVIRONMENT in ['production', 'prod'] or 
+        os.environ.get('RENDER') == 'true' or  # Render indicator
+        os.environ.get('DYNO')  # Heroku indicator
+    )
+    IS_DEVELOPMENT = ENVIRONMENT in ['development', 'dev', 'local'] and not IS_PRODUCTION
+    IS_STAGING = ENVIRONMENT in ['staging', 'stage'] and not IS_PRODUCTION
     
     # Django Core Settings
     DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
