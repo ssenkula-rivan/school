@@ -2,7 +2,7 @@ services:
   - type: web
     name: school-management-system
     runtime: python
-    pythonVersion: 3.9
+    pythonVersion: 3.11
     buildCommand: |
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
