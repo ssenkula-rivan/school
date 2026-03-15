@@ -49,9 +49,9 @@ elif DEBUG and EnvironmentConfig.IS_PRODUCTION:
     )
 
 ALLOWED_HOSTS = EnvironmentConfig.ALLOWED_HOSTS
-# Add wildcard for Render domains if in production
+# In production, accept all hosts (Render uses dynamic domains)
 if EnvironmentConfig.IS_PRODUCTION:
-    ALLOWED_HOSTS.extend(['*.onrender.com', 'onrender.com'])
+    ALLOWED_HOSTS = ['*']
 
 # Custom Error Handlers - Never crash, always handle errors gracefully
 handler404 = 'core.error_handlers.handle_404'
