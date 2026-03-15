@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Import - {{ config.school_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4"><i class="fas fa-database me-2"></i>Data Import Center</h2>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Import from Files -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-upload me-2"></i>Import from Files</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Upload CSV or Excel files with your existing data</p>
+                    
+                    <div class="list-group">
+                        <a href="{% url 'accounts:import_students' %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-graduate fa-2x text-primary me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Import Students</h6>
+                                    <small class="text-muted">Upload student records (CSV/Excel)</small>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'accounts:import_employees' %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-users fa-2x text-success me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Import Employees</h6>
+                                    <small class="text-muted">Upload staff records (CSV)</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <h6>Download Templates:</h6>
+                    <div class="btn-group-vertical w-100">
+                        <a href="{% url 'accounts:download_template' 'students' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-download me-2"></i>Students Template
+                        </a>
+                        <a href="{% url 'accounts:download_template' 'employees' %}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-download me-2"></i>Employees Template
+                        </a>
+                        <a href="{% url 'accounts:download_template' 'fees' %}" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-download me-2"></i>Fees Template
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import from Database -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-server me-2"></i>Import from Database</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Connect to your existing school management system database</p>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Supported Databases:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>MySQL / MariaDB</li>
+                            <li>PostgreSQL</li>
+                            <li>Microsoft SQL Server</li>
+                        </ul>
+                    </div>
+                    
+                    <a href="{% url 'accounts:import_from_database' %}" class="btn btn-success w-100">
+                        <i class="fas fa-plug me-2"></i>Connect to Database
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>How to Import Data</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Method 1: File Upload (Recommended)</h6>
+                    <ol>
+                        <li>Download the appropriate template</li>
+                        <li>Fill in your data following the template format</li>
+                        <li>Save as CSV or Excel file</li>
+                        <li>Upload the file using the import buttons above</li>
+                    </ol>
+                </div>
+                <div class="col-md-6">
+                    <h6>Method 2: Database Connection</h6>
+                    <ol>
+                        <li>Get database credentials from your IT team</li>
+                        <li>Click "Connect to Database"</li>
+                        <li>Enter connection details</li>
+                        <li>Test connection and import data</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="alert alert-warning mt-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Important:</strong> Always backup your data before importing. Duplicate records will be skipped automatically.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

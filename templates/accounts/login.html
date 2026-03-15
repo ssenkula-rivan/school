@@ -52,21 +52,52 @@
                     <div class="p-4">
                         {% if messages %}
                             {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
+                                {% if message.tags == 'error' %}
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <strong>Login Failed!</strong>
+                                        <p class="mb-0">{{ message }}</p>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% elif message.tags == 'success' %}
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <strong>Success!</strong>
+                                        <p class="mb-0">{{ message }}</p>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <p class="mb-0">{{ message }}</p>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endif %}
                             {% endfor %}
+                        {% endif %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-times-circle me-2"></i>
+                                <strong>Login Error!</strong>
+                                <ul class="mb-0 mt-2">
+                                    {% for error in form.non_field_errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
                         {% endif %}
 
                         <form method="post">
                             {% csrf_token %}
                             <div class="mb-3">
                                 <label for="id_username" class="form-label">
-                                    <i class="fas fa-user me-2"></i>Username
+                                    <i class="fas fa-user me-2"></i>Username or Email
                                 </label>
-                                <input type="text" class="form-control" name="username" id="id_username" required autofocus>
-                                <small class="form-text text-muted">Use your registered username to login</small>
+                                <input type="text" class="form-control" name="username" id="id_username" required autofocus 
+                                       placeholder="username or email@yourschool.edu">
+                                <small class="form-text text-muted">Use your school email to automatically identify your school</small>
                             </div>
                             
                             <div class="mb-3">

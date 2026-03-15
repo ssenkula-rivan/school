@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Offline Sync{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Offline Sync Management</h2>
+            <p class="text-muted">Hybrid offline/online data synchronization</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card {% if status.online %}bg-success{% else %}bg-warning{% endif %} text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Connection Status</h5>
+                    <h2>{% if status.online %}Online{% else %}Offline{% endif %}</h2>
+                    <p class="mb-0">
+                        {% if status.online %}
+                        <i class="fas fa-wifi"></i> Connected
+                        {% else %}
+                        <i class="fas fa-wifi-slash"></i> No Internet
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card {% if status.pending_changes > 0 %}bg-warning{% else %}bg-success{% endif %} text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Changes</h5>
+                    <h2>{{ status.pending_changes }}</h2>
+                    <p class="mb-0">Waiting to sync</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Last Sync</h5>
+                    <p class="mb-0">
+                        {% if status.last_sync %}
+                        {{ status.last_sync|date:"Y-m-d H:i" }}
+                        {% else %}
+                        Never
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Sync Server</h5>
+                    <p class="mb-0 small">{{ status.sync_server }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Sync Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'core:sync_now' %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary" {% if not status.online %}disabled{% endif %}>
+                            <i class="fas fa-sync"></i> Sync Now
+                        </button>
+                    </form>
+                    
+                    <form method="post" action="{% url 'core:cleanup_synced' %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="fas fa-broom"></i> Cleanup Old Synced Data
+                        </button>
+                    </form>
+                    
+                    <button class="btn btn-info" onclick="checkStatus()">
+                        <i class="fas fa-info-circle"></i> Check Status
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">How Offline Sync Works</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-wifi-slash"></i> Offline Mode</h6>
+                            <p>System works fully offline. All changes are saved locally and queued for sync.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-sync-alt"></i> Auto Sync</h6>
+                            <p>When internet returns, system automatically syncs queued changes to server.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-shield-alt"></i> Data Safety</h6>
+                            <p>All data is stored locally first. No data loss even without internet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Pending Changes (Last 50)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Model</th>
+                                    <th>Action</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for change in pending_changes %}
+                                <tr>
+                                    <td>{{ change.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                    <td>{{ change.model }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if change.action == 'create' %}bg-success
+                                            {% elif change.action == 'update' %}bg-info
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ change.action }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if change.synced %}
+                                        <span class="badge bg-success">Synced</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No pending changes</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if total_pending > 50 %}
+                    <p class="text-muted text-center mt-2">
+                        Showing 50 of {{ total_pending }} pending changes
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function checkStatus() {
+    fetch('{% url "core:sync_status_api" %}')
+        .then(response => response.json())
+        .then(data => {
+            alert(`Status:\nOnline: ${data.online}\nPending: ${data.pending_changes}\nLast Sync: ${data.last_sync || 'Never'}`);
+        });
+}
+
+// Auto-refresh status every 30 seconds
+setInterval(() => {
+    fetch('{% url "core:sync_status_api" %}')
+        .then(response => response.json())
+        .then(data => {
+            // Update UI with new status
+            console.log('Sync status:', data);
+        });
+}, 30000);
+</script>
+{% endblock %}

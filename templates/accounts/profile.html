@@ -167,13 +167,18 @@
             <!-- Change Password Section -->
             <div class="card border-0 shadow-sm mt-4">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-key me-2"></i>Change Password</h5>
+                    <h5 class="mb-0"><i class="fas fa-key me-2"></i>Security</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted">To change your password, please use the password reset feature.</p>
-                    <a href="{% url 'accounts:password_reset' %}" class="btn btn-outline-warning">
-                        <i class="fas fa-lock me-2"></i>Reset Password
-                    </a>
+                    <p class="text-muted mb-3">Manage your account security and password.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'accounts:password_change' %}" class="btn btn-warning">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </a>
+                        <small class="text-muted text-center">
+                            Forgot your password? <a href="{% url 'accounts:password_reset' %}">Reset it here</a>
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>

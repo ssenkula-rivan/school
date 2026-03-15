@@ -4,7 +4,8 @@ from django.contrib import messages
 from django.db.models import Sum, Q, Count
 from django.core.paginator import Paginator
 from datetime import date, timedelta
-from .models import Student, FeeStructure, FeePayment, FeeBalance, AcademicYear, Grade
+from core.models import Student, Grade, AcademicYear
+from .models import FeeStructure, FeePayment, FeeBalance
 from accounts.decorators import can_manage_fees
 
 
@@ -61,14 +62,18 @@ def bursar_dashboard(request):
     
     # Recent payments (last 10)
     recent_payments = FeePayment.objects.select_related(
-        'student', 'fee_structure', 'received_by'
+        'student', 'student__grade', 'fee_structure', 
+        'fee_structure__academic_year', 'received_by'
     ).order_by('-payment_date', '-created_at')[:10]
     
     # Defaulters (overdue balances)
     defaulters = FeeBalance.objects.filter(
         is_paid=False,
         due_date__lt=date.today()
-    ).select_related('student', 'fee_structure').order_by('due_date')[:10]
+    ).select_related(
+        'student', 'student__grade', 'fee_structure',
+        'fee_structure__academic_year'
+    ).order_by('due_date')[:10]
     
     # Students with scholarships
     scholarship_students = Student.objects.filter(
@@ -322,7 +327,10 @@ def payment_receipt(request, pk):
 @login_required
 def balance_list(request):
     """List fee balances"""
-    balances = FeeBalance.objects.select_related('student', 'fee_structure').filter(is_paid=False)
+    balances = FeeBalance.objects.select_related(
+        'student', 'student__grade', 'fee_structure',
+        'fee_structure__academic_year'
+    ).filter(is_paid=False)
     
     # Pagination
     paginator = Paginator(balances, 20)

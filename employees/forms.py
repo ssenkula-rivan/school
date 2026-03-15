@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Employee, Department, Position, LeaveRequest, PerformanceReview, LeaveType
+from core.models import Department
+from .models import Employee, Position, LeaveRequest, PerformanceReview, LeaveType
 
 class UserForm(forms.ModelForm):
     """Form for User model fields"""
@@ -97,6 +98,11 @@ class EmployeeForm(forms.ModelForm):
         return email
     
     def save(self, commit=True):
+        from workplace_system.security import SecureKeyGenerator
+        from django.contrib.auth.tokens import default_token_generator
+        from django.core.mail import send_mail
+        from django.conf import settings
+        
         employee = super().save(commit=False)
         
         # Handle User creation/update
@@ -107,13 +113,47 @@ class EmployeeForm(forms.ModelForm):
             user.last_name = self.cleaned_data['last_name']
             user.email = self.cleaned_data['email']
         else:  # Creating new employee
+            # Generate secure random password
+            temp_password = SecureKeyGenerator.generate_password(16)
+            
             user = User.objects.create_user(
                 username=self.cleaned_data['username'],
                 first_name=self.cleaned_data['first_name'],
                 last_name=self.cleaned_data['last_name'],
                 email=self.cleaned_data['email'],
-                password='temp123456'  # Temporary password
+                password=temp_password
             )
+            
+            # Force password reset on first login
+            user.userprofile.force_password_reset = True
+            user.userprofile.save()
+            
+            # Send welcome email with password reset link
+            try:
+                token = default_token_generator.make_token(user)
+                reset_url = f"{settings.SITE_URL}/accounts/password-reset/{user.pk}/{token}/"
+                
+                send_mail(
+                    subject='Welcome to School Management System',
+                    message=f'''
+Hello {user.first_name},
+
+Your account has been created. Please reset your password to activate your account.
+
+Reset Password: {reset_url}
+
+This link expires in 24 hours.
+
+Best regards,
+School Management System
+                    ''',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                print(f"Error sending welcome email: {e}")
+            
             employee.user = user
         
         if commit:
@@ -171,21 +211,23 @@ class DepartmentForm(forms.ModelForm):
     """Form for creating/editing departments"""
     class Meta:
         model = Department
-        fields = ['name', 'description', 'manager', 'budget']
+        fields = ['school', 'name', 'description', 'head', 'budget', 'is_active']
         widgets = {
+            'school': forms.Select(attrs={'class': 'form-select'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'manager': forms.Select(attrs={'class': 'form-select'}),
+            'head': forms.Select(attrs={'class': 'form-select'}),
             'budget': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Only show users who are employees as potential managers
-        self.fields['manager'].queryset = User.objects.filter(
+        # Only show users who are employees as potential heads
+        self.fields['head'].queryset = User.objects.filter(
             employee__employment_status='active'
         )
-        self.fields['manager'].required = False
+        self.fields['head'].required = False
 
 class PositionForm(forms.ModelForm):
     """Form for creating/editing positions"""

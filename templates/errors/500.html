@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Error</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center align-items-center" style="min-height: 100vh;">
+            <div class="col-md-6 text-center">
+                <i class="fas fa-server text-danger" style="font-size: 100px;"></i>
+                <h1 class="display-1 fw-bold">500</h1>
+                <h2 class="mb-4">Server Error</h2>
+                <p class="lead mb-4">Something went wrong on our end. Your data is safe.</p>
+                <p class="text-muted mb-4">Our team has been notified and is working to fix the issue.</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="/" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home me-2"></i>Go Home
+                    </a>
+                    <a href="javascript:location.reload()" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-redo me-2"></i>Try Again
+                    </a>
+                </div>
+                {% if support_email %}
+                <p class="mt-4 text-muted">
+                    Need help? Contact us at <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

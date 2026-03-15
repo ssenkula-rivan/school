@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Financial Reports{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Financial Reports</h2>
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="{% url 'reports:export_financial_summary' %}?start_date={{ start_date }}&end_date={{ end_date }}" 
+               class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Export to Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Date Filter -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="form-inline">
+                        <label class="mr-2">From:</label>
+                        <input type="date" name="start_date" value="{{ start_date }}" class="form-control mr-3">
+                        <label class="mr-2">To:</label>
+                        <input type="date" name="end_date" value="{{ end_date }}" class="form-control mr-3">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Collected</h5>
+                    <h2>KES {{ total_collected|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Payments</h5>
+                    <h2>KES {{ pending_payments|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Methods Breakdown -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Payment Methods Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Payment Method</th>
+                                <th>Count</th>
+                                <th>Total Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for method in payment_methods %}
+                            <tr>
+                                <td>{{ method.payment_method|title }}</td>
+                                <td>{{ method.count }}</td>
+                                <td>KES {{ method.total|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Payments</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Receipt No</th>
+                                <th>Student</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in recent_payments %}
+                            <tr>
+                                <td>{{ payment.receipt_number }}</td>
+                                <td>{{ payment.student.get_full_name }}</td>
+                                <td>KES {{ payment.amount_paid|floatformat:2 }}</td>
+                                <td>{{ payment.get_payment_method_display }}</td>
+                                <td>{{ payment.payment_date|date:"Y-m-d" }}</td>
+                                <td>
+                                    <span class="badge badge-{% if payment.payment_status == 'completed' %}success{% else %}warning{% endif %}">
+                                        {{ payment.get_payment_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'reports:download_fee_receipt' payment.id %}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fas fa-download"></i> PDF
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">No payments found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Registration</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        .register-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+        }
+        .register-body {
+            padding: 40px;
+        }
+        .error-alert {
+            background-color: #f8d7da;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .error-alert i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        .error-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 10px 0 0 0;
+        }
+        .error-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(114, 28, 36, 0.2);
+        }
+        .error-list li:last-child {
+            border-bottom: none;
+        }
+        .field-error {
+            border-color: #dc3545 !important;
+            background-color: #fff5f5;
+        }
+        .field-error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: block;
+        }
+        .success-alert {
+            background-color: #d4edda;
+            border: 2px solid #c3e6cb;
+            color: #155724;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .success-alert i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        .info-alert {
+            background-color: #d1ecf1;
+            border: 2px solid #bee5eb;
+            color: #0c5460;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .info-alert i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        .btn-register:hover {
+            opacity: 0.9;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="register-card">
+            <div class="register-header">
+                <h2><i class="fas fa-user-plus"></i> Staff Registration</h2>
+            </div>
+            <div class="register-body">
+                <!-- System Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <div class="error-alert alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <strong>Registration Failed!</strong>
+                                <p class="mb-0">{{ message }}</p>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% elif message.tags == 'success' %}
+                            <div class="success-alert alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle"></i>
+                                <strong>Success!</strong>
+                                <p class="mb-0">{{ message }}</p>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% else %}
+                            <div class="info-alert alert-dismissible fade show" role="alert">
+                                <i class="fas fa-info-circle"></i>
+                                <p class="mb-0">{{ message }}</p>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Form Errors -->
+                {% if form.non_field_errors %}
+                    <div class="error-alert alert-dismissible fade show" role="alert">
+                        <i class="fas fa-times-circle"></i>
+                        <strong>Registration Error!</strong>
+                        <ul class="error-list">
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Username Field -->
+                    <div class="form-group">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="fas fa-user"></i> {{ form.username.label }}
+                        </label>
+                        <input type="text" 
+                               class="form-control {% if form.username.errors %}field-error{% endif %}" 
+                               name="username" 
+                               id="{{ form.username.id_for_label }}"
+                               placeholder="Enter your username"
+                               required>
+                        {% if form.username.errors %}
+                            {% for error in form.username.errors %}
+                                <span class="field-error-message">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                        {% if form.username.help_text %}
+                            <small class="form-text text-muted d-block mt-2">{{ form.username.help_text|safe }}</small>
+                        {% endif %}
+                    </div>
+
+                    <!-- First Name Field -->
+                    <div class="form-group">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                            <i class="fas fa-user-tag"></i> {{ form.first_name.label }}
+                        </label>
+                        <input type="text" 
+                               class="form-control {% if form.first_name.errors %}field-error{% endif %}" 
+                               name="first_name" 
+                               id="{{ form.first_name.id_for_label }}"
+                               placeholder="Enter your first name"
+                               required>
+                        {% if form.first_name.errors %}
+                            {% for error in form.first_name.errors %}
+                                <span class="field-error-message">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Last Name Field -->
+                    <div class="form-group">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                            <i class="fas fa-user-tag"></i> {{ form.last_name.label }}
+                        </label>
+                        <input type="text" 
+                               class="form-control {% if form.last_name.errors %}field-error{% endif %}" 
+                               name="last_name" 
+                               id="{{ form.last_name.id_for_label }}"
+                               placeholder="Enter your last name"
+                               required>
+                        {% if form.last_name.errors %}
+                            {% for error in form.last_name.errors %}
+                                <span class="field-error-message">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            <i class="fas fa-envelope"></i> {{ form.email.label }}
+                        </label>
+                        <input type="email" 
+                               class="form-control {% if form.email.errors %}field-error{% endif %}" 
+                               name="email" 
+                               id="{{ form.email.id_for_label }}"
+                               placeholder="your.email@school.edu"
+                               required>
+                        {% if form.email.errors %}
+                            {% for error in form.email.errors %}
+                                <span class="field-error-message">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                        <small class="form-text text-muted d-block mt-2">Must use your school email domain</small>
+                    </div>
+
+                    <!-- Role Field -->
+                    <div class="form-group">
+                        <label for="{{ form.role.id_for_label }}" class="form-label">
+                            <i class="fas fa-briefcase"></i> {{ form.role.label }}
+                        </label>
+                        <select class="form-control {% if form.role.errors %}field-error{% endif %}" 
+                                name="role" 
+                                id="{{ form.role.id_for_label }}"
+                                onchange="toggleClassField()"
+                                required>
+                            <option value="">-- Select your role --</option>
+                            {% for value, label in form.role.field.choices %}
+                                {% if value %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        {% if form.role.errors %}
+                            {% for error in form.role.errors %}
+                                <span class="field-error-message">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                        <small class="form-text text-muted d-block mt-2">{{ form.role.help_text|safe }}</small>
+                    </div>
+
+                    <!-- Class Name Field (conditional) -->
+                    <div class="form-group" id="class_name_group" style="display: none;">
+                        <label for="{{ form.class_name.id_for_label }}" class="form-label">
+                            <i class="fas fa-chalkboard"></i> {{ form.class_name.label }}
+                        </label>
+                        <input type="text" 
+                               class="form-control {% if form.class_name.errors %}field-error{% endif %}" 
+                               name="class_name" 
+                               id="{{ form.class_name.id_for_label }}"
+                               placeholder="e.g., Grade 1A, Grade 2B">
+                        {% if form.class_name.errors %}
+                            {% for error in form.class_name.errors %}
+                                <span class="field-error-message">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                        <small class="form-text text-muted d-block mt-2">{{ form.class_name.help_text|safe }}</small>
+                    </div>
+
+                    <!-- Department Field -->
+                    <div class="form-group">
+                        <label for="{{ form.department.id_for_label }}" class="form-label">
+                            <i class="fas fa-sitemap"></i> {{ form.department.label }}
+                        </label>
+                        <select class="form-control {% if form.department.errors %}field-error{% endif %}" 
+                                name="department" 
+                                id="{{ form.department.id_for_label }}">
+                            <option value="">-- Select department (optional) --</option>
+                            {% for value, label in form.department.field.choices %}
+                                {% if value %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        {% if form.department.errors %}
+                            {% for error in form.department.errors %}
+                                <span class="field-error-message">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Phone Field -->
+                    <div class="form-group">
+                        <label for="{{ form.phone.id_for_label }}" class="form-label">
+                            <i class="fas fa-phone"></i> {{ form.phone.label }}
+                        </label>
+                        <input type="tel" 
+                               class="form-control {% if form.phone.errors %}field-error{% endif %}" 
+                               name="phone" 
+                               id="{{ form.phone.id_for_label }}"
+                               placeholder="+1-234-567-8900">
+                        {% if form.phone.errors %}
+                            {% for error in form.phone.errors %}
+                                <span class="field-error-message">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">
+                            <i class="fas fa-lock"></i> {{ form.password1.label }}
+                        </label>
+                        <input type="password" 
+                               class="form-control {% if form.password1.errors %}field-error{% endif %}" 
+                               name="password1" 
+                               id="{{ form.password1.id_for_label }}"
+                               placeholder="Enter a strong password"
+                               required>
+                        {% if form.password1.errors %}
+                            {% for error in form.password1.errors %}
+                                <span class="field-error-message">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                        <small class="form-text text-muted d-block mt-2">
+                            <strong>Password Requirements:</strong>
+                            <ul style="margin: 5px 0; padding-left: 20px;">
+                                <li>At least 8 characters long</li>
+                                <li>Cannot be entirely numeric</li>
+                                <li>Cannot be a common password</li>
+                            </ul>
+                        </small>
+                    </div>
+
+                    <!-- Confirm Password Field -->
+                    <div class="form-group">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                            <i class="fas fa-lock-open"></i> {{ form.password2.label }}
+                        </label>
+                        <input type="password" 
+                               class="form-control {% if form.password2.errors %}field-error{% endif %}" 
+                               name="password2" 
+                               id="{{ form.password2.id_for_label }}"
+                               placeholder="Confirm your password"
+                               required>
+                        {% if form.password2.errors %}
+                            {% for error in form.password2.errors %}
+                                <span class="field-error-message">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-register w-100 mb-3">
+                        <i class="fas fa-user-check me-2"></i>Create Account
+                    </button>
+                </form>
+
+                <div class="text-center">
+                    <p class="mb-0">Already have an account? 
+                        <a href="{% url 'accounts:login' %}" class="text-decoration-none fw-bold">
+                            <i class="fas fa-sign-in-alt me-1"></i>Sign in here
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleClassField() {
+            const roleSelect = document.getElementById('id_role');
+            const classNameGroup = document.getElementById('class_name_group');
+            const classNameInput = document.getElementById('id_class_name');
+            
+            if (roleSelect.value === 'teacher' || roleSelect.value === 'head_of_class') {
+                classNameGroup.style.display = 'block';
+                classNameInput.required = true;
+            } else {
+                classNameGroup.style.display = 'none';
+                classNameInput.required = false;
+                classNameInput.value = '';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleClassField();
+        });
+
+        // Auto-dismiss alerts after 5 seconds
+        document.querySelectorAll('.alert').forEach(function(alert) {
+            setTimeout(function() {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

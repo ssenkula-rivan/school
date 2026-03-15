@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}HR Manager Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>HR Manager Dashboard</h2>
+            <p class="text-muted">Human Resources Management</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Employees</h5>
+                    <h2>{{ total_employees|default:0 }}</h2>
+                    <p class="mb-0">Active Staff</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Leave Requests</h5>
+                    <h2>{{ pending_leaves|default:0 }}</h2>
+                    <p class="mb-0">Pending Approval</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">On Leave</h5>
+                    <h2>{{ on_leave|default:0 }}</h2>
+                    <p class="mb-0">Currently Away</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">New Hires</h5>
+                    <h2>{{ new_hires|default:0 }}</h2>
+                    <p class="mb-0">This Month</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Employee Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{% url 'employees:employee_list' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-users"></i> All Employees
+                        </a>
+                        <a href="{% url 'employees:employee_create' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-plus"></i> Add New Employee
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-id-card"></i> Employee Records
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-times"></i> Terminations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Leave Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{% url 'employees:leave_approve' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-clipboard-check"></i> Approve Leave Requests
+                            {% if pending_leaves %}
+                            <span class="badge bg-warning float-end">{{ pending_leaves }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar-alt"></i> Leave Calendar
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chart-bar"></i> Leave Statistics
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-cog"></i> Leave Policies
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recruitment & Training</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-briefcase"></i> Job Postings
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-alt"></i> Applications
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chalkboard-teacher"></i> Training Programs
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-check"></i> Onboarding
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Performance & Payroll</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{% url 'employees:performance_reviews' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-star"></i> Performance Reviews
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-money-bill-wave"></i> Payroll Management
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-gift"></i> Benefits Administration
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-invoice-dollar"></i> Salary Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

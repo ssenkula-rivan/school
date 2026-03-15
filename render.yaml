@@ -2,30 +2,66 @@ services:
   - type: web
     name: school-management-system
     runtime: python
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
-    startCommand: "gunicorn workplace_system.wsgi:application"
+    pythonVersion: 3.9
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+      python manage.py migrate
+    startCommand: gunicorn workplace_system.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
+      - key: DEBUG
+        value: "False"
+      - key: ENVIRONMENT
+        value: "production"
+      - key: ALLOWED_HOSTS
+        fromDatabase:
+          name: school_db
+          property: host
       - key: SECRET_KEY
         generateValue: true
-      - key: DEBUG
+      - key: USE_POSTGRES
         value: "True"
-      - key: ALLOWED_HOSTS
-        value: "*"
+      - key: DB_NAME
+        fromDatabase:
+          name: school_db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: school_db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: school_db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: school_db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: school_db
+          property: port
       - key: EMAIL_BACKEND
-        value: django.core.mail.backends.smtp.EmailBackend
+        value: "django.core.mail.backends.smtp.EmailBackend"
       - key: EMAIL_HOST
-        value: mail.privateemail.com
+        value: "smtp.gmail.com"
       - key: EMAIL_PORT
-        value: "465"
-      - key: EMAIL_USE_SSL
-        value: "True"
+        value: "587"
       - key: EMAIL_USE_TLS
-        value: "False"
+        value: "True"
       - key: EMAIL_HOST_USER
-        value: cranictech@elincorporatedlimited.com
+        sync: false
       - key: EMAIL_HOST_PASSWORD
-        value: Happylife227.#
+        sync: false
       - key: DEFAULT_FROM_EMAIL
-        value: cranictech@elincorporatedlimited.com
+        value: "noreply@yourdomain.com"
+      - key: SITE_URL
+        value: "https://yourdomain.com"
+      - key: SITE_NAME
+        value: "School Management System"
+
+databases:
+  - name: school_db
+    databaseName: school_management
+    user: postgres
+    region: oregon

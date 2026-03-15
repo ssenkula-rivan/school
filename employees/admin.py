@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.utils.html import format_html
 from django.urls import reverse
 from .models import (
-    Department, Position, Employee, LeaveType, LeaveRequest, 
+    Position, Employee, LeaveType, LeaveRequest, 
     PerformanceReview, Attendance, WorkSubmission
 )
 
@@ -57,17 +57,6 @@ except admin.sites.NotRegistered:
 
 # Register the new CustomUserAdmin
 admin.site.register(User, CustomUserAdmin)
-
-@admin.register(Department)
-class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'manager', 'employee_count', 'budget', 'created_at')
-    list_filter = ('created_at',)
-    search_fields = ('name', 'description')
-    readonly_fields = ('created_at',)
-    
-    def employee_count(self, obj):
-        return obj.employee_set.count()
-    employee_count.short_description = 'Employees'
 
 @admin.register(Position)
 class PositionAdmin(admin.ModelAdmin):

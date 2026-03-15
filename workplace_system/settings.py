@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
+from workplace_system.env_config import EnvironmentConfig
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,16 +22,41 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load environment variables from .env file
 load_dotenv(BASE_DIR / '.env')
 
+# Print configuration on startup
+EnvironmentConfig.print_config()
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-e1cpt8!-a3!paktt851hlp9rav6#b@3ms@3sby478@^5aolj-w')
+SECRET_KEY = EnvironmentConfig.SECRET_KEY
+
+# Fail fast if SECRET_KEY is not set
+if not SECRET_KEY:
+    raise ValueError(
+        'SECRET_KEY environment variable is not set! '
+        'Set it in your .env file or environment variables.'
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = EnvironmentConfig.DEBUG
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
+# Validate production settings
+if not DEBUG and EnvironmentConfig.IS_PRODUCTION:
+    print("✅ Production mode enabled with DEBUG=False")
+elif DEBUG and EnvironmentConfig.IS_PRODUCTION:
+    raise ValueError(
+        'CRITICAL SECURITY ERROR: DEBUG=True in production! '
+        'This exposes sensitive information. Set DEBUG=False immediately.'
+    )
+
+ALLOWED_HOSTS = EnvironmentConfig.ALLOWED_HOSTS
+
+# Custom Error Handlers - Never crash, always handle errors gracefully
+handler404 = 'core.error_handlers.handle_404'
+handler500 = 'core.error_handlers.handle_500'
+handler403 = 'core.error_handlers.handle_403'
+handler400 = 'core.error_handlers.handle_400'
 
 # CSRF trusted origins for Render
 CSRF_TRUSTED_ORIGINS = [
@@ -52,12 +78,18 @@ INSTALLED_APPS = [
     # Third party apps
     'crispy_forms',
     'widget_tweaks',
+    # 'django_ratelimit',  # Disabled - use custom rate limiting
     
-    # Local apps
+    # Local apps - Core first
+    'core',
+    'subscriptions',  # SaaS subscription management
     'accounts',
     'employees',
     'fees',
     'academics',
+    'library',
+    'inventory',
+    'reports',
 ]
 
 MIDDLEWARE = [
@@ -69,25 +101,22 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'workplace_system.ssl_middleware.HTTPSRedirectMiddleware',  # HTTPS enforcement
+    'workplace_system.ssl_middleware.SecurityHeadersEnforcementMiddleware',  # Security headers
+    'workplace_system.ssl_middleware.CookieSecurityMiddleware',  # Secure cookies
+    'workplace_system.security_middleware.SecurityHeadersMiddleware',
+    'workplace_system.security_middleware.RequestLoggingMiddleware',
+    'workplace_system.security_middleware.SecurityAuditMiddleware',
+    'workplace_system.security_middleware.XSSProtectionMiddleware',
+    'workplace_system.security_middleware.ClickjackingProtectionMiddleware',
+    'workplace_system.security_middleware.ContentSecurityPolicyMiddleware',
+    'core.sync_manager.OfflineMiddleware',
+    'core.middleware.TenantMiddleware',  # Multi-tenant isolation - CRITICAL
+    'accounts.middleware.SchoolConfigurationMiddleware',  # School setup check
 ]
 
 # Caching Configuration for High Performance
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        },
-        'KEY_PREFIX': 'school_mgmt',
-        'TIMEOUT': 300,  # 5 minutes default
-    }
-} if os.environ.get('USE_REDIS', 'False') == 'True' else {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-    }
-}
+CACHES = EnvironmentConfig.get_cache_config()
 
 # Session Configuration for Performance
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
@@ -117,19 +146,24 @@ WSGI_APPLICATION = 'workplace_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-import os
+# Use PostgreSQL for production, SQLite for development
+USE_POSTGRES = EnvironmentConfig.USE_POSTGRES
 
-# Database
-# Use SQLite for simplicity
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'OPTIONS': {
-            'timeout': 20,
-        }
-    }
+    'default': EnvironmentConfig.get_database_config()
 }
+
+# Validate database configuration
+if USE_POSTGRES:
+    if not DATABASES['default']['PASSWORD']:
+        raise ValueError('DB_PASSWORD must be set when using PostgreSQL!')
+else:
+    # SQLite for Development Only
+    if not DEBUG:
+        raise ValueError(
+            'SQLite is not suitable for production! '
+            'Set USE_POSTGRES=True and configure PostgreSQL.'
+        )
 
 
 # Password validation
@@ -199,32 +233,49 @@ LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
-# Email Configuration
-# To send REAL emails, configure these settings in .env file
-EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False') == 'True'
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@schoolmanagement.com')
-
-# If no email credentials provided, fall back to console backend for development
-if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email Configuration (single source of truth via EnvironmentConfig)
+EMAIL_BACKEND = EnvironmentConfig.EMAIL_BACKEND
+EMAIL_HOST = EnvironmentConfig.EMAIL_HOST
+EMAIL_PORT = EnvironmentConfig.EMAIL_PORT
+EMAIL_USE_TLS = EnvironmentConfig.EMAIL_USE_TLS
+EMAIL_USE_SSL = EnvironmentConfig.EMAIL_USE_SSL
+EMAIL_HOST_USER = EnvironmentConfig.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = EnvironmentConfig.EMAIL_HOST_PASSWORD
+DEFAULT_FROM_EMAIL = EnvironmentConfig.DEFAULT_FROM_EMAIL
 
 
 
-# Security Settings (for production, update these)
-# SECURE_BROWSER_XSS_FILTER = True
-# SECURE_CONTENT_TYPE_NOSNIFF = True
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
-# SECURE_HSTS_SECONDS = 31536000
-# SECURE_SSL_REDIRECT = True
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
+# Rate Limiting Configuration - using custom middleware
+# RATELIMIT_ENABLE = not DEBUG
+# RATELIMIT_USE_CACHE = 'default'
+# RATELIMIT_VIEW = 'django_ratelimit.views.ratelimited'
+
+# SSL/HTTPS Security Settings - CRITICAL FOR PRODUCTION
+SECURE_SSL_REDIRECT = True if not DEBUG else False
+SESSION_COOKIE_SECURE = True if not DEBUG else False
+CSRF_COOKIE_SECURE = True if not DEBUG else False
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Strict'
+CSRF_COOKIE_SAMESITE = 'Strict'
+
+# HSTS (HTTP Strict Transport Security)
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0  # 1 year in production
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True if not DEBUG else False
+SECURE_HSTS_PRELOAD = True if not DEBUG else False
+
+# Security Headers
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# Proxy Settings (if behind reverse proxy like nginx)
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Additional Security
+SECURE_REDIRECT_EXEMPT = []  # No paths exempt from SSL redirect
 
 # Database Query Optimization
 # Logging configuration
@@ -236,18 +287,30 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG' if DEBUG else 'INFO',
+            'level': EnvironmentConfig.LOG_LEVEL,
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose' if DEBUG else 'simple',
+        },
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'django.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10MB
+            'backupCount': 5,
             'formatter': 'verbose',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
+            'handlers': ['console', 'file'] if not DEBUG else ['console'],
+            'level': EnvironmentConfig.LOG_LEVEL,
             'propagate': False,
         },
         'django.db.backends': {
@@ -256,21 +319,33 @@ LOGGING = {
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['console', 'file'],
+            'level': 'WARNING',
             'propagate': False,
         },
     },
 }
+
+# Create logs directory if it doesn't exist
+import logging
+logs_dir = BASE_DIR / 'logs'
+logs_dir.mkdir(exist_ok=True)
 
 # Performance Settings
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
 
 # Database Connection Pooling (for production with PostgreSQL)
-if os.environ.get('USE_POSTGRES', 'False') == 'True':
-    DATABASES['default']['CONN_MAX_AGE'] = 600
-    DATABASES['default']['ATOMIC_REQUESTS'] = True
+if EnvironmentConfig.USE_POSTGRES:
+    # Values are already set in EnvironmentConfig.get_database_config()
+    # This block is kept for backward compatibility and clarity.
+    DATABASES['default']['CONN_MAX_AGE'] = DATABASES['default'].get('CONN_MAX_AGE', 600)
+    DATABASES['default']['ATOMIC_REQUESTS'] = DATABASES['default'].get('ATOMIC_REQUESTS', True)
 
 # Template Caching (for production)
 if not DEBUG:
@@ -281,3 +356,61 @@ if not DEBUG:
             'django.template.loaders.app_directories.Loader',
         ]),
     ]
+
+# ============================================================================
+# SAAS PLATFORM CONFIGURATION
+# ============================================================================
+
+# Site Configuration
+SITE_NAME = os.environ.get('SITE_NAME', 'School Management System')
+SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
+SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', 'support@example.com')
+
+# Email Configuration
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend'  # Development default
+)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@example.com')
+
+# Payment Gateway Configuration
+PAYMENT_GATEWAY = EnvironmentConfig.PAYMENT_GATEWAY
+
+# Stripe
+STRIPE_PUBLIC_KEY = EnvironmentConfig.STRIPE_PUBLIC_KEY
+STRIPE_SECRET_KEY = EnvironmentConfig.STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET = EnvironmentConfig.STRIPE_WEBHOOK_SECRET
+
+# Flutterwave
+FLUTTERWAVE_PUBLIC_KEY = os.environ.get('FLUTTERWAVE_PUBLIC_KEY', '')
+FLUTTERWAVE_SECRET_KEY = os.environ.get('FLUTTERWAVE_SECRET_KEY', '')
+FLUTTERWAVE_WEBHOOK_SECRET = os.environ.get('FLUTTERWAVE_WEBHOOK_SECRET', '')
+
+# Paystack
+PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY', '')
+PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY', '')
+
+# Subscription Settings
+DEFAULT_TRIAL_DAYS = int(os.environ.get('DEFAULT_TRIAL_DAYS', '14'))
+SUBSCRIPTION_GRACE_PERIOD_DAYS = int(os.environ.get('SUBSCRIPTION_GRACE_PERIOD_DAYS', '3'))
+
+# Feature Flags (Global defaults - can be overridden per plan)
+DEFAULT_FEATURES = {
+    'advanced_reports': False,
+    'sms_integration': False,
+    'bulk_export': False,
+    'api_access': False,
+    'custom_branding': False,
+    'priority_support': False,
+}
+
+
+# Offline Sync Configuration
+SYNC_SERVER_URL = os.environ.get('SYNC_SERVER_URL', None)
+SYNC_ENABLED = os.environ.get('SYNC_ENABLED', 'True') == 'True'
+SYNC_INTERVAL_MINUTES = int(os.environ.get('SYNC_INTERVAL_MINUTES', '15'))

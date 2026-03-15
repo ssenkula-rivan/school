@@ -85,24 +85,71 @@
             background: #f8f9fa;
             transform: translateY(-3px);
         }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 56px;
+                width: 250px;
+                height: calc(100vh - 56px);
+                z-index: 1000;
+                transition: left 0.3s;
+            }
+            .sidebar.show {
+                left: 0;
+            }
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+            .welcome-banner {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .stat-card h3 {
+                font-size: 1.5rem;
+            }
+            .stat-card .icon-wrapper {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            .navbar-brand {
+                font-size: 0.875rem;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Top Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
+            <button class="btn btn-link text-white d-md-none me-2" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
             <a class="navbar-brand" href="{% url 'accounts:dashboard' %}">
                 <i class="fas fa-graduation-cap me-2"></i>
-                School Management System
+                <span class="d-none d-sm-inline">School Management System</span>
+                <span class="d-inline d-sm-none">SMS</span>
             </a>
             <div class="ms-auto d-flex align-items-center">
-                <span class="text-white me-3">
+                <span class="text-white me-3 d-none d-sm-inline">
                     <i class="fas fa-user-circle me-2"></i>
                     {{ user.get_full_name|default:user.username }}
                 </span>
-                <a href="{% url 'accounts:logout' %}" class="btn btn-light btn-sm">
-                    <i class="fas fa-sign-out-alt me-1"></i>Logout
-                </a>
+                <form method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-light btn-sm">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="d-none d-sm-inline ms-1">Logout</span>
+                    </button>
+                </form>
             </div>
         </div>
     </nav>
@@ -334,5 +381,27 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                });
+                
+                // Close sidebar when clicking outside on mobile
+                document.addEventListener('click', function(event) {
+                    if (window.innerWidth <= 768) {
+                        if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                            sidebar.classList.remove('show');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

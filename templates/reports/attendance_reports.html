@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Attendance Reports{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Attendance Reports</h2>
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="{% url 'reports:export_attendance' %}?start_date={{ start_date }}&end_date={{ end_date }}{% if grade %}&grade={{ grade }}{% endif %}" 
+               class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Export to Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="form-inline">
+                        <label class="mr-2">From:</label>
+                        <input type="date" name="start_date" value="{{ start_date }}" class="form-control mr-3">
+                        <label class="mr-2">To:</label>
+                        <input type="date" name="end_date" value="{{ end_date }}" class="form-control mr-3">
+                        <label class="mr-2">Grade:</label>
+                        <input type="text" name="grade" value="{{ grade }}" placeholder="e.g. Grade 5" class="form-control mr-3">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Records</h5>
+                    <h2>{{ total_records }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Attendance Rate</h5>
+                    <h2>{{ attendance_rate }}%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Status Types</h5>
+                    <h2>{{ status_breakdown|length }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Breakdown -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Attendance Status Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for status in status_breakdown %}
+                            <tr>
+                                <td>{{ status.status|title }}</td>
+                                <td>{{ status.count }}</td>
+                                <td>
+                                    {% if total_records > 0 %}
+                                        {{ status.count|floatformat:0|add:"0"|floatformat:0|mul:100|div:total_records|floatformat:1 }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Attendance Students -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Students with Low Attendance</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Present</th>
+                                <th>Total</th>
+                                <th>Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in low_attendance_students %}
+                            {% if student.total_days > 0 %}
+                            {% with rate=student.present_days|floatformat:0|add:"0"|mul:100|div:student.total_days %}
+                            {% if rate < 75 %}
+                            <tr>
+                                <td>{{ student.get_full_name }}</td>
+                                <td>{{ student.present_days }}</td>
+                                <td>{{ student.total_days }}</td>
+                                <td>
+                                    <span class="badge badge-{% if rate < 50 %}danger{% elif rate < 75 %}warning{% else %}success{% endif %}">
+                                        {{ rate|floatformat:1 }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endwith %}
+                            {% endif %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No low attendance students</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

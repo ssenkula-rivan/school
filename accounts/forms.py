@@ -29,6 +29,22 @@ class UserRegistrationForm(UserCreationForm):
         self.fields['role'].widget.attrs['onchange'] = 'toggleClassField()'
         self.fields['class_name'].widget.attrs['id'] = 'id_class_name'
 
+    def clean_email(self):
+        """Validate email domain matches school"""
+        email = self.cleaned_data.get('email')
+        if email and '@' in email:
+            email_domain = email.split('@')[1]
+            from core.models import School
+            from core.middleware import get_current_school
+            
+            # Get current school from context
+            school = get_current_school()
+            if school and school.email_domain != email_domain:
+                raise forms.ValidationError(
+                    f'Email must use school domain: @{school.email_domain}'
+                )
+        return email
+    
     def clean(self):
         cleaned_data = super().clean()
         role = cleaned_data.get('role')

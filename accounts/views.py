@@ -5,25 +5,55 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db.models import Q
-from .models import UserProfile, Department
+from core.models import Department
+from .models import UserProfile
 from .forms import UserRegistrationForm, UserProfileForm # type: ignore
 from .decorators import role_required, can_manage_employees
 
 def register(request):
+    """
+    Staff registration - only available after school is configured
+    If school not configured, redirect to public school registration
+    """
+    from .school_config import get_school_config
+    
+    # Check if school is configured
+    config = get_school_config()
+    if not config or not config.is_configured:
+        messages.info(request, '📋 Please register your school first before creating staff accounts.')
+        return redirect('accounts:register_school')
+    
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            # Get the created profile to show employee ID
-            profile = UserProfile.objects.get(user=user)
-            username = form.cleaned_data.get('username')
-            messages.success(
-                request, 
-                f'Account created successfully! Your Employee ID is: {profile.employee_id}. Please login with username: {username}'
-            )
-            return redirect('accounts:login')
+            try:
+                user = form.save()
+                # Get the created profile to show employee ID
+                profile = UserProfile.objects.get(user=user)
+                username = form.cleaned_data.get('username')
+                messages.success(
+                    request, 
+                    f'✅ Account created successfully! Your Employee ID is: {profile.employee_id}. Please login with username: {username}'
+                )
+                return redirect('accounts:login')
+            except Exception as e:
+                messages.error(request, f'❌ Error creating account: {str(e)}. Please try again.')
+        else:
+            # Display form errors
+            if form.errors:
+                error_messages = []
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        if field == '__all__':
+                            error_messages.append(f'❌ {error}')
+                        else:
+                            error_messages.append(f'❌ {field.upper()}: {error}')
+                
+                for error_msg in error_messages:
+                    messages.error(request, error_msg)
     else:
         form = UserRegistrationForm()
+    
     return render(request, 'accounts/register.html', {'form': form})
 
 @login_required
@@ -39,18 +69,23 @@ def dashboard(request):
     )
     
     # Redirect to role-specific dashboard
-    if user_profile.role == 'teacher':
-        return redirect('employees:teacher_dashboard')
-    elif user_profile.role == 'director':
-        return redirect('employees:director_dashboard')
-    elif user_profile.role == 'head_of_class':
-        return redirect('employees:head_of_class_dashboard')
-    elif user_profile.role == 'security':
-        return redirect('employees:security_dashboard')
-    elif user_profile.role == 'bursar':
-        return redirect('fees:bursar_dashboard')
-    elif user_profile.role == 'accountant':
-        return redirect('fees:bursar_dashboard')
+    role_dashboards = {
+        'teacher': 'employees:teacher_dashboard',
+        'director': 'employees:director_dashboard',
+        'dos': 'employees:dos_dashboard',
+        'registrar': 'employees:registrar_dashboard',
+        'head_of_class': 'employees:head_of_class_dashboard',
+        'security': 'employees:security_dashboard',
+        'bursar': 'fees:bursar_dashboard',
+        'accountant': 'fees:bursar_dashboard',
+        'hr_manager': 'employees:hr_dashboard',
+        'receptionist': 'employees:receptionist_dashboard',
+        'librarian': 'library:librarian_dashboard',
+        'nurse': 'employees:nurse_dashboard',
+    }
+    
+    if user_profile.role in role_dashboards:
+        return redirect(role_dashboards[user_profile.role])
     
     # Get dashboard statistics based on role
     context = {
@@ -63,7 +98,8 @@ def dashboard(request):
     
     # Add role-specific data
     if user_profile.can_manage_fees:
-        from fees.models import Student, FeePayment
+        from core.models import Student
+        from fees.models import FeePayment
         context['total_students'] = Student.objects.filter(status='active').count()
         context['pending_payments'] = FeePayment.objects.filter(payment_status='pending').count()
     

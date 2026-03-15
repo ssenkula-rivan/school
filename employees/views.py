@@ -7,16 +7,17 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import date, timedelta
-from .models import Employee, Department, Position, LeaveRequest, PerformanceReview, Attendance
+from core.models import Department
+from .models import Employee, Position, LeaveRequest, PerformanceReview, Attendance
 from .forms import EmployeeForm, LeaveRequestForm, PerformanceReviewForm # type: ignore
 from accounts.decorators import can_manage_employees
 
 @login_required
 def employee_list(request):
     """Display list of all employees with filtering and search"""
-    employees = Employee.objects.select_related('user', 'department', 'position').filter(
-        employment_status='active'
-    )
+    employees = Employee.objects.select_related(
+        'user', 'department', 'position'
+    ).filter(employment_status='active')
     
     # Search functionality
     search_query = request.GET.get('search')
@@ -622,3 +623,68 @@ def review_submission_detail(request, pk):
     }
     
     return render(request, 'employees/review_submission_detail.html', context)
+
+
+@login_required
+def dos_dashboard(request):
+    """Director of Studies Dashboard - Examination Management"""
+    context = {
+        'total_exams': 0,
+        'completed_exams': 0,
+        'pending_exams': 0,
+        'total_subjects': 0,
+        'upcoming_exams': [],
+    }
+    return render(request, 'employees/dos_dashboard.html', context)
+
+@login_required
+def registrar_dashboard(request):
+    """Registrar Dashboard - University Examination & Records"""
+    context = {
+        'total_students': 0,
+        'total_exams': 0,
+        'pending_results': 0,
+        'pending_transcripts': 0,
+    }
+    return render(request, 'employees/registrar_dashboard.html', context)
+
+@login_required
+def hr_dashboard(request):
+    """HR Manager Dashboard"""
+    from .models import LeaveRequest
+    
+    context = {
+        'total_employees': Employee.objects.filter(employment_status='active').count(),
+        'pending_leaves': LeaveRequest.objects.filter(status='pending').count(),
+        'on_leave': LeaveRequest.objects.filter(
+            status='approved',
+            start_date__lte=timezone.now().date(),
+            end_date__gte=timezone.now().date()
+        ).count(),
+        'new_hires': Employee.objects.filter(
+            hire_date__gte=timezone.now().date() - timedelta(days=30)
+        ).count(),
+    }
+    return render(request, 'employees/hr_dashboard.html', context)
+
+@login_required
+def receptionist_dashboard(request):
+    """Receptionist Dashboard"""
+    context = {
+        'visitors_today': 0,
+        'appointments_today': 0,
+        'pending_messages': 0,
+        'calls_today': 0,
+    }
+    return render(request, 'employees/receptionist_dashboard.html', context)
+
+@login_required
+def nurse_dashboard(request):
+    """School Nurse Dashboard"""
+    context = {
+        'visits_today': 0,
+        'medications_due': 0,
+        'students_with_allergies': 0,
+        'vaccinations_due': 0,
+    }
+    return render(request, 'employees/nurse_dashboard.html', context)

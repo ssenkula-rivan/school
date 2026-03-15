@@ -3,32 +3,40 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils import timezone
 from datetime import date
+from core.models import Department
+from core.managers import TenantAwareModel
 
-class Department(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_departments')
-    budget = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.name
-    
-    @property
-    def employee_count(self):
-        return self.employees.count()
 
-class Position(models.Model):
+class Position(TenantAwareModel):
+    """
+    Job positions within departments
+    
+    TENANT ISOLATION: Indirect via Department (has school FK)
+    Automatically filtered when querying through Department relationship
+    """
     title = models.CharField(max_length=100)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='positions')
     description = models.TextField(blank=True)
     min_salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     max_salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     
+    # Note: No direct school FK - filtered through department.school
+    @property
+    def school(self):
+        """Get school from department"""
+        return self.department.school if self.department else None
+    
     def __str__(self):
         return f"{self.title} - {self.department.name}"
 
-class Employee(models.Model):
+
+class Employee(TenantAwareModel):
+    """
+    Employee records
+    
+    TENANT ISOLATION: Indirect via Department (has school FK)
+    Automatically filtered when querying through Department relationship
+    """
     EMPLOYMENT_STATUS = [
         ('active', 'Active'),
         ('on_leave', 'On Leave'),
@@ -44,6 +52,7 @@ class Employee(models.Model):
     ]
     
     # Basic Information
+    school = models.ForeignKey('core.School', on_delete=models.PROTECT, related_name='direct_employees')
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     employee_id = models.CharField(max_length=20, unique=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
@@ -66,6 +75,8 @@ class Employee(models.Model):
     profile_picture = models.ImageField(upload_to='employee_photos/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Note: Direct school FK for tenant isolation
     
     class Meta:
         ordering = ['employee_id']
@@ -102,6 +113,12 @@ class LeaveType(models.Model):
         return self.name
 
 class LeaveRequest(models.Model):
+    """
+    Employee leave requests
+    
+    TENANT ISOLATION: Indirect via Employee (has department.school FK)
+    Automatically filtered when querying through Employee relationship
+    """
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('approved', 'Approved'),
@@ -214,7 +231,12 @@ class Attendance(models.Model):
         return 0
 
 class WorkSubmission(models.Model):
-    """Teacher work submissions to Director of Studies"""
+    """
+    Teacher work submissions to Director of Studies
+    
+    TENANT ISOLATION: Indirect via teacher User
+    Filtered by checking teacher's employee.department.school
+    """
     STATUS_CHOICES = [
         ('pending', 'Pending Review'),
         ('approved', 'Approved'),

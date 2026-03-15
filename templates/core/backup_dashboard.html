@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Backup & Recovery{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Backup & Recovery Management</h2>
+            <p class="text-muted">Database backup, export, and recovery tools</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Backups</h5>
+                    <h2>{{ backups|length }}</h2>
+                    <p class="mb-0">Available</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Backup Location</h5>
+                    <p class="mb-0 small">{{ backup_dir }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Auto Backup</h5>
+                    <p class="mb-0">Daily at 2:00 AM</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'core:create_backup' %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-database"></i> Create Backup Now
+                        </button>
+                    </form>
+                    
+                    <a href="{% url 'core:export_database' %}?format=json" class="btn btn-success">
+                        <i class="fas fa-file-export"></i> Export as JSON
+                    </a>
+                    
+                    <a href="{% url 'core:export_database' %}?format=sql" class="btn btn-info">
+                        <i class="fas fa-file-code"></i> Export as SQL
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Available Backups</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Backup Name</th>
+                                    <th>Created</th>
+                                    <th>Type</th>
+                                    <th>Size</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for backup in backups %}
+                                <tr>
+                                    <td>{{ backup.backup_name }}</td>
+                                    <td>{{ backup.created_at|date:"Y-m-d H:i:s" }}</td>
+                                    <td><span class="badge bg-info">{{ backup.database_type }}</span></td>
+                                    <td>{{ backup.file_size|filesizeformat }}</td>
+                                    <td>
+                                        <a href="{% url 'core:download_backup' backup.backup_name %}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                        
+                                        <form method="post" 
+                                              action="{% url 'core:restore_backup' backup.backup_name %}" 
+                                              class="d-inline"
+                                              onsubmit="return confirm('This will overwrite current database. Continue?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-undo"></i> Restore
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No backups available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Recovery Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Manual Recovery Steps:</h6>
+                    <ol>
+                        <li>Stop the application server</li>
+                        <li>Run: <code>python3 manage.py restore_database backup_name</code></li>
+                        <li>Restart the application server</li>
+                    </ol>
+                    
+                    <h6 class="mt-3">Setup Automatic Backups:</h6>
+                    <p>Run: <code>bash scripts/installation/setup_cron.sh</code></p>
+                    
+                    <h6 class="mt-3">Manual Backup:</h6>
+                    <p>Run: <code>python3 manage.py backup_database --type=manual</code></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

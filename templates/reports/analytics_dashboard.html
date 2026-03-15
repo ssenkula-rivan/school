@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Academic Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2>Academic Analytics Dashboard</h2>
+            <p class="text-muted">{{ academic_year.name }} - {{ term }}</p>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-warning">{{ error }}</div>
+    {% else %}
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Students</h5>
+                    <h2>{{ analytics.total_students }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Top Performers</h5>
+                    <h2>{{ analytics.top_performers|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Subjects</h5>
+                    <h2>{{ analytics.subject_performance|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Attendance Rate</h5>
+                    <h2>
+                        {% if analytics.attendance_stats %}
+                            {% for stat in analytics.attendance_stats %}
+                                {% if stat.status == 'present' %}{{ stat.count }}{% endif %}
+                            {% endfor %}
+                        {% else %}N/A{% endif %}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grade Distribution -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Grade Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Grade</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in analytics.grade_distribution %}
+                            <tr>
+                                <td>{{ item.grade }}</td>
+                                <td>{{ item.count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject Performance -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Subject Performance</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Avg %</th>
+                                <th>Avg GPA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in analytics.subject_performance %}
+                            <tr>
+                                <td>{{ item.subject__name }}</td>
+                                <td>{{ item.avg_percentage|floatformat:1 }}%</td>
+                                <td>{{ item.avg_grade_point|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performers -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Top 10 Performers</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Student</th>
+                                <th>Admission No</th>
+                                <th>Grade</th>
+                                <th>Average %</th>
+                                <th>GPA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in analytics.top_performers %}
+                            <tr>
+                                <td>{{ report.position }}</td>
+                                <td>{{ report.student.get_full_name }}</td>
+                                <td>{{ report.student.admission_number }}</td>
+                                <td>{{ report.student.grade }}</td>
+                                <td>{{ report.average_percentage|floatformat:1 }}%</td>
+                                <td>{{ report.gpa|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Attendance Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in analytics.attendance_stats %}
+                            <tr>
+                                <td>{{ stat.status|title }}</td>
+                                <td>{{ stat.count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+{% endblock %}

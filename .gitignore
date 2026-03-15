@@ -1,27 +1,48 @@
 # Python
+__pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-__pycache__/
-*.pyc
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
 # Virtual Environment
 venv/
 env/
 ENV/
+env.bak/
+venv.bak/
 
 # Django
 *.log
+local_settings.py
 db.sqlite3
 db.sqlite3-journal
 /media
 /staticfiles
 /static
 
-# Environment variables
+# Environment Variables
 .env
 .env.local
+.env.*.local
 
 # IDE
 .vscode/
@@ -29,10 +50,18 @@ db.sqlite3-journal
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
-Thumbs.db
+
+# Testing
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
 
 # Logs
 logs/
@@ -41,3 +70,75 @@ logs/
 # Backup files
 *.bak
 *.backup
+*.old
+backups/
+*.emergency
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+
+# Compiled files
+*.pyc
+*.pyo
+
+# Database
+*.sqlite3
+*.db
+
+# Secrets
+secrets.json
+credentials.json
+
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Collected static files
+/staticfiles/
+
+# Media files
+/media/
+
+# Gunicorn
+gunicorn.ctl/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# Poetry
+poetry.lock
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# Sync queue
+sync_queue/
+
+# Documentation (not needed on server)
+*.md
+*.txt
+!requirements.txt
+
+# macOS app bundle
+*.app/

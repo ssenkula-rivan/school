@@ -4,8 +4,15 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
+import os
 
-SYSTEM_ADMIN_PASSWORD = "Cranictech"
+# CRITICAL SECURITY: Password must be set via environment variable
+SYSTEM_ADMIN_PASSWORD = os.environ.get('SYSADMIN_PASSWORD')
+if not SYSTEM_ADMIN_PASSWORD:
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.critical("SYSADMIN_PASSWORD environment variable not set! System admin login disabled.")
+
 SYSTEM_ADMIN_TRIGGER = "system administrator"  # Username to trigger sysadmin login
 
 @never_cache
@@ -61,7 +68,8 @@ def system_admin_dashboard(request):
     
     from django.contrib.auth.models import User
     from accounts.models import UserProfile
-    from fees.models import Student, FeePayment
+    from core.models import Student
+    from fees.models import FeePayment
     from employees.models import Employee
     
     context = {
