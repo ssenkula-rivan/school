@@ -7,7 +7,7 @@ services:
       pip install --upgrade pip setuptools wheel
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
-      python manage.py migrate
+      python manage.py migrate --noinput
     startCommand: gunicorn workplace_system.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --worker-class sync --timeout 60
     envVars:
       - key: DEBUG
@@ -17,9 +17,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: school_db
-          property: connectionString
+        sync: false
       - key: ALLOWED_HOSTS
         value: "school-2v7o.onrender.com,*.onrender.com"
       - key: EMAIL_BACKEND
@@ -38,9 +36,3 @@ services:
         value: "noreply@school.com"
       - key: USE_REDIS
         value: "False"
-
-databases:
-  - name: school_db
-    databaseName: school_management_saas
-    user: postgres
-    region: oregon
