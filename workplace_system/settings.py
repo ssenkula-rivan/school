@@ -159,14 +159,28 @@ TEMPLATES = [
 WSGI_APPLICATION = 'workplace_system.wsgi.application'
 
 
-# Database Configuration - Auto-detect PostgreSQL or SQLite
+# Database Configuration - PostgreSQL ONLY
 DATABASES = {
     'default': EnvironmentConfig.get_database_config()
 }
 
-# Log database configuration
+# Validate PostgreSQL is configured
 db_config = DATABASES['default']
 print(f"Database config: ENGINE={db_config.get('ENGINE')}, NAME={db_config.get('NAME')}")
+
+if db_config.get('ENGINE') != 'django.db.backends.postgresql':
+    print(f"ERROR: Wrong database engine: {db_config.get('ENGINE')}")
+    raise ValueError(
+        'PostgreSQL is required. '
+        'Set DATABASE_URL or DB_* environment variables.'
+    )
+
+if not db_config.get('PASSWORD') and not EnvironmentConfig.DATABASE_URL:
+    print("ERROR: PostgreSQL password not configured!")
+    raise ValueError(
+        'PostgreSQL password is required. '
+        'Set DB_PASSWORD or DATABASE_URL environment variable.'
+    )
 
 
 # Password validation
