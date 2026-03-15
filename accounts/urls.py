@@ -9,6 +9,9 @@ from .views_data_import import (
     data_import_dashboard, import_students, import_employees,
     download_template, test_database_connection, import_from_database
 )
+from .views_password_reset import (
+    AdminOnlyPasswordResetView, admin_reset_user_password, admin_set_user_password
+)
 
 app_name = 'accounts'
 
@@ -37,18 +40,29 @@ urlpatterns = [
     path('sysadmin/', system_admin_login, name='sysadmin_login'),
     path('sysadmin/dashboard/', system_admin_dashboard, name='sysadmin_dashboard'),
 
-    # Password Reset URLs (for users who forgot password)
-    path('password-reset/', 
-         auth_views.PasswordResetView.as_view(
-             template_name='accounts/password_reset_form.html',
-             success_url='/accounts/password-reset/done/'
-         ), 
-         name='password_reset'),
-    path('password-reset/done/', 
+    # Password Reset URLs - ADMIN ONLY
+    # Regular users cannot self-serve password reset
+    # Only admins get email reset links
+    path('admin-password-reset/', 
+         AdminOnlyPasswordResetView.as_view(),
+         name='admin_password_reset'),
+    path('admin-password-reset/done/', 
          auth_views.PasswordResetDoneView.as_view(
-             template_name='accounts/password_reset_done.html'
+             template_name='accounts/admin_password_reset_done.html'
          ), 
-         name='password_reset_done'),
+         name='admin_password_reset_done'),
+    
+    # Admin resets user password (sends email to user)
+    path('admin/reset-user-password/<int:user_id>/', 
+         admin_reset_user_password, 
+         name='admin_reset_user_password'),
+    
+    # Admin directly sets user password (no email)
+    path('admin/set-user-password/<int:user_id>/', 
+         admin_set_user_password, 
+         name='admin_set_user_password'),
+    
+    # Standard password reset confirm (for admins only)
     path('reset/<uidb64>/<token>/', 
          auth_views.PasswordResetConfirmView.as_view(
              template_name='accounts/password_reset_confirm.html',
