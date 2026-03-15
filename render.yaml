@@ -2,8 +2,8 @@ services:
   - type: web
     name: school-management-system
     runtime: python
-    pythonVersion: 3.11.9
     buildCommand: |
+      python --version
       pip install --upgrade pip setuptools wheel
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
