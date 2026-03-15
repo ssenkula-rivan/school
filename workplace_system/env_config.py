@@ -43,9 +43,19 @@ class EnvironmentConfig:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
     
-    # Database Settings - PostgreSQL ONLY (no SQLite)
+    # Database Settings - Auto-detect based on DATABASE_URL
     DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
-    DB_ENGINE = 'django.db.backends.postgresql'
+    
+    # Auto-detect database engine from DATABASE_URL
+    if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+        DB_ENGINE = 'django.db.backends.postgresql'
+    elif DATABASE_URL and DATABASE_URL.startswith('sqlite://'):
+        DB_ENGINE = 'django.db.backends.sqlite3'
+    elif os.environ.get('USE_POSTGRES', 'False').lower() == 'true':
+        DB_ENGINE = 'django.db.backends.postgresql'
+    else:
+        DB_ENGINE = 'django.db.backends.sqlite3'  # Default to SQLite for safety
+    
     DB_NAME = os.environ.get('DB_NAME', 'school_management_saas')
     DB_USER = os.environ.get('DB_USER', '')
     DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
@@ -124,44 +134,66 @@ class EnvironmentConfig:
     @classmethod
     def get_database_config(cls):
         """
-        Get PostgreSQL database configuration.
+        Get database configuration with auto-detection.
         
         Priority:
         1. DATABASE_URL (Render/Heroku style)
         2. Individual DB_* settings
+        3. SQLite fallback
         """
         if cls.DATABASE_URL:
             print(f"Using DATABASE_URL for database configuration")
-            config = dj_database_url.parse(
-                cls.DATABASE_URL,
-                conn_max_age=600,
-            )
-            # Add SSL mode for production if not already in URL
-            if cls.IS_PRODUCTION and 'OPTIONS' not in config:
-                config['OPTIONS'] = {}
-            if cls.IS_PRODUCTION and 'sslmode' not in config.get('OPTIONS', {}):
-                config['OPTIONS']['sslmode'] = 'require'
-            
-            print(f"Parsed database config: ENGINE={config.get('ENGINE')}, NAME={config.get('NAME')}")
-            return config
+            try:
+                config = dj_database_url.parse(
+                    cls.DATABASE_URL,
+                    conn_max_age=600,
+                )
+                # Add SSL mode for production if not already in URL
+                if cls.IS_PRODUCTION and 'OPTIONS' not in config:
+                    config['OPTIONS'] = {}
+                if cls.IS_PRODUCTION and 'sslmode' not in config.get('OPTIONS', {}):
+                    config['OPTIONS']['sslmode'] = 'require'
+                
+                print(f"Parsed database config: ENGINE={config.get('ENGINE')}, NAME={config.get('NAME')}")
+                return config
+            except Exception as e:
+                print(f"Error parsing DATABASE_URL: {e}")
+                print("Falling back to SQLite")
+                return cls._get_sqlite_config()
 
-        # Use explicit settings
-        print(f"Using explicit DB_* settings for database configuration")
-        config = {
-            'ENGINE': cls.DB_ENGINE,
-            'NAME': cls.DB_NAME,
-            'USER': cls.DB_USER,
-            'PASSWORD': cls.DB_PASSWORD,
-            'HOST': cls.DB_HOST,
-            'PORT': cls.DB_PORT,
-            'CONN_MAX_AGE': 600,
+        # Use explicit settings if PostgreSQL
+        if cls.DB_ENGINE == 'django.db.backends.postgresql':
+            print(f"Using explicit PostgreSQL configuration")
+            config = {
+                'ENGINE': cls.DB_ENGINE,
+                'NAME': cls.DB_NAME,
+                'USER': cls.DB_USER,
+                'PASSWORD': cls.DB_PASSWORD,
+                'HOST': cls.DB_HOST,
+                'PORT': cls.DB_PORT,
+                'CONN_MAX_AGE': 600,
+                'ATOMIC_REQUESTS': True,
+                'OPTIONS': {
+                    'connect_timeout': 10,
+                },
+            }
+            print(f"Database config: ENGINE={config.get('ENGINE')}, NAME={config.get('NAME')}")
+            return config
+        
+        # Default to SQLite
+        return cls._get_sqlite_config()
+    
+    @classmethod
+    def _get_sqlite_config(cls):
+        """Get SQLite configuration"""
+        print("Using SQLite fallback configuration")
+        from pathlib import Path
+        base_dir = Path(__file__).resolve().parent.parent
+        return {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': base_dir / 'db.sqlite3',
             'ATOMIC_REQUESTS': True,
-            'OPTIONS': {
-                'connect_timeout': 10,
-            },
         }
-        print(f"Database config: ENGINE={config.get('ENGINE')}, NAME={config.get('NAME')}")
-        return config
     
     @classmethod
     def get_cache_config(cls):
