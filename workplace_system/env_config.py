@@ -38,11 +38,10 @@ class EnvironmentConfig:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
     
-    # Database Settings
-    USE_POSTGRES = os.environ.get('USE_POSTGRES', 'False').lower() == 'true'
+    # Database Settings - PostgreSQL ONLY (no SQLite)
     DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
-    DB_ENGINE = 'django.db.backends.postgresql' if USE_POSTGRES else 'django.db.backends.sqlite3'
-    DB_NAME = os.environ.get('DB_NAME', str(BASE_DIR / 'db.sqlite3'))
+    DB_ENGINE = 'django.db.backends.postgresql'
+    DB_NAME = os.environ.get('DB_NAME', 'school_management_saas')
     DB_USER = os.environ.get('DB_USER', '')
     DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
     DB_HOST = os.environ.get('DB_HOST', 'localhost')
@@ -100,9 +99,8 @@ class EnvironmentConfig:
             if not cls.SECRET_KEY or 'change' in cls.SECRET_KEY.lower():
                 errors.append('SECRET_KEY must be a secure random value in production.')
             
-            if cls.USE_POSTGRES:
-                if not cls.DB_PASSWORD:
-                    errors.append('DB_PASSWORD must be set for PostgreSQL in production.')
+            if not cls.DB_PASSWORD:
+                errors.append('DB_PASSWORD must be set for PostgreSQL.')
             
             if not cls.EMAIL_HOST_USER or not cls.EMAIL_HOST_PASSWORD:
                 warnings.append('Email credentials not configured. Email sending will fail.')
@@ -113,52 +111,41 @@ class EnvironmentConfig:
         # Development warnings
         if cls.IS_DEVELOPMENT:
             if cls.DEBUG:
-                warnings.append('DEBUG=True in development. This is normal but remember to disable in production.')
+                warnings.append('DEBUG=True in development. Remember to disable in production.')
             
-            if not cls.USE_POSTGRES:
-                warnings.append('Using SQLite in development. Switch to PostgreSQL for production.')
+            if not cls.DB_PASSWORD:
+                warnings.append('DB_PASSWORD not set. PostgreSQL connection may fail.')
         
         return errors, warnings
     
     @classmethod
     def get_database_config(cls):
         """
-        Get database configuration dictionary.
-
-        Priority when USE_POSTGRES is true:
-        1. DATABASE_URL (professional, single-URL style used by most hosts)
-        2. Individual DB_* settings (NAME, USER, PASSWORD, HOST, PORT)
+        Get PostgreSQL database configuration.
+        
+        Priority:
+        1. DATABASE_URL (Render/Heroku style)
+        2. Individual DB_* settings
         """
-        if cls.USE_POSTGRES:
-            if cls.DATABASE_URL:
-                # Use DATABASE_URL when provided (e.g. Render/Heroku style)
-                return dj_database_url.parse(
-                    cls.DATABASE_URL,
-                    conn_max_age=600,
-                    ssl_require=cls.IS_PRODUCTION,
-                )
+        if cls.DATABASE_URL:
+            return dj_database_url.parse(
+                cls.DATABASE_URL,
+                conn_max_age=600,
+                ssl_require=cls.IS_PRODUCTION,
+            )
 
-            # Fallback to explicit settings
-            return {
-                'ENGINE': cls.DB_ENGINE,
-                'NAME': cls.DB_NAME,
-                'USER': cls.DB_USER,
-                'PASSWORD': cls.DB_PASSWORD,
-                'HOST': cls.DB_HOST,
-                'PORT': cls.DB_PORT,
-                'CONN_MAX_AGE': 600,
-                'ATOMIC_REQUESTS': True,
-                'OPTIONS': {
-                    'connect_timeout': 10,
-                },
-            }
-
-        # Default: SQLite for development
+        # Use explicit settings
         return {
             'ENGINE': cls.DB_ENGINE,
             'NAME': cls.DB_NAME,
+            'USER': cls.DB_USER,
+            'PASSWORD': cls.DB_PASSWORD,
+            'HOST': cls.DB_HOST,
+            'PORT': cls.DB_PORT,
+            'CONN_MAX_AGE': 600,
+            'ATOMIC_REQUESTS': True,
             'OPTIONS': {
-                'timeout': 20,
+                'connect_timeout': 10,
             },
         }
     
@@ -191,7 +178,7 @@ class EnvironmentConfig:
         print("="*60)
         print(f"Environment: {cls.ENVIRONMENT.upper()}")
         print(f"DEBUG Mode: {cls.DEBUG}")
-        print(f"Database: {'PostgreSQL' if cls.USE_POSTGRES else 'SQLite'}")
+        print(f"Database: PostgreSQL")
         print(f"Cache: {'Redis' if cls.USE_REDIS else 'Local Memory'}")
         print(f"Email Backend: {cls.EMAIL_BACKEND.split('.')[-1]}")
         print(f"Allowed Hosts: {', '.join(cls.ALLOWED_HOSTS)}")

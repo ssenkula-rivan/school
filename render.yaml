@@ -15,8 +15,6 @@ services:
         value: "production"
       - key: SECRET_KEY
         generateValue: true
-      - key: USE_POSTGRES
-        value: "True"
       - key: DATABASE_URL
         fromDatabase:
           name: school_db

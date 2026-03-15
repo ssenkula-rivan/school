@@ -161,24 +161,19 @@ WSGI_APPLICATION = 'workplace_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Use PostgreSQL for production, SQLite for development
-USE_POSTGRES = EnvironmentConfig.USE_POSTGRES
+# Use PostgreSQL only
+USE_POSTGRES = True
 
 DATABASES = {
     'default': EnvironmentConfig.get_database_config()
 }
 
-# Validate database configuration
-if USE_POSTGRES:
-    if not DATABASES['default']['PASSWORD']:
-        raise ValueError('DB_PASSWORD must be set when using PostgreSQL!')
-else:
-    # SQLite for Development Only - Allow DEBUG=False for local testing
-    if not DEBUG and EnvironmentConfig.IS_PRODUCTION:
-        raise ValueError(
-            'SQLite is not suitable for production! '
-            'Set USE_POSTGRES=True and configure PostgreSQL.'
-        )
+# Validate PostgreSQL is configured
+if not DATABASES['default'].get('PASSWORD') and not EnvironmentConfig.DATABASE_URL:
+    raise ValueError(
+        'PostgreSQL configuration required! '
+        'Set DATABASE_URL or DB_PASSWORD in .env file.'
+    )
 
 
 # Password validation
