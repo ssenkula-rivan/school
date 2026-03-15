@@ -167,19 +167,14 @@ DATABASES = {
 # Validate PostgreSQL is configured
 db_config = DATABASES['default']
 print(f"Database config: ENGINE={db_config.get('ENGINE')}, NAME={db_config.get('NAME')}")
+print(f"Has PASSWORD: {bool(db_config.get('PASSWORD'))}")
+print(f"DATABASE_URL set: {bool(EnvironmentConfig.DATABASE_URL)}")
 
 if db_config.get('ENGINE') != 'django.db.backends.postgresql':
     print(f"ERROR: Wrong database engine: {db_config.get('ENGINE')}")
     raise ValueError(
         'PostgreSQL is required. '
         'Set DATABASE_URL or DB_* environment variables.'
-    )
-
-if not db_config.get('PASSWORD') and not EnvironmentConfig.DATABASE_URL:
-    print("ERROR: PostgreSQL password not configured!")
-    raise ValueError(
-        'PostgreSQL password is required. '
-        'Set DB_PASSWORD or DATABASE_URL environment variable.'
     )
 
 
