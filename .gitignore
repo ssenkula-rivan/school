@@ -16,19 +16,15 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # Virtual Environment
 venv/
 env/
 ENV/
-env.bak/
-venv.bak/
+.venv
 
 # Django
 *.log
@@ -39,10 +35,10 @@ db.sqlite3-journal
 /staticfiles
 /static
 
-# Environment Variables
+# Environment variables
 .env
 .env.local
-.env.*.local
+.env.production
 
 # IDE
 .vscode/
@@ -53,92 +49,37 @@ db.sqlite3-journal
 .DS_Store
 
 # Testing
-.tox/
 .coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
+htmlcov/
 .pytest_cache/
-
-# Logs
-logs/
-*.log
+.tox/
 
 # Backup files
 *.bak
 *.backup
-*.old
 backups/
-*.emergency
 
-# OS
-Thumbs.db
+# macOS
+._*
 .DS_Store
+.AppleDouble
+.LSOverride
 
-# Temporary files
-*.tmp
-*.temp
+# Thumbnails
+._*
 
-# Compiled files
-*.pyc
-*.pyo
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 
-# Database
-*.sqlite3
-*.db
-
-# Secrets
-secrets.json
-credentials.json
-
-# Node modules
-node_modules/
-npm-debug.log
-yarn-error.log
-
-# Collected static files
-/staticfiles/
-
-# Media files
-/media/
-
-# Gunicorn
-gunicorn.ctl/
-
-# Celery
-celerybeat-schedule
-celerybeat.pid
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
-
-# Poetry
-poetry.lock
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre
-.pyre/
-
-# Sync queue
-sync_queue/
-
-# Documentation (not needed on server)
-*.md
-*.txt
-!requirements.txt
-
-# macOS app bundle
-*.app/
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk

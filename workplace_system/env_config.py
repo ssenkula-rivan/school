@@ -43,9 +43,14 @@ class EnvironmentConfig:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
     
-    # Database Settings - PostgreSQL ONLY
+    # Database Settings - PostgreSQL or SQLite
     DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
-    DB_ENGINE = 'django.db.backends.postgresql'  # Force PostgreSQL
+    
+    # Allow SQLite for local development
+    if DATABASE_URL.startswith('sqlite'):
+        DB_ENGINE = 'django.db.backends.sqlite3'
+    else:
+        DB_ENGINE = 'django.db.backends.postgresql'
     
     DB_NAME = os.environ.get('DB_NAME', 'school_management_saas')
     DB_USER = os.environ.get('DB_USER', '')
@@ -125,13 +130,26 @@ class EnvironmentConfig:
     @classmethod
     def get_database_config(cls):
         """
-        Get PostgreSQL database configuration.
+        Get database configuration (PostgreSQL or SQLite).
         
         Priority:
-        1. DATABASE_URL (Render/Heroku style)
+        1. DATABASE_URL (Render/Heroku style or sqlite:///path)
         2. Individual DB_* settings
         """
         if cls.DATABASE_URL:
+            # Check if it's SQLite
+            if cls.DATABASE_URL.startswith('sqlite'):
+                print(f"Using SQLite database from DATABASE_URL")
+                # Extract path from sqlite:///path
+                db_path = cls.DATABASE_URL.replace('sqlite:///', '')
+                if not db_path.startswith('/'):
+                    # Relative path
+                    db_path = BASE_DIR / db_path
+                return {
+                    'ENGINE': 'django.db.backends.sqlite3',
+                    'NAME': str(db_path),
+                }
+            
             print(f"Using DATABASE_URL for PostgreSQL configuration")
             config = dj_database_url.parse(
                 cls.DATABASE_URL,
@@ -193,7 +211,8 @@ class EnvironmentConfig:
         print("="*60)
         print(f"Environment: {cls.ENVIRONMENT.upper()}")
         print(f"DEBUG Mode: {cls.DEBUG}")
-        print(f"Database: PostgreSQL")
+        db_type = "SQLite" if cls.DATABASE_URL.startswith('sqlite') else "PostgreSQL"
+        print(f"Database: {db_type}")
         print(f"Cache: {'Redis' if cls.USE_REDIS else 'Local Memory'}")
         print(f"Email Backend: {cls.EMAIL_BACKEND.split('.')[-1]}")
         print(f"Allowed Hosts: {', '.join(cls.ALLOWED_HOSTS)}")

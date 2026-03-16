@@ -64,8 +64,10 @@ CSRF_COOKIE_SECURE = True if not DEBUG else False
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Strict' if not DEBUG else 'Lax'
 
-# Development: Allow localhost
-if DEBUG:
+# CSRF Trusted Origins - Allow localhost for local production
+DISABLE_SSL_REDIRECT = os.environ.get('DISABLE_SSL_REDIRECT', 'False').lower() == 'true'
+
+if DEBUG or DISABLE_SSL_REDIRECT:
     CSRF_TRUSTED_ORIGINS = [
         'http://localhost:8000',
         'http://127.0.0.1:8000',
@@ -164,16 +166,18 @@ DATABASES = {
     'default': EnvironmentConfig.get_database_config()
 }
 
-# Validate PostgreSQL is configured
+# Validate database is configured
 db_config = DATABASES['default']
 print(f"Database config: ENGINE={db_config.get('ENGINE')}, NAME={db_config.get('NAME')}")
-print(f"Has PASSWORD: {bool(db_config.get('PASSWORD'))}")
-print(f"DATABASE_URL set: {bool(EnvironmentConfig.DATABASE_URL)}")
-
-if db_config.get('ENGINE') != 'django.db.backends.postgresql':
-    print(f"ERROR: Wrong database engine: {db_config.get('ENGINE')}")
+if db_config.get('ENGINE') == 'django.db.backends.postgresql':
+    print(f"Has PASSWORD: {bool(db_config.get('PASSWORD'))}")
+    print(f"DATABASE_URL set: {bool(EnvironmentConfig.DATABASE_URL)}")
+elif db_config.get('ENGINE') == 'django.db.backends.sqlite3':
+    print(f"Using SQLite for local development")
+else:
+    print(f"ERROR: Unsupported database engine: {db_config.get('ENGINE')}")
     raise ValueError(
-        'PostgreSQL is required. '
+        'Only PostgreSQL and SQLite are supported. '
         'Set DATABASE_URL or DB_* environment variables.'
     )
 
@@ -263,9 +267,11 @@ DEFAULT_FROM_EMAIL = EnvironmentConfig.DEFAULT_FROM_EMAIL
 # RATELIMIT_VIEW = 'django_ratelimit.views.ratelimited'
 
 # SSL/HTTPS Security Settings - CRITICAL FOR PRODUCTION
-SECURE_SSL_REDIRECT = True if not DEBUG else False
-SESSION_COOKIE_SECURE = True if not DEBUG else False
-CSRF_COOKIE_SECURE = True if not DEBUG else False
+# Allow disabling SSL redirect for local production
+DISABLE_SSL_REDIRECT = os.environ.get('DISABLE_SSL_REDIRECT', 'False').lower() == 'true'
+SECURE_SSL_REDIRECT = False if DISABLE_SSL_REDIRECT else (not DEBUG)
+SESSION_COOKIE_SECURE = False if DISABLE_SSL_REDIRECT else (not DEBUG)
+CSRF_COOKIE_SECURE = False if DISABLE_SSL_REDIRECT else (not DEBUG)
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax' if DEBUG else 'Strict'
