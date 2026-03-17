@@ -1,7 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.core.cache import cache
 from core.models import Department
+import uuid
+
+
+def generate_employee_id():
+    """Generate unique employee ID"""
+    return f"EMP-{uuid.uuid4().hex[:8].upper()}"
+
 
 class UserProfile(models.Model):
     ROLE_CHOICES = [
@@ -10,6 +18,7 @@ class UserProfile(models.Model):
         ('director', 'Director'),
         ('dos', 'Director of Studies (DOS)'),  # For schools - handles exams
         ('head_of_class', 'Head of Class'),
+        ('deputy_head_teacher', 'Deputy Head Teacher'),
         ('teacher', 'Teacher'),
         ('security', 'Security'),
         ('bursar', 'Bursar'),
@@ -24,9 +33,25 @@ class UserProfile(models.Model):
     ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    employee_id = models.CharField(max_length=20, unique=True)
+    employee_id = models.CharField(
+        max_length=20, 
+        unique=True, 
+        default=generate_employee_id,
+        help_text='Auto-generated unique employee ID'
+    )
+    
+    # CRITICAL: Multi-tenant isolation
+    school = models.ForeignKey(
+        'accounts.SchoolConfiguration',
+        on_delete=models.CASCADE,
+        null=True,  # null for superusers
+        blank=True,
+        related_name='staff',
+        help_text='School this user belongs to'
+    )
+    
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='staff')
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='staff')  # Increased length
     phone = models.CharField(max_length=15, blank=True)
     address = models.TextField(blank=True)
     profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
@@ -45,6 +70,7 @@ class UserProfile(models.Model):
             models.Index(fields=['employee_id']),
             models.Index(fields=['role']),
             models.Index(fields=['is_active_employee']),
+            models.Index(fields=['school', 'role']),  # Multi-tenant queries
         ]
     
     def __str__(self):
@@ -89,19 +115,27 @@ class UserProfile(models.Model):
     
     @property
     def can_manage_exams(self):
-        """Check if user can manage examinations based on institution type"""
-        from .school_config import get_school_config
-        config = get_school_config()
+        """Check if user can manage examinations based on institution type - CACHED"""
+        # Cache the school type to avoid repeated DB queries
+        cache_key = f'school_type_{self.school_id}' if self.school_id else 'school_type_none'
+        school_type = cache.get(cache_key)
         
-        if not config:
+        if school_type is None:
+            # Import inside method to avoid circular import
+            from .school_config import get_school_config
+            config = get_school_config()
+            school_type = config.school_type if config else None
+            cache.set(cache_key, school_type, 300)  # Cache for 5 minutes
+        
+        if not school_type:
             return self.role == 'admin'
         
         # For schools (nursery, primary, secondary): DOS manages exams
-        if config.school_type in ['nursery', 'primary', 'secondary', 'combined']:
+        if school_type in ['nursery', 'primary', 'secondary', 'combined']:
             return self.role in ['admin', 'dos']
         
         # For universities/colleges: Registrar manages exams
-        elif config.school_type in ['university', 'college']:
+        elif school_type in ['university', 'college']:
             return self.role in ['admin', 'registrar']
         
         return self.role == 'admin'
@@ -140,15 +174,18 @@ class AuditLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='audit_logs')
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     
-    # Generic relation to any model
+    # Generic relation to any model - FIXED for UUID support
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
-    object_id = models.PositiveIntegerField(null=True, blank=True)
+    object_id = models.CharField(max_length=255, null=True, blank=True)  # Support UUID PKs
     content_object = GenericForeignKey('content_type', 'object_id')
     
     # Details
     description = models.TextField()
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True)
+    
+    # GDPR compliance
+    is_anonymised = models.BooleanField(default=False, help_text='User data anonymised for GDPR compliance')
     
     # Metadata
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -159,10 +196,12 @@ class AuditLog(models.Model):
             models.Index(fields=['user', '-timestamp']),
             models.Index(fields=['action', '-timestamp']),
             models.Index(fields=['-timestamp']),
+            models.Index(fields=['is_anonymised']),
         ]
     
     def __str__(self):
-        return f"{self.user} - {self.action} - {self.timestamp}"
+        user_display = "Anonymous" if self.is_anonymised else str(self.user)
+        return f"{user_display} - {self.action} - {self.timestamp}"
 
 
 class LoginLog(models.Model):
@@ -176,8 +215,12 @@ class LoginLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='login_logs')
     username_attempted = models.CharField(max_length=150)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-    ip_address = models.GenericIPAddressField()
+    ip_address = models.GenericIPAddressField(null=True, blank=True)  # Allow null for programmatic logins
     user_agent = models.TextField(blank=True)
+    
+    # GDPR compliance
+    is_anonymised = models.BooleanField(default=False, help_text='User data anonymised for GDPR compliance')
+    
     timestamp = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -187,10 +230,12 @@ class LoginLog(models.Model):
             models.Index(fields=['status', '-timestamp']),
             models.Index(fields=['-timestamp']),
             models.Index(fields=['ip_address']),
+            models.Index(fields=['is_anonymised']),
         ]
     
     def __str__(self):
-        return f"{self.username_attempted} - {self.status} - {self.timestamp}"
+        user_display = "Anonymous" if self.is_anonymised else self.username_attempted
+        return f"{user_display} - {self.status} - {self.timestamp}"
 
 
 # Import SchoolConfiguration
@@ -240,8 +285,8 @@ class ParentStudentLink(models.Model):
         ('other', 'Other'),
     ]
     
-    parent = models.ForeignKey(Parent, on_delete=models.CASCADE, related_name='children')
-    student = models.ForeignKey('core.Student', on_delete=models.CASCADE, related_name='parents')
+    parent = models.ForeignKey(Parent, on_delete=models.CASCADE, related_name='children', db_index=True)
+    student = models.ForeignKey('core.Student', on_delete=models.CASCADE, related_name='parents', db_index=True)
     relationship = models.CharField(max_length=20, choices=RELATIONSHIP_CHOICES)
     is_primary_contact = models.BooleanField(default=False, help_text='Primary contact for this student')
     can_pickup = models.BooleanField(default=True, help_text='Authorized to pick up student')
@@ -251,6 +296,11 @@ class ParentStudentLink(models.Model):
     class Meta:
         unique_together = ['parent', 'student']
         ordering = ['-is_primary_contact', 'relationship']
+        indexes = [
+            models.Index(fields=['parent']),  # Explicit index for parent lookups
+            models.Index(fields=['student']),  # Explicit index for student lookups
+            models.Index(fields=['is_primary_contact']),
+        ]
     
     def __str__(self):
         return f"{self.parent.user.get_full_name()} - {self.student.get_full_name()} ({self.relationship})"
@@ -295,7 +345,9 @@ class ParentTeacherMessage(models.Model):
         ]
     
     def __str__(self):
-        return f"{self.sender.get_full_name()} to {self.recipient.get_full_name()} - {self.subject}"
+        # Improved admin display with truncated subject and date
+        subject_short = self.subject[:30] + "..." if len(self.subject) > 30 else self.subject
+        return f"{self.sender.get_full_name()} → {self.recipient.get_full_name()}: {subject_short} ({self.sent_at.strftime('%Y-%m-%d')})"
     
     def mark_as_read(self):
         """Mark message as read"""

@@ -1,9 +1,12 @@
 from django.urls import path
-from . import views_backup, views_sync
+from . import views, views_backup, views_sync
 
 app_name = 'core'
 
 urlpatterns = [
+    # Health check
+    path('health/', views.health_check, name='health_check'),
+    
     # Backup URLs
     path('backup/', views_backup.backup_dashboard, name='backup_dashboard'),
     path('backup/create/', views_backup.create_backup, name='create_backup'),

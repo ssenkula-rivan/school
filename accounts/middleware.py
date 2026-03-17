@@ -38,6 +38,10 @@ class SchoolConfigurationMiddleware:
             if request.user.is_authenticated and request.user.is_superuser:
                 if request.path != reverse('accounts:school_setup'):
                     return redirect('accounts:school_setup')
+            else:
+                # Redirect to public school registration
+                if request.path != reverse('accounts:register_school'):
+                    return redirect('accounts:register_school')
         
         response = self.get_response(request)
         return response

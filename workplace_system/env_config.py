@@ -16,113 +16,112 @@ load_dotenv(BASE_DIR / '.env')
 class EnvironmentConfig:
     """Centralized environment configuration with validation"""
     
-    # Environment detection - Handle Render and other hosting platforms
-    ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development').lower()
-    # Detect production environment (Render sets ENVIRONMENT=production, but also check other indicators)
-    IS_PRODUCTION = (
-        ENVIRONMENT in ['production', 'prod'] or 
-        os.environ.get('RENDER') == 'true' or  # Render indicator
-        os.environ.get('DYNO')  # Heroku indicator
-    )
-    IS_DEVELOPMENT = ENVIRONMENT in ['development', 'dev', 'local'] and not IS_PRODUCTION
-    IS_STAGING = ENVIRONMENT in ['staging', 'stage'] and not IS_PRODUCTION
+    @classmethod
+    def get_environment(cls):
+        return os.environ.get('ENVIRONMENT', 'development').lower()
     
-    # Django Core Settings
-    DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
-    SECRET_KEY = os.environ.get('SECRET_KEY')
-    ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')]
+    @classmethod
+    def is_production(cls):
+        env = cls.get_environment()
+        return (
+            env in ['production', 'prod'] or 
+            os.environ.get('RENDER', '').lower() in ('true', '1', 'yes') or
+            bool(os.environ.get('DYNO'))  # Heroku
+        )
     
-    # Security Settings
-    SECURE_SSL_REDIRECT = IS_PRODUCTION
-    SESSION_COOKIE_SECURE = IS_PRODUCTION
-    CSRF_COOKIE_SECURE = IS_PRODUCTION
-    SECURE_HSTS_SECONDS = 31536000 if IS_PRODUCTION else 0
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = IS_PRODUCTION
-    SECURE_HSTS_PRELOAD = IS_PRODUCTION
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
+    @classmethod
+    def is_development(cls):
+        env = cls.get_environment()
+        return env in ['development', 'dev', 'local'] and not cls.is_production()
     
-    # Database Settings - PostgreSQL or SQLite
-    DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
+    @classmethod
+    def get_debug(cls):
+        return os.environ.get('DEBUG', 'False').lower() == 'true'
     
-    # Allow SQLite for local development
-    if DATABASE_URL.startswith('sqlite'):
-        DB_ENGINE = 'django.db.backends.sqlite3'
-    else:
-        DB_ENGINE = 'django.db.backends.postgresql'
+    @classmethod
+    def get_secret_key(cls):
+        return os.environ.get('SECRET_KEY')
     
-    DB_NAME = os.environ.get('DB_NAME', 'school_management_saas')
-    DB_USER = os.environ.get('DB_USER', '')
-    DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
-    DB_HOST = os.environ.get('DB_HOST', 'localhost')
-    DB_PORT = os.environ.get('DB_PORT', '5432')
+    @classmethod
+    def get_allowed_hosts(cls):
+        return [h.strip() for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')]
     
-    # Cache Settings
-    USE_REDIS = os.environ.get('USE_REDIS', 'False').lower() == 'true'
-    REDIS_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1')
+    @classmethod
+    def get_database_url(cls):
+        return os.environ.get('DATABASE_URL', '').strip()
     
-    # Email Settings
-    EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
-    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
-    EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@school.com')
+    @classmethod
+    def get_db_engine(cls):
+        url = cls.get_database_url()
+        return 'django.db.backends.sqlite3' if url.startswith('sqlite') else 'django.db.backends.postgresql'
     
-    # Payment Gateway
-    PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'stripe')
-    STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', '')
-    STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
-    STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+    @classmethod
+    def get_email_backend(cls):
+        # SAFE DEFAULT: Console backend to prevent accidental emails
+        return os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
     
-    # Logging
-    LOG_LEVEL = 'WARNING' if IS_PRODUCTION else 'DEBUG'
+    @classmethod
+    def get_log_level(cls):
+        return os.environ.get('LOG_LEVEL', 'INFO' if cls.is_production() else 'DEBUG')
     
     @classmethod
     def validate(cls):
-        """Validate critical environment settings"""
+        """Validate critical environment settings - SAFE to call anytime"""
         errors = []
         warnings = []
         
-        # Warnings only - don't block deployment
-        if not cls.SECRET_KEY:
-            warnings.append('SECRET_KEY is not set. Will auto-generate.')
+        secret_key = cls.get_secret_key()
         
-        # Validate SECRET_KEY strength if provided
-        if cls.SECRET_KEY:
-            if len(cls.SECRET_KEY) < 50:
-                warnings.append(f'SECRET_KEY is weak ({len(cls.SECRET_KEY)} chars). Should be 50+ characters.')
-            
-            if 'change' in cls.SECRET_KEY.lower() or 'placeholder' in cls.SECRET_KEY.lower():
-                warnings.append('SECRET_KEY contains placeholder text.')
-            
-            if cls.SECRET_KEY.startswith('django-insecure-'):
-                warnings.append('SECRET_KEY is using Django development key.')
+        # CRITICAL: SECRET_KEY must be set in production
+        if cls.is_production():
+            if not secret_key:
+                errors.append('SECRET_KEY must be set as an environment variable in production!')
+            elif len(secret_key) < 50:
+                errors.append(f'SECRET_KEY is too weak ({len(secret_key)} chars). Must be 50+ characters in production.')
+            elif 'change' in secret_key.lower() or 'placeholder' in secret_key.lower():
+                errors.append('SECRET_KEY contains placeholder text in production!')
+            elif secret_key.startswith('django-insecure-'):
+                errors.append('SECRET_KEY is using Django development key in production!')
+        else:
+            # Development warnings only
+            if not secret_key:
+                warnings.append('SECRET_KEY is not set. Will auto-generate.')
+            elif len(secret_key) < 50:
+                warnings.append(f'SECRET_KEY is weak ({len(secret_key)} chars). Should be 50+ characters.')
         
-        if cls.IS_PRODUCTION:
-            # Production-specific checks
-            if cls.DEBUG:
+        if cls.is_production():
+            if cls.get_debug():
                 errors.append('DEBUG=True in production is a CRITICAL SECURITY RISK!')
             
-            # Don't require SECRET_KEY - it will be auto-generated
-            if not cls.DB_PASSWORD:
-                warnings.append('DB_PASSWORD not set. Will use SQLite fallback.')
+            database_url = cls.get_database_url()
+            if not database_url:
+                errors.append('DATABASE_URL must be set in production!')
             
-            if not cls.EMAIL_HOST_USER or not cls.EMAIL_HOST_PASSWORD:
+            # Check settings module
+            settings_module = os.environ.get('DJANGO_SETTINGS_MODULE', '')
+            if 'production' not in settings_module:
+                warnings.append(f'DJANGO_SETTINGS_MODULE is "{settings_module}" - should contain "production"')
+            
+            email_user = os.environ.get('EMAIL_HOST_USER', '')
+            email_pass = os.environ.get('EMAIL_HOST_PASSWORD', '')
+            if not email_user or not email_pass:
                 warnings.append('Email credentials not configured. Email sending will fail.')
             
-            if not cls.STRIPE_SECRET_KEY:
+            stripe_key = os.environ.get('STRIPE_SECRET_KEY', '')
+            if not stripe_key:
                 warnings.append('Stripe credentials not configured. Payment processing will fail.')
+            
+            # Check R2 storage
+            r2_bucket = os.environ.get('R2_BUCKET_NAME', '')
+            if not r2_bucket:
+                warnings.append('R2 storage not configured. Media files will be lost on deploy!')
         
-        # Development warnings
-        if cls.IS_DEVELOPMENT:
-            if cls.DEBUG:
+        if cls.is_development():
+            if cls.get_debug():
                 warnings.append('DEBUG=True in development. Remember to disable in production.')
             
-            if not cls.DB_PASSWORD:
+            db_password = os.environ.get('DB_PASSWORD', '')
+            if not db_password:
                 warnings.append('DB_PASSWORD not set. PostgreSQL connection may fail.')
         
         return errors, warnings
@@ -132,67 +131,89 @@ class EnvironmentConfig:
         """
         Get database configuration (PostgreSQL or SQLite).
         
-        Priority:
-        1. DATABASE_URL (Render/Heroku style or sqlite:///path)
-        2. Individual DB_* settings
+        CRITICAL: Fails hard in production if DATABASE_URL missing
         """
-        if cls.DATABASE_URL:
-            # Check if it's SQLite
-            if cls.DATABASE_URL.startswith('sqlite'):
-                print(f"Using SQLite database from DATABASE_URL")
-                # Extract path from sqlite:///path
-                db_path = cls.DATABASE_URL.replace('sqlite:///', '')
-                if not db_path.startswith('/'):
-                    # Relative path
-                    db_path = BASE_DIR / db_path
-                return {
-                    'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': str(db_path),
-                }
-            
-            print(f"Using DATABASE_URL for PostgreSQL configuration")
-            config = dj_database_url.parse(
-                cls.DATABASE_URL,
-                conn_max_age=600,
+        database_url = cls.get_database_url()
+        
+        try:
+            if database_url:
+                # Check if it's SQLite
+                if database_url.startswith('sqlite'):
+                    print(f"Using SQLite database from DATABASE_URL")
+                    db_path = database_url.replace('sqlite:///', '')
+                    if not db_path.startswith('/'):
+                        db_path = BASE_DIR / db_path
+                    return {
+                        'ENGINE': 'django.db.backends.sqlite3',
+                        'NAME': str(db_path),
+                    }
+                
+                print(f"Using DATABASE_URL for PostgreSQL configuration")
+                config = dj_database_url.parse(
+                    database_url,
+                    conn_max_age=600,
+                    conn_health_checks=True,  # CRITICAL: Prevent stale connections
+                )
+                if cls.is_production() and 'OPTIONS' not in config:
+                    config['OPTIONS'] = {}
+                if cls.is_production() and 'sslmode' not in config.get('OPTIONS', {}):
+                    config['OPTIONS']['sslmode'] = 'require'
+                
+                print(f"Parsed database config: ENGINE={config.get('ENGINE')}, NAME={config.get('NAME')}")
+                return config
+        except Exception as e:
+            print(f"Warning: Failed to parse DATABASE_URL: {e}")
+        
+        # CRITICAL: Fail hard in production if no DATABASE_URL
+        if cls.is_production():
+            raise ValueError(
+                "CRITICAL: DATABASE_URL must be set in production. "
+                "SQLite is not permitted on Render - data will be lost on deploy!"
             )
-            # Add SSL mode for production if not already in URL
-            if cls.IS_PRODUCTION and 'OPTIONS' not in config:
-                config['OPTIONS'] = {}
-            if cls.IS_PRODUCTION and 'sslmode' not in config.get('OPTIONS', {}):
-                config['OPTIONS']['sslmode'] = 'require'
-            
-            print(f"Parsed database config: ENGINE={config.get('ENGINE')}, NAME={config.get('NAME')}")
-            return config
-
-        # Use explicit PostgreSQL settings
-        print(f"Using explicit PostgreSQL configuration")
-        config = {
-            'ENGINE': cls.DB_ENGINE,
-            'NAME': cls.DB_NAME,
-            'USER': cls.DB_USER,
-            'PASSWORD': cls.DB_PASSWORD,
-            'HOST': cls.DB_HOST,
-            'PORT': cls.DB_PORT,
-            'CONN_MAX_AGE': 600,
-            'ATOMIC_REQUESTS': True,
-            'OPTIONS': {
-                'connect_timeout': 10,
-            },
-        }
-        print(f"Database config: ENGINE={config.get('ENGINE')}, NAME={config.get('NAME')}")
-        return config
+        
+        # Development fallback
+        db_password = os.environ.get('DB_PASSWORD', '')
+        if db_password:
+            print(f"Using explicit PostgreSQL configuration")
+            return {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ.get('DB_NAME', 'school_management_saas'),
+                'USER': os.environ.get('DB_USER', ''),
+                'PASSWORD': db_password,
+                'HOST': os.environ.get('DB_HOST', 'localhost'),
+                'PORT': os.environ.get('DB_PORT', '5432'),
+                'CONN_MAX_AGE': 600,
+                'ATOMIC_REQUESTS': True,
+                'OPTIONS': {'connect_timeout': 10},
+            }
+        else:
+            print(f"Using SQLite fallback for development")
+            return {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
     
     @classmethod
     def get_cache_config(cls):
         """Get cache configuration dictionary"""
-        if cls.USE_REDIS:
+        use_redis = os.environ.get('USE_REDIS', 'False').lower() == 'true'
+        if use_redis:
+            redis_url = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1')
             return {
                 'default': {
                     'BACKEND': 'django_redis.cache.RedisCache',
-                    'LOCATION': cls.REDIS_URL,
+                    'LOCATION': redis_url,
                     'OPTIONS': {
                         'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-                    }
+                        'CONNECTION_POOL_KWARGS': {
+                            'max_connections': 50,
+                            'retry_on_timeout': True,
+                        },
+                        'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+                        'IGNORE_EXCEPTIONS': True,  # Don't crash if Redis is down
+                    },
+                    'TIMEOUT': 300,
+                    'KEY_PREFIX': 'school_mgmt',
                 }
             }
         else:
@@ -200,44 +221,65 @@ class EnvironmentConfig:
                 'default': {
                     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
                     'LOCATION': 'unique-snowflake',
+                    'TIMEOUT': 300,
+                    'OPTIONS': {
+                        'MAX_ENTRIES': 1000
+                    }
                 }
             }
     
+    @classmethod
+    def get_storage_config(cls):
+        """Get storage configuration for media files"""
+        use_r2 = os.environ.get('USE_R2_STORAGE', 'False').lower() == 'true'
+        
+        if use_r2:
+            return {
+                "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+                "OPTIONS": {
+                    "access_key": os.environ.get('R2_ACCESS_KEY_ID'),
+                    "secret_key": os.environ.get('R2_SECRET_ACCESS_KEY'),
+                    "bucket_name": os.environ.get('R2_BUCKET_NAME'),
+                    "endpoint_url": os.environ.get('R2_ENDPOINT_URL'),
+                    "region_name": "auto",
+                    "file_overwrite": False,
+                    "default_acl": None,
+                    "signature_version": "s3v4",
+                    "querystring_auth": True,
+                    "querystring_expire": 3600,
+                }
+            }
+        else:
+            return {
+                "BACKEND": "django.core.files.storage.FileSystemStorage",
+            }
+    
+    @classmethod
+    def get_sentry_dsn(cls):
+        """Get Sentry DSN for error tracking"""
+        return os.environ.get('SENTRY_DSN', '')
     @classmethod
     def print_config(cls):
         """Print current configuration (safe for logging)"""
         print("\n" + "="*60)
         print("ENVIRONMENT CONFIGURATION")
         print("="*60)
-        print(f"Environment: {cls.ENVIRONMENT.upper()}")
-        print(f"DEBUG Mode: {cls.DEBUG}")
-        db_type = "SQLite" if cls.DATABASE_URL.startswith('sqlite') else "PostgreSQL"
+        print(f"Environment: {cls.get_environment().upper()}")
+        print(f"DEBUG Mode: {cls.get_debug()}")
+        database_url = cls.get_database_url()
+        db_type = "SQLite" if database_url and database_url.startswith('sqlite') else "PostgreSQL" if database_url else "Not Set"
         print(f"Database: {db_type}")
-        print(f"Cache: {'Redis' if cls.USE_REDIS else 'Local Memory'}")
-        print(f"Email Backend: {cls.EMAIL_BACKEND.split('.')[-1]}")
-        print(f"Allowed Hosts: {', '.join(cls.ALLOWED_HOSTS)}")
-        print(f"SSL Redirect: {cls.SECURE_SSL_REDIRECT}")
+        use_redis = os.environ.get('USE_REDIS', 'False').lower() == 'true'
+        print(f"Cache: {'Redis' if use_redis else 'Local Memory'}")
+        print(f"Email Backend: {cls.get_email_backend().split('.')[-1]}")
+        print(f"Allowed Hosts: {', '.join(cls.get_allowed_hosts())}")
+        print(f"SSL Redirect: {cls.is_production()}")
+        use_r2 = os.environ.get('USE_R2_STORAGE', 'False').lower() == 'true'
+        print(f"Storage: {'Cloudflare R2' if use_r2 else 'Local Filesystem'}")
+        sentry_dsn = cls.get_sentry_dsn()
+        print(f"Error Tracking: {'Sentry Enabled' if sentry_dsn else 'None'}")
         print("="*60 + "\n")
 
 
-# Validate on import
-errors, warnings = EnvironmentConfig.validate()
-
-if errors:
-    print("\n" + "!"*60)
-    print("CONFIGURATION ERRORS:")
-    print("!"*60)
-    for error in errors:
-        print(f"❌ {error}")
-    print("!"*60 + "\n")
-    # Don't raise in production - let it try to run with fallbacks
-    if not EnvironmentConfig.IS_PRODUCTION:
-        raise ValueError("Configuration errors detected!")
-
-if warnings:
-    print("\n" + "⚠️ "*30)
-    print("CONFIGURATION WARNINGS:")
-    print("⚠️ "*30)
-    for warning in warnings:
-        print(f"⚠️  {warning}")
-    print("⚠️ "*30 + "\n")
+# REMOVED: Module-level validation that runs on every import
+# This will be called from core/apps.py ready() method instead

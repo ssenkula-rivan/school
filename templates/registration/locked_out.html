@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Account Locked</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        .error-container { max-width: 500px; margin: 0 auto; }
+        h1 { color: #e74c3c; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>🔒 Account Temporarily Locked</h1>
+        
+        <div class="warning">
+            <p><strong>Too many failed login attempts detected.</strong></p>
+            <p>Your account has been temporarily locked for security reasons.</p>
+        </div>
+        
+        <p>Please wait <strong>1 hour</strong> before trying again, or contact your system administrator.</p>
+        
+        <p><strong>Security Tips:</strong></p>
+        <ul style="text-align: left; display: inline-block;">
+            <li>Make sure you're using the correct username and password</li>
+            <li>Check if Caps Lock is enabled</li>
+            <li>Contact IT support if you've forgotten your credentials</li>
+        </ul>
+        
+        <p><a href="/accounts/login/">← Back to Login</a></p>
+    </div>
+</body>
+</html>

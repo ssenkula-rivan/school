@@ -22,38 +22,51 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load environment variables from .env file
 load_dotenv(BASE_DIR / '.env')
 
-# Print configuration on startup
-EnvironmentConfig.print_config()
+# Configuration will be printed and validated in core/apps.py ready() method
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = EnvironmentConfig.DEBUG
+DEBUG = EnvironmentConfig.get_debug()
 
 # Generate SECRET_KEY if not set (for deployment)
-SECRET_KEY = EnvironmentConfig.SECRET_KEY
+SECRET_KEY = EnvironmentConfig.get_secret_key()
 if not SECRET_KEY:
-    # Use a default for initial deployment - MUST be changed in production
     SECRET_KEY = 'django-insecure-temporary-key-change-in-production-immediately'
     if not DEBUG:
         import sys
         print("WARNING: Using temporary SECRET_KEY. Set SECRET_KEY environment variable!")
-        # Don't crash - allow deployment to proceed
 
 # Validate production settings
-if not DEBUG and EnvironmentConfig.IS_PRODUCTION:
+if not DEBUG and EnvironmentConfig.is_production():
     print("✅ Production mode enabled with DEBUG=False")
-elif DEBUG and EnvironmentConfig.IS_PRODUCTION:
+elif DEBUG and EnvironmentConfig.is_production():
     raise ValueError(
         'CRITICAL SECURITY ERROR: DEBUG=True in production! '
         'This exposes sensitive information. Set DEBUG=False immediately.'
     )
 
-ALLOWED_HOSTS = EnvironmentConfig.ALLOWED_HOSTS
+ALLOWED_HOSTS = EnvironmentConfig.get_allowed_hosts()
 # In production, accept all hosts (Render uses dynamic domains)
-if EnvironmentConfig.IS_PRODUCTION:
+if EnvironmentConfig.is_production():
     ALLOWED_HOSTS = ['*']
+
+# ============================================================================
+# SECURITY CONFIGURATION
+# ============================================================================
+
+# Django Axes - Brute Force Protection
+AXES_ENABLED = True
+AXES_FAILURE_LIMIT = 5  # Lock after 5 failed attempts
+AXES_COOLOFF_TIME = 1  # Lock for 1 hour
+AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_TEMPLATE = 'registration/locked_out.html'
+AXES_LOCKOUT_URL = '/accounts/locked/'
+AXES_LOGIN_FAILURE_LIMIT = 5
+AXES_LOCK_OUT_AT_FAILURE = True
+AXES_USE_USER_AGENT = True
+AXES_VERBOSE = True
 
 # Custom Error Handlers - Never crash, always handle errors gracefully
 handler404 = 'core.error_handlers.handle_404'
@@ -97,7 +110,7 @@ INSTALLED_APPS = [
     # Third party apps
     'crispy_forms',
     'widget_tweaks',
-    # 'django_ratelimit',  # Disabled - use custom rate limiting
+    'axes',  # Brute force protection
     
     # Local apps - Core first
     'core',
@@ -118,6 +131,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'axes.middleware.AxesMiddleware',  # Brute force protection - AFTER AuthenticationMiddleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.sync_manager.OfflineMiddleware',
@@ -138,9 +152,14 @@ MIDDLEWARE = [
 # Caching Configuration for High Performance
 CACHES = EnvironmentConfig.get_cache_config()
 
-# Session Configuration for Performance
-SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
-SESSION_CACHE_ALIAS = 'default'
+# Session Configuration for Multi-Worker Compatibility (Render/Gunicorn)
+if EnvironmentConfig.is_production():
+    # Use database sessions for multi-worker compatibility
+    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+else:
+    # Use cached_db for development performance
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+    SESSION_CACHE_ALIAS = 'default'
 
 ROOT_URLCONF = 'workplace_system.urls'
 
@@ -168,17 +187,20 @@ DATABASES = {
     'default': EnvironmentConfig.get_database_config()
 }
 
-# Validate database is configured
-db_config = DATABASES['default']
-print(f"Database config: ENGINE={db_config.get('ENGINE')}, NAME={db_config.get('NAME')}")
-if db_config.get('ENGINE') == 'django.db.backends.postgresql':
-    print(f"Has PASSWORD: {bool(db_config.get('PASSWORD'))}")
-    print(f"DATABASE_URL set: {bool(EnvironmentConfig.DATABASE_URL)}")
-elif db_config.get('ENGINE') == 'django.db.backends.sqlite3':
-    print(f"Using SQLite for local development")
-else:
-    print(f"WARNING: Unsupported database engine: {db_config.get('ENGINE')}")
-    # Don't crash - allow deployment to proceed with warning
+# Validate database is configured - but don't crash on missing DATABASE_URL
+try:
+    db_config = DATABASES['default']
+    print(f"Database config: ENGINE={db_config.get('ENGINE')}, NAME={db_config.get('NAME')}")
+    if db_config.get('ENGINE') == 'django.db.backends.postgresql':
+        print(f"Has PASSWORD: {bool(db_config.get('PASSWORD'))}")
+        print(f"DATABASE_URL set: {bool(EnvironmentConfig.DATABASE_URL)}")
+    elif db_config.get('ENGINE') == 'django.db.backends.sqlite3':
+        print(f"Using SQLite for local development")
+    else:
+        print(f"WARNING: Unsupported database engine: {db_config.get('ENGINE')}")
+except Exception as e:
+    print(f"Database configuration warning: {e}")
+    # Don't crash - allow deployment to proceed
 
 
 # Password validation
@@ -249,14 +271,14 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 # Email Configuration (single source of truth via EnvironmentConfig)
-EMAIL_BACKEND = EnvironmentConfig.EMAIL_BACKEND
-EMAIL_HOST = EnvironmentConfig.EMAIL_HOST
-EMAIL_PORT = EnvironmentConfig.EMAIL_PORT
-EMAIL_USE_TLS = EnvironmentConfig.EMAIL_USE_TLS
-EMAIL_USE_SSL = EnvironmentConfig.EMAIL_USE_SSL
-EMAIL_HOST_USER = EnvironmentConfig.EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = EnvironmentConfig.EMAIL_HOST_PASSWORD
-DEFAULT_FROM_EMAIL = EnvironmentConfig.DEFAULT_FROM_EMAIL
+EMAIL_BACKEND = EnvironmentConfig.get_email_backend()
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@school.com')
 
 
 
@@ -311,7 +333,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': EnvironmentConfig.LOG_LEVEL,
+            'level': EnvironmentConfig.get_log_level(),
             'class': 'logging.StreamHandler',
             'formatter': 'verbose' if DEBUG else 'simple',
         },
@@ -327,7 +349,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console', 'file'] if not DEBUG else ['console'],
-            'level': EnvironmentConfig.LOG_LEVEL,
+            'level': EnvironmentConfig.get_log_level(),
             'propagate': False,
         },
         'django.db.backends': {
@@ -373,6 +395,24 @@ if not DEBUG:
     ]
 
 # ============================================================================
+# CELERY CONFIGURATION (Task Queue)
+# ============================================================================
+
+# Celery Configuration
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
+
+# ============================================================================
 # SAAS PLATFORM CONFIGURATION
 # ============================================================================
 
@@ -394,12 +434,12 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@example.com')
 
 # Payment Gateway Configuration
-PAYMENT_GATEWAY = EnvironmentConfig.PAYMENT_GATEWAY
+PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'stripe')
 
 # Stripe
-STRIPE_PUBLIC_KEY = EnvironmentConfig.STRIPE_PUBLIC_KEY
-STRIPE_SECRET_KEY = EnvironmentConfig.STRIPE_SECRET_KEY
-STRIPE_WEBHOOK_SECRET = EnvironmentConfig.STRIPE_WEBHOOK_SECRET
+STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', '')
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
 # Flutterwave
 FLUTTERWAVE_PUBLIC_KEY = os.environ.get('FLUTTERWAVE_PUBLIC_KEY', '')
