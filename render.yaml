@@ -3,12 +3,12 @@ services:
     name: school-management-system
     runtime: python
     buildCommand: |
-      python --version
-      pip install --upgrade pip setuptools wheel
+      pip install --upgrade pip
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
+    startCommand: |
       python manage.py migrate --noinput
-    startCommand: gunicorn workplace_system.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --worker-class sync --timeout 60
+      gunicorn workplace_system.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: DEBUG
         value: "False"
@@ -16,27 +16,20 @@ services:
         value: "production"
       - key: SECRET_KEY
         generateValue: true
-      - key: DATABASE_URL
-        sync: false
       - key: ALLOWED_HOSTS
         value: "school-2v7o.onrender.com,*.onrender.com,localhost,127.0.0.1"
       - key: CSRF_TRUSTED_ORIGINS
         value: "https://school-2v7o.onrender.com,https://*.onrender.com"
       - key: SYSADMIN_PASSWORD
         value: "Admin@123456"
-      - key: EMAIL_BACKEND
-        value: "django.core.mail.backends.smtp.EmailBackend"
-      - key: EMAIL_HOST
-        value: "smtp.gmail.com"
-      - key: EMAIL_PORT
-        value: "587"
-      - key: EMAIL_USE_TLS
+      - key: DISABLE_SSL_REDIRECT
         value: "True"
-      - key: EMAIL_HOST_USER
-        sync: false
-      - key: EMAIL_HOST_PASSWORD
-        sync: false
-      - key: DEFAULT_FROM_EMAIL
-        value: "noreply@school.com"
+      - key: EMAIL_BACKEND
+        value: "django.core.mail.backends.console.EmailBackend"
       - key: USE_REDIS
         value: "False"
+
+databases:
+  - name: school-db
+    databaseName: workplace_management
+    user: school_user
