@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.shortcuts import redirect
 from django.http import HttpResponse, Http404
 from django.core.cache import cache
@@ -23,12 +24,18 @@ def home_redirect(request):
 def test_404(request):
     raise Http404("Test 404 page")
 
+def service_worker(request):
+    """Serve service worker file"""
+    from django.template.loader import render_to_string
+    return HttpResponse(render_to_string('sw.js'), content_type='application/javascript')
+
 def test_500(request):
     raise Exception("Test 500 page")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', health_check, name='health'),
+    path('sw.js', service_worker, name='service_worker'),
     path('', home_redirect, name='home'),
     
     # Core apps
