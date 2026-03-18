@@ -52,12 +52,9 @@ def register(request):
 
 @login_required
 def dashboard(request):
-    """Main dashboard view with role-based redirection"""
     try:
-        # Get user profile
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
-        # Create profile if it doesn't exist
         user_profile = UserProfile.objects.create(
             user=request.user,
             employee_id=f'EMP{request.user.id:04d}',
@@ -65,16 +62,13 @@ def dashboard(request):
             is_active_employee=True
         )
     
-    # Check if user has school assigned
     if not user_profile.school and not request.user.is_superuser:
-        # Try to assign user to a school
         from core.models import School
         school = School.objects.filter(is_active=True).first()
         if school:
             user_profile.school = school
             user_profile.save()
     
-    # Redirect to role-specific dashboard
     role_dashboards = {
         'teacher': 'employees:teacher_dashboard',
         'director': 'employees:director_dashboard',
@@ -93,7 +87,6 @@ def dashboard(request):
     if user_profile.role in role_dashboards:
         return redirect(role_dashboards[user_profile.role])
     
-    # Get dashboard statistics based on role
     context = {
         'user_profile': user_profile,
         'total_employees': User.objects.filter(is_active=True).count(),
@@ -102,7 +95,6 @@ def dashboard(request):
         'recent_activities': [],
     }
     
-    # Add role-specific data
     if user_profile.can_manage_fees:
         from core.models import Student
         from fees.models import FeePayment
