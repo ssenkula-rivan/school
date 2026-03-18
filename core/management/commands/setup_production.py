@@ -71,34 +71,11 @@ class Command(BaseCommand):
             )
 
     def create_school_config(self):
-        """Create school configuration if it doesn't exist"""
-        if not SchoolConfiguration.objects.exists():
-            school = SchoolConfiguration.objects.create(
-                school_name=os.environ.get('COMPANY_NAME', 'School Management System'),
-                school_type='secondary',
-                institution_type='private',
-                address=os.environ.get('COMPANY_ADDRESS', 'School Address'),
-                phone=os.environ.get('COMPANY_PHONE', '+1-234-567-8900'),
-                email=os.environ.get('COMPANY_EMAIL', 'admin@school.com'),
-                is_configured=True
-            )
-            
-            self.stdout.write(
-                self.style.SUCCESS(f'✅ School configured: {school.school_name}')
-            )
-        else:
-            # Ensure existing school is marked as configured
-            school = SchoolConfiguration.objects.first()
-            if not school.is_configured:
-                school.is_configured = True
-                school.save()
-                self.stdout.write(
-                    self.style.SUCCESS('✅ School configuration updated')
-                )
-            else:
-                self.stdout.write(
-                    self.style.WARNING('⚠️  School already configured')
-                )
+        """Create school configuration if it doesn't exist - DISABLED for proper registration flow"""
+        # Skip automatic school creation to allow proper registration
+        self.stdout.write(
+            self.style.SUCCESS('✅ Skipping automatic school setup - use registration page instead')
+        )
 
     def create_sample_users(self):
         """Create sample users for different roles"""
