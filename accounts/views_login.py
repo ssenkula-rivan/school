@@ -30,34 +30,40 @@ class CustomLoginView(auth_views.LoginView):
         if username in ['system administrator', 'sysadmin', 'system admin']:
             return redirect('accounts:sysadmin_login')
         
-        # Check if username is an email - identify school by domain
-        if '@' in username:
-            email_domain = username.split('@')[1]
-            try:
-                school = School.objects.get(email_domain=email_domain, is_active=True)
-                # Store school in session for tenant middleware
-                request.session['school_id'] = school.id
-                request.session['school_name'] = school.name
-            except School.DoesNotExist:
-                messages.error(request, f'❌ No active school found for email domain: @{email_domain}. Please contact your administrator.')
-                return render(request, self.template_name, self.get_context_data())
-        
-        # Authenticate user
+        # Authenticate user FIRST - don't check school domain before authentication
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
             # Login successful
             login(request, user)
             
-            # Set school context from email domain
-            if user.email and '@' in user.email:
-                email_domain = user.email.split('@')[1]
+            # Now set school context - for admins, allow any school
+            if user.is_superuser:
+                # For superusers, get the first active school or create session
                 try:
-                    school = School.objects.get(email_domain=email_domain, is_active=True)
-                    request.session['school_id'] = school.id
-                    request.session['school_name'] = school.name
+                    school = School.objects.filter(is_active=True).first()
+                    if school:
+                        request.session['school_id'] = school.id
+                        request.session['school_name'] = school.name
                 except School.DoesNotExist:
                     pass
+            else:
+                # For regular users, try to find school by email domain
+                if user.email and '@' in user.email:
+                    email_domain = user.email.split('@')[1]
+                    try:
+                        school = School.objects.get(email_domain=email_domain, is_active=True)
+                        request.session['school_id'] = school.id
+                        request.session['school_name'] = school.name
+                    except School.DoesNotExist:
+                        # If no school found for domain, try to find any active school
+                        try:
+                            school = School.objects.filter(is_active=True).first()
+                            if school:
+                                request.session['school_id'] = school.id
+                                request.session['school_name'] = school.name
+                        except School.DoesNotExist:
+                            pass
             
             messages.success(request, f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.')
             return redirect(self.get_success_url())

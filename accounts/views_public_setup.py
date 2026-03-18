@@ -42,9 +42,16 @@ def public_school_registration(request):
                     school_code = f"{base_code}{counter}"
                     counter += 1
                 
+                # Extract email domain from admin email to match school
+                admin_email = request.POST.get('admin_email')
+                admin_email_domain = admin_email.split('@')[1] if '@' in admin_email else f"{school_code}.edu"
+                
                 # Extract email domain from school email
                 school_email = request.POST.get('email')
-                email_domain = school_email.split('@')[1] if '@' in school_email else f"{school_code}.edu"
+                school_email_domain = school_email.split('@')[1] if '@' in school_email else admin_email_domain
+                
+                # Use admin email domain for school domain matching
+                email_domain = admin_email_domain
                 
                 # Step 1: Create School (for multi-tenant middleware)
                 current_date = timezone.now().date()
