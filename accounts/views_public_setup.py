@@ -113,14 +113,21 @@ def public_school_registration(request):
                 )
                 
                 # Create admin profile linked to school
-                UserProfile.objects.create(
-                    user=admin_user,
-                    school=school,  # Link admin to their specific school
-                    employee_id='ADMIN001',
-                    role='admin',
-                    phone=request.POST.get('admin_phone', ''),
-                    is_active_employee=True
-                )
+                try:
+                    UserProfile.objects.create(
+                        user=admin_user,
+                        school=school,  # Link admin to their specific school
+                        employee_id='ADMIN001',
+                        role='admin',
+                        phone=request.POST.get('admin_phone', ''),
+                        is_active_employee=True
+                    )
+                    print(f"✅ UserProfile created for admin: {admin_username}")
+                except Exception as profile_error:
+                    print(f"❌ UserProfile creation failed: {profile_error}")
+                    # Delete the user if profile creation fails
+                    admin_user.delete()
+                    raise Exception(f"Failed to create user profile: {profile_error}")
                 
                 # Step 4: Create Academic Year
                 current_year = timezone.now().year

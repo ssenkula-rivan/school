@@ -30,12 +30,18 @@ class CustomLoginView(auth_views.LoginView):
         if username in ['system administrator', 'sysadmin', 'system admin']:
             return redirect('accounts:sysadmin_login')
         
+        # DEBUG: Log login attempt
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Login attempt for username: {username}")
+        
         # Authenticate user FIRST - don't check school domain before authentication
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
             # Login successful
             login(request, user)
+            logger.info(f"Authentication successful for: {username}")
             
             # Now set school context - for admins, allow any school
             if user.is_superuser:
@@ -45,13 +51,15 @@ class CustomLoginView(auth_views.LoginView):
                     if school:
                         request.session['school_id'] = school.id
                         request.session['school_name'] = school.name
+                        logger.info(f"Superuser logged in with school: {school.name}")
                 except School.DoesNotExist:
-                    pass
+                    logger.warning("No schools found for superuser")
             elif hasattr(user, 'userprofile') and user.userprofile.school:
                 # For school-specific admins, use their assigned school
                 school = user.userprofile.school
                 request.session['school_id'] = school.id
                 request.session['school_name'] = school.name
+                logger.info(f"School admin logged in with school: {school.name}")
             else:
                 # For regular users, try to find school by email domain
                 if user.email and '@' in user.email:
@@ -60,6 +68,7 @@ class CustomLoginView(auth_views.LoginView):
                         school = School.objects.get(email_domain=email_domain, is_active=True)
                         request.session['school_id'] = school.id
                         request.session['school_name'] = school.name
+                        logger.info(f"User logged in with school from email domain: {school.name}")
                     except School.DoesNotExist:
                         # If no school found for domain, try to find any active school
                         try:
@@ -67,12 +76,14 @@ class CustomLoginView(auth_views.LoginView):
                             if school:
                                 request.session['school_id'] = school.id
                                 request.session['school_name'] = school.name
+                                logger.info(f"User logged in with fallback school: {school.name}")
                         except School.DoesNotExist:
-                            pass
+                            logger.error("No schools found for user")
             
             messages.success(request, f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.')
             return redirect(self.get_success_url())
         else:
             # Authentication failed
+            logger.error(f"Authentication failed for: {username}")
             messages.error(request, '❌ Invalid username or password. Please try again.')
             return render(request, self.template_name, self.get_context_data())

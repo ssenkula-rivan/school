@@ -42,7 +42,7 @@ class UserProfile(models.Model):
     
     # CRITICAL: Multi-tenant isolation
     school = models.ForeignKey(
-        'accounts.SchoolConfiguration',
+        'core.School',
         on_delete=models.CASCADE,
         null=True,  # null for superusers
         blank=True,
