@@ -11,7 +11,7 @@ services:
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
       python manage.py migrate --noinput
-      python manage.py setup_production
+      python manage.py setup_production --skip-school
     startCommand: >
       gunicorn workplace_system.wsgi:application
       --bind 0.0.0.0:$PORT
@@ -68,14 +68,9 @@ services:
       - key: COMPANY_NAME
         value: "School Management System"
       
-      # Cache and Task Queue
+      # Cache and Task Queue (Redis not available on free tier)
       - key: USE_REDIS
-        value: "True"
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: school-redis
-          property: connectionString
+        value: "False"
       
       # File upload limits
       - key: FILE_UPLOAD_MAX_SIZE
@@ -104,11 +99,5 @@ databases:
   - name: school-postgres
     databaseName: workplace_management
     user: school_admin
-    plan: free
-    region: oregon
-
-services:
-  - type: redis
-    name: school-redis
     plan: free
     region: oregon

@@ -395,22 +395,29 @@ if not DEBUG:
     ]
 
 # ============================================================================
-# CELERY CONFIGURATION (Task Queue)
+# CELERY CONFIGURATION (Task Queue) - Optional, disabled on free tier
 # ============================================================================
 
-# Celery Configuration
-CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE
-CELERY_ENABLE_UTC = True
-CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
-CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes
-CELERY_WORKER_PREFETCH_MULTIPLIER = 1
-CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
+# Celery Configuration - Only if Redis is available
+USE_CELERY = os.environ.get('USE_REDIS', 'False').lower() == 'true'
+
+if USE_CELERY:
+    CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
+    CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
+    CELERY_ACCEPT_CONTENT = ['json']
+    CELERY_TASK_SERIALIZER = 'json'
+    CELERY_RESULT_SERIALIZER = 'json'
+    CELERY_TIMEZONE = TIME_ZONE
+    CELERY_ENABLE_UTC = True
+    CELERY_TASK_TRACK_STARTED = True
+    CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+    CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes
+    CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+    CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
+else:
+    # Disable Celery for free tier deployments
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
 
 # ============================================================================
 # SAAS PLATFORM CONFIGURATION
