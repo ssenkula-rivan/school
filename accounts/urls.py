@@ -9,6 +9,7 @@ from .views_data_import import (
     data_import_dashboard, import_students, import_employees,
     download_template, test_database_connection, import_from_database
 )
+from .views_debug import debug_config
 from .views_password_reset import (
     AdminOnlyPasswordResetView, admin_reset_user_password, admin_set_user_password
 )
@@ -94,6 +95,9 @@ urlpatterns = [
 
     # Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
+    
+    # Debug endpoint
+    path('debug-config/', debug_config, name='debug_config'),
     
     # User Management
     path('manage-users/', views.manage_users, name='manage_users'),

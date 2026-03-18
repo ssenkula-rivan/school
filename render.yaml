@@ -47,9 +47,9 @@ services:
       
       # Security settings (CRITICAL for your domain)
       - key: ALLOWED_HOSTS
-        value: "school-2v7o.onrender.com"
+        value: "*.onrender.com,localhost,127.0.0.1"
       - key: CSRF_TRUSTED_ORIGINS
-        value: "https://school-2v7o.onrender.com"
+        value: "https://*.onrender.com,http://localhost:8000"
       - key: SECURE_SSL_REDIRECT
         value: "False"
       - key: DISABLE_SSL_REDIRECT

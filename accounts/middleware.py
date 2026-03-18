@@ -34,14 +34,8 @@ class SchoolConfigurationMiddleware:
         
         # Check if school is configured
         if not SchoolConfiguration.is_school_configured():
-            # Only redirect authenticated superusers to setup
-            if request.user.is_authenticated and request.user.is_superuser:
-                if request.path != reverse('accounts:school_setup'):
-                    return redirect('accounts:school_setup')
-            else:
-                # Redirect to public school registration
-                if request.path != reverse('accounts:register_school'):
-                    return redirect('accounts:register_school')
+            # Always redirect to school registration for unconfigured schools
+            return redirect('accounts:register_school')
         
         response = self.get_response(request)
         return response

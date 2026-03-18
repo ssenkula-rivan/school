@@ -15,13 +15,8 @@ def home_redirect(request):
     # Lazy import to avoid circular import
     from accounts.school_config import SchoolConfiguration
     
-    # Cache the config check to avoid DB query on every request
-    config = cache.get('school_config_check')
-    if config is None:
-        config = SchoolConfiguration.get_config()
-        cache.set('school_config_check', config, 300)  # Cache for 5 minutes
-    
-    if not config or not config.is_configured:
+    # Direct check without caching to avoid issues
+    if not SchoolConfiguration.is_school_configured():
         # School not registered yet - go to public registration
         return redirect('accounts:register_school')
     elif not request.user.is_authenticated:
