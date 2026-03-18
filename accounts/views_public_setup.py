@@ -147,9 +147,23 @@ def public_school_registration(request):
                 messages.success(
                     request, 
                     f'{school_name} has been registered successfully! '
-                    f'You can now login with username: {admin_username}'
+                    f'Logging you in automatically with username: {admin_username}'
                 )
-                return redirect('accounts:login')
+                
+                # Auto-login the admin user after registration
+                from django.contrib.auth import login, authenticate
+                auto_login_user = authenticate(request, username=admin_username, password=admin_password)
+                if auto_login_user:
+                    login(request, auto_login_user)
+                    
+                    # Set school context
+                    request.session['school_id'] = school.id
+                    request.session['school_name'] = school.name
+                    
+                    return redirect('accounts:dashboard')
+                else:
+                    # Fallback to login page if auto-login fails
+                    return redirect('accounts:login')
                 
         except Exception as e:
             import traceback

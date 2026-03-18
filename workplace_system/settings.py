@@ -110,7 +110,7 @@ INSTALLED_APPS = [
     # Third party apps
     'crispy_forms',
     'widget_tweaks',
-    # 'axes',  # DISABLED: Account locking issue - will re-enable after fixing login
+    'axes',  # Re-enabled with proper configuration
     
     # Local apps - Core first
     'core',
@@ -131,7 +131,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    # 'axes.middleware.AxesMiddleware',  # DISABLED: Account locking issue - will re-enable after fixing login
+    'axes.middleware.AxesMiddleware',  # Re-enabled with proper configuration
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.sync_manager.OfflineMiddleware',
@@ -476,3 +476,38 @@ DEFAULT_FEATURES = {
 SYNC_SERVER_URL = os.environ.get('SYNC_SERVER_URL', None)
 SYNC_ENABLED = os.environ.get('SYNC_ENABLED', 'True') == 'True'
 SYNC_INTERVAL_MINUTES = int(os.environ.get('SYNC_INTERVAL_MINUTES', '15'))
+
+# ============================================================================
+# AXES CONFIGURATION - Brute Force Protection (Professional Settings)
+# ============================================================================
+AXES_FAILURE_LIMIT = 3  # Lock after 3 failed attempts
+AXES_COOLOFF_TIME = 0.5  # 30 minutes lockout (0.5 hours)
+AXES_RESET_ON_SUCCESS = True  # Reset counter on successful login
+AXES_LOCK_OUT_AT_FAILURE = True  # Enable lockout mechanism
+AXES_LOCKOUT_TEMPLATE = 'accounts/lockout.html'  # Custom lockout page
+AXES_LOCKOUT_URL = '/accounts/lockout/'  # Lockout redirect URL
+AXES_ONLY_USER_FAILURES = True  # Only count username-specific failures
+AXES_USE_USER_AGENT = False  # Don't track user agent for privacy
+AXES_LOGGER = 'axes'  # Use axes logger
+AXES_VERBOSITY = 1  # Log important events
+
+# Disable lockout for superusers (system administrators)
+AXES_LOCKOUT_BY_COMBINATION_USER_AND_IP = False
+AXES_LOCKOUT_BY_IP_AND_USER_AGENT = False
+AXES_LOCKOUT_BY_USER_AND_IP = True  # Lock by username + IP combination
+
+# Allowlist for testing (remove in production)
+AXES_IP_WHITELIST = [
+    '127.0.0.1',
+    'localhost',
+] if DEBUG else []
+
+# Custom lockout handler
+def axes_custom_lockout_handler(request, credentials):
+    """Custom handler for lockout events"""
+    from django.contrib import messages
+    messages.error(
+        request, 
+        '🔒 Account locked due to too many failed attempts. Please wait 30 minutes or contact support.',
+        extra_tags='lockout'
+    )
