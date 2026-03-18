@@ -102,18 +102,20 @@ def public_school_registration(request):
                         'institution_types': SchoolConfiguration.INSTITUTION_TYPE_CHOICES,
                     })
                 
-                # Create superuser
-                admin_user = User.objects.create_superuser(
+                # Create admin user (regular user, not superuser - for school isolation)
+                admin_user = User.objects.create_user(
                     username=admin_username,
                     email=admin_email,
                     password=admin_password,
                     first_name=admin_first_name,
-                    last_name=admin_last_name
+                    last_name=admin_last_name,
+                    is_staff=True  # Can access admin panel, but only for their school
                 )
                 
-                # Create admin profile
+                # Create admin profile linked to school
                 UserProfile.objects.create(
                     user=admin_user,
+                    school=school,  # Link admin to their specific school
                     employee_id='ADMIN001',
                     role='admin',
                     phone=request.POST.get('admin_phone', ''),

@@ -47,6 +47,11 @@ class CustomLoginView(auth_views.LoginView):
                         request.session['school_name'] = school.name
                 except School.DoesNotExist:
                     pass
+            elif hasattr(user, 'userprofile') and user.userprofile.school:
+                # For school-specific admins, use their assigned school
+                school = user.userprofile.school
+                request.session['school_id'] = school.id
+                request.session['school_name'] = school.name
             else:
                 # For regular users, try to find school by email domain
                 if user.email and '@' in user.email:
