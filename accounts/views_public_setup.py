@@ -94,7 +94,15 @@ def public_school_registration(request):
                 admin_first_name = request.POST.get('admin_first_name')
                 admin_last_name = request.POST.get('admin_last_name')
                 
-                # Check if username already exists
+                # Check if school name already exists for this school type
+                if School.objects.filter(name=school_name, school_type=school_type).exists():
+                    messages.error(request, f'A school named "{school_name}" of type "{dict(SchoolConfiguration.SCHOOL_TYPE_CHOICES).get(school_type, school_type)}" already exists. Please choose a different name or contact support.')
+                    return render(request, 'accounts/public_school_registration.html', {
+                        'school_types': SchoolConfiguration.SCHOOL_TYPE_CHOICES,
+                        'institution_types': SchoolConfiguration.INSTITUTION_TYPE_CHOICES,
+                    })
+                
+                # Check if admin username already exists
                 if User.objects.filter(username=admin_username).exists():
                     messages.error(request, 'Username already exists. Please choose another.')
                     return render(request, 'accounts/public_school_registration.html', {
