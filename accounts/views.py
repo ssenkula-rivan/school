@@ -12,16 +12,10 @@ from .decorators import role_required, can_manage_employees
 
 def register(request):
     """
-    Staff registration - only available after school is configured
-    If school not configured, redirect to public school registration
+    Staff registration - available for multi-tenant system
+    Users can register staff for any school
     """
-    from .school_config import get_school_config
-    
-    # Check if school is configured
-    config = get_school_config()
-    if not config or not config.is_configured:
-        messages.info(request, '📋 Please register your school first before creating staff accounts.')
-        return redirect('accounts:register_school')
+    # Remove single-school restriction for multi-tenant system
     
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)

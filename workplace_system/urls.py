@@ -11,19 +11,12 @@ def health_check(request):
     return HttpResponse("ok", status=200)
 
 def home_redirect(request):
-    """Redirect to appropriate page based on school configuration"""
-    # Lazy import to avoid circular import
-    from accounts.school_config import SchoolConfiguration
-    
-    # Direct check without caching to avoid issues
-    if not SchoolConfiguration.is_school_configured():
-        # School not registered yet - go to public registration
+    """Redirect to appropriate page - multi-tenant system"""
+    # For multi-tenant system, always show school selection/registration
+    if not request.user.is_authenticated:
         return redirect('accounts:register_school')
-    elif not request.user.is_authenticated:
-        # School registered but user not logged in
-        return redirect('accounts:login')
     else:
-        # User logged in - go to dashboard
+        # Authenticated users go to dashboard
         return redirect('accounts:dashboard')
 
 # Test error handlers in development

@@ -17,13 +17,11 @@ def public_school_registration(request):
     """
     Public school registration - accessible without login
     Creates school configuration and admin account
+    Multi-tenant: Allows multiple schools to register
     """
     
-    # Check if school is already registered
-    config = get_school_config()
-    if config and config.is_configured:
-        messages.info(request, 'This system is already configured for a school. Please login.')
-        return redirect('accounts:login')
+    # Remove single-school restriction for multi-tenant system
+    # Allow multiple schools to register
     
     if request.method == 'POST':
         try:

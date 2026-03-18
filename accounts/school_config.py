@@ -80,10 +80,7 @@ class SchoolConfiguration(models.Model):
         return f"{self.school_name} - {self.get_school_type_display()}"
     
     def save(self, *args, **kwargs):
-        # Ensure only one configuration exists
-        if not self.pk and SchoolConfiguration.objects.exists():
-            raise ValueError('Only one school configuration can exist')
-        
+        # Remove single configuration restriction - allow multiple schools
         # Auto-configure features based on school type
         self._configure_features()
         

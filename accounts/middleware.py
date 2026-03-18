@@ -32,10 +32,8 @@ class SchoolConfigurationMiddleware:
         if any(request.path.startswith(url) for url in self.exempt_urls):
             return self.get_response(request)
         
-        # Check if school is configured
-        if not SchoolConfiguration.is_school_configured():
-            # Always redirect to school registration for unconfigured schools
-            return redirect('accounts:register_school')
+        # Multi-tenant system - no single school restrictions
+        # Allow access to all pages, tenant isolation handled at model level
         
         response = self.get_response(request)
         return response
