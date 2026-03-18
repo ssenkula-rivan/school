@@ -110,7 +110,7 @@ INSTALLED_APPS = [
     # Third party apps
     'crispy_forms',
     'widget_tweaks',
-    'axes',  # Brute force protection
+    # 'axes',  # DISABLED: Account locking issue - will re-enable after fixing login
     
     # Local apps - Core first
     'core',
@@ -131,7 +131,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'axes.middleware.AxesMiddleware',  # Brute force protection - AFTER AuthenticationMiddleware
+    # 'axes.middleware.AxesMiddleware',  # DISABLED: Account locking issue - will re-enable after fixing login
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.sync_manager.OfflineMiddleware',
