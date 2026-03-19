@@ -37,6 +37,7 @@ urlpatterns = [
     path('login/', CustomLoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='accounts:login'), name='logout'),
     path('register/', views.register, name='register'),
+    path('dashboard/', views.dashboard, name='dashboard'),
     path('lockout/', TemplateView.as_view(template_name='accounts/lockout.html'), name='lockout'),
     path('password-reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),

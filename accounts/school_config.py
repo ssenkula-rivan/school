@@ -11,11 +11,72 @@ class SchoolConfiguration(models.Model):
     Single instance model to store school-wide configuration
     """
     SCHOOL_TYPE_CHOICES = [
-        ('nursery', 'Nursery School'),
-        ('primary', 'Primary School'),
+        # Early Childhood Education
+        ('daycare', 'Daycare/Childcare Center'),
+        ('preschool', 'Preschool/Pre-K'),
+        ('kindergarten', 'Kindergarten'),
+        
+        # Primary Education
+        ('primary', 'Primary School (Grades 1-6)'),
+        ('elementary', 'Elementary School (K-5)'),
+        ('junior_primary', 'Junior Primary School'),
+        
+        # Secondary Education  
+        ('middle_school', 'Middle School (Grades 6-8)'),
+        ('junior_high', 'Junior High School (Grades 7-9)'),
+        ('high_school', 'High School (Grades 9-12)'),
+        ('senior_high', 'Senior High School (Grades 11-12)'),
         ('secondary', 'Secondary School (O-Level & A-Level)'),
+        
+        # Higher Education
         ('college', 'College'),
         ('university', 'University'),
+        ('technical_college', 'Technical College'),
+        ('vocational_college', 'Vocational College'),
+        ('community_college', 'Community College'),
+        ('polytechnic', 'Polytechnic Institute'),
+        
+        # Specialized Education
+        ('special_education', 'Special Education School'),
+        ('stem_school', 'STEM School'),
+        ('arts_school', 'Arts School'),
+        ('music_school', 'Music Conservatory'),
+        ('sports_academy', 'Sports Academy'),
+        ('language_school', 'Language School'),
+        ('international_school', 'International School'),
+        ('montessori', 'Montessori School'),
+        ('waldorf', 'Waldorf School'),
+        
+        # Religious/Parochial
+        ('catholic_school', 'Catholic School'),
+        ('christian_school', 'Christian School'),
+        ('islamic_school', 'Islamic School'),
+        ('jewish_school', 'Jewish School'),
+        ('buddhist_school', 'Buddhist School'),
+        ('hindu_school', 'Hindu School'),
+        
+        # Alternative Education
+        ('charter_school', 'Charter School'),
+        ('magnet_school', 'Magnet School'),
+        ('homeschool_coop', 'Homeschool Cooperative'),
+        ('online_school', 'Online/Virtual School'),
+        ('microschool', 'Microschool'),
+        
+        # Adult/Continuing Education
+        ('adult_education', 'Adult Education Center'),
+        ('continuing_ed', 'Continuing Education'),
+        ('corporate_training', 'Corporate Training Center'),
+        ('professional_development', 'Professional Development Institute'),
+        
+        # Special Purpose
+        ('military_academy', 'Military Academy'),
+        ('boarding_school', 'Boarding School'),
+        ('hospital_school', 'Hospital School'),
+        ('prison_education', 'Correctional Education'),
+        ('refugee_school', 'Refugee Education Center'),
+        
+        # Legacy/Combined
+        ('nursery', 'Nursery School'),
         ('combined', 'Combined School (Multiple Levels)'),
     ]
     

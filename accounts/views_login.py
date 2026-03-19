@@ -85,5 +85,5 @@ class CustomLoginView(auth_views.LoginView):
         else:
             # Authentication failed
             logger.error(f"Authentication failed for: {username}")
-            messages.error(request, '❌ Invalid username or password. Please try again.')
+            messages.error(request, 'Invalid username or password. Please try again.')
             return render(request, self.template_name, self.get_context_data())
