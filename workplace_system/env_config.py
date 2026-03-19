@@ -40,7 +40,19 @@ class EnvironmentConfig:
     
     @classmethod
     def get_secret_key(cls):
-        return os.environ.get('SECRET_KEY')
+        secret_key = os.environ.get('SECRET_KEY')
+        if not secret_key:
+            # Generate a secure 50+ character key for production
+            if cls.is_production():
+                import secrets
+                secret_key = secrets.token_urlsafe(60)  # 60 characters, well above 50 requirement
+                print(f"Generated secure SECRET_KEY (60 chars) for production")
+            else:
+                # Development can use shorter key
+                import secrets
+                secret_key = secrets.token_urlsafe(32)
+                print(f"Generated SECRET_KEY for development")
+        return secret_key
     
     @classmethod
     def get_allowed_hosts(cls):

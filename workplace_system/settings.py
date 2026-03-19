@@ -193,7 +193,7 @@ try:
     print(f"Database config: ENGINE={db_config.get('ENGINE')}, NAME={db_config.get('NAME')}")
     if db_config.get('ENGINE') == 'django.db.backends.postgresql':
         print(f"Has PASSWORD: {bool(db_config.get('PASSWORD'))}")
-        print(f"DATABASE_URL set: {bool(EnvironmentConfig.DATABASE_URL)}")
+        print(f"DATABASE_URL set: {bool(EnvironmentConfig.get_database_url())}")
     elif db_config.get('ENGINE') == 'django.db.backends.sqlite3':
         print(f"Using SQLite for local development")
     else:
@@ -486,14 +486,19 @@ AXES_RESET_ON_SUCCESS = True  # Reset counter on successful login
 AXES_LOCK_OUT_AT_FAILURE = True  # Enable lockout mechanism
 AXES_LOCKOUT_TEMPLATE = 'accounts/lockout.html'  # Custom lockout page
 AXES_LOCKOUT_URL = '/accounts/lockout/'  # Lockout redirect URL
+
+# Updated Axes 5.0+ settings
 AXES_ONLY_USER_FAILURES = True  # Only count username-specific failures
 AXES_USE_USER_AGENT = False  # Don't track user agent for privacy
-AXES_LOGGER = 'axes'  # Use axes logger
 AXES_VERBOSITY = 1  # Log important events
 
+# Authentication backend for Axes 5.0+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',  # Axes backend for lockout protection
+    'django.contrib.auth.backends.ModelBackend',  # Default Django backend
+]
+
 # Disable lockout for superusers (system administrators)
-AXES_LOCKOUT_BY_COMBINATION_USER_AND_IP = False
-AXES_LOCKOUT_BY_IP_AND_USER_AGENT = False
 AXES_LOCKOUT_BY_USER_AND_IP = True  # Lock by username + IP combination
 
 # Allowlist for testing (remove in production)
