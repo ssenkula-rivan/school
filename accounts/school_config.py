@@ -94,7 +94,7 @@ class SchoolConfiguration(models.Model):
     
     # Basic School Information
     school_name = models.CharField(max_length=200)
-    school_type = models.CharField(max_length=20, choices=SCHOOL_TYPE_CHOICES)
+    school_type = models.CharField(max_length=50, choices=SCHOOL_TYPE_CHOICES)
     institution_type = models.CharField(max_length=20, choices=INSTITUTION_TYPE_CHOICES, default='private')
     school_motto = models.CharField(max_length=200, blank=True)
     school_logo = models.ImageField(upload_to='school/', blank=True, null=True)

@@ -486,10 +486,6 @@ AXES_RESET_ON_SUCCESS = True  # Reset counter on successful login
 AXES_LOCK_OUT_AT_FAILURE = True  # Enable lockout mechanism
 AXES_LOCKOUT_TEMPLATE = 'accounts/lockout.html'  # Custom lockout page
 AXES_LOCKOUT_URL = '/accounts/lockout/'  # Lockout redirect URL
-
-# Updated Axes 5.0+ settings
-AXES_ONLY_USER_FAILURES = True  # Only count username-specific failures
-AXES_USE_USER_AGENT = False  # Don't track user agent for privacy
 AXES_VERBOSITY = 1  # Log important events
 
 # Authentication backend for Axes 5.0+
@@ -498,7 +494,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Default Django backend
 ]
 
-# Disable lockout for superusers (system administrators)
+# Lock by username + IP combination (modern setting)
 AXES_LOCKOUT_BY_USER_AND_IP = True  # Lock by username + IP combination
 
 # Allowlist for testing (remove in production)
