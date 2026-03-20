@@ -488,10 +488,10 @@ AXES_LOCKOUT_TEMPLATE = 'accounts/lockout.html'  # Custom lockout page
 AXES_LOCKOUT_URL = '/accounts/lockout/'  # Lockout redirect URL
 AXES_VERBOSITY = 1  # Log important events
 
-# Authentication backend for Axes 5.0+
+# Authentication backend - Use Django default first, then Axes for protection
 AUTHENTICATION_BACKENDS = [
-    'axes.backends.AxesStandaloneBackend',  # Axes backend for lockout protection
-    'django.contrib.auth.backends.ModelBackend',  # Default Django backend
+    'django.contrib.auth.backends.ModelBackend',  # Default Django backend FIRST
+    'axes.backends.AxesStandaloneBackend',  # Axes backend SECOND
 ]
 
 # Lock by username + IP combination (modern setting)

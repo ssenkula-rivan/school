@@ -17,6 +17,12 @@ class CustomLoginView(auth_views.LoginView):
         username = request.POST.get('username', '').lower().strip()
         password = request.POST.get('password', '')
         
+        # DEBUG: Log login attempt
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Login attempt for username: {username}")
+        logger.info(f"Password provided: {'Yes' if password else 'No'}")
+        
         # Validate inputs
         if not username:
             messages.error(request, '❌ Username or email is required.')
@@ -30,18 +36,33 @@ class CustomLoginView(auth_views.LoginView):
         if username in ['system administrator', 'sysadmin', 'system admin']:
             return redirect('accounts:sysadmin_login')
         
-        # DEBUG: Log login attempt
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"Login attempt for username: {username}")
+        # DEBUG: Check if user exists
+        from django.contrib.auth.models import User
+        try:
+            user_obj = User.objects.get(username=username)
+            logger.info(f"User found: {user_obj.username}, ID: {user_obj.id}")
+            logger.info(f"User is active: {user_obj.is_active}")
+            logger.info(f"User is staff: {user_obj.is_staff}")
+            logger.info(f"User is superuser: {user_obj.is_superuser}")
+        except User.DoesNotExist:
+            logger.error(f"User not found: {username}")
+            # Try by email
+            try:
+                user_obj = User.objects.get(email=username)
+                logger.info(f"User found by email: {user_obj.username}")
+                username = user_obj.username  # Use username for authentication
+            except User.DoesNotExist:
+                logger.error(f"User not found by email either: {username}")
         
         # Authenticate user FIRST - don't check school domain before authentication
+        logger.info(f"Attempting authentication with username: {username}")
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
             # Login successful
-            login(request, user)
             logger.info(f"Authentication successful for: {username}")
+            login(request, user)
+            logger.info(f"User logged in via login()")
             
             # Now set school context - for admins, allow any school
             if user.is_superuser:
@@ -85,5 +106,19 @@ class CustomLoginView(auth_views.LoginView):
         else:
             # Authentication failed
             logger.error(f"Authentication failed for: {username}")
+            logger.error(f"User object returned: {user}")
+            
+            # Check if user exists but password is wrong
+            try:
+                user_obj = User.objects.get(username=username)
+                logger.error(f"User exists but authentication failed - likely wrong password")
+                logger.error(f"User is active: {user_obj.is_active}")
+            except User.DoesNotExist:
+                try:
+                    user_obj = User.objects.get(email=username)
+                    logger.error(f"User exists by email but authentication failed - likely wrong password")
+                except User.DoesNotExist:
+                    logger.error(f"User does not exist at all")
+            
             messages.error(request, 'Invalid username or password. Please try again.')
             return render(request, self.template_name, self.get_context_data())
