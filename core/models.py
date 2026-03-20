@@ -5,6 +5,12 @@ from django.core.cache import cache
 from decimal import Decimal
 from .managers import TenantAwareModel
 
+# Import new models (commented out until properly integrated)
+# from .models_curriculum import *
+# from .models_multilang import *
+# from .models_assessment import *
+# from .models_analytics import *
+
 
 class School(models.Model):
     """Multi-tenant school model - CRITICAL for SaaS"""
