@@ -11,8 +11,6 @@ services:
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
       python manage.py migrate --noinput
-      python manage.py reset_school_config
-      python manage.py setup_production --skip-school
     startCommand: >
       gunicorn workplace_system.wsgi:application
       --bind 0.0.0.0:$PORT
@@ -25,7 +23,7 @@ services:
     envVars:
       # CRITICAL: Correct settings module name
       - key: DJANGO_SETTINGS_MODULE
-        value: "workplace_system.production_settings"
+        value: "workplace_system.settings"
       
       # Database connection (auto-linked)
       - key: DATABASE_URL

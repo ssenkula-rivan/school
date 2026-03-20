@@ -46,7 +46,7 @@ elif DEBUG and EnvironmentConfig.is_production():
         'This exposes sensitive information. Set DEBUG=False immediately.'
     )
 
-ALLOWED_HOSTS = EnvironmentConfig.get_allowed_hosts()
+ALLOWED_HOSTS = ['school-management-c-8qtq.onrender.com', 'localhost', '127.0.0.1']
 # In production, accept all hosts (Render uses dynamic domains)
 if EnvironmentConfig.is_production():
     ALLOWED_HOSTS = ['*']

@@ -45,18 +45,23 @@ class CustomLoginView(auth_views.LoginView):
             logger.info(f"User is staff: {user_obj.is_staff}")
             logger.info(f"User is superuser: {user_obj.is_superuser}")
         except User.DoesNotExist:
-            logger.error(f"User not found: {username}")
+            logger.info(f"User not found by username: {username}")
             # Try by email
             try:
                 user_obj = User.objects.get(email=username)
                 logger.info(f"User found by email: {user_obj.username}")
                 username = user_obj.username  # Use username for authentication
             except User.DoesNotExist:
-                logger.error(f"User not found by email either: {username}")
+                logger.info(f"User not found by email either: {username}")
+                # User doesn't exist - let authentication fail gracefully
+                user = None
         
-        # Authenticate user FIRST - don't check school domain before authentication
-        logger.info(f"Attempting authentication with username: {username}")
-        user = authenticate(request, username=username, password=password)
+        # Authenticate user ONLY if user exists
+        if user is None:
+            logger.info(f"User not found, skipping authentication for: {username}")
+        else:
+            logger.info(f"Attempting authentication with username: {username}")
+            user = authenticate(request, username=username, password=password)
         
         if user is not None:
             # Login successful
