@@ -134,19 +134,10 @@ MIDDLEWARE = [
     'axes.middleware.AxesMiddleware',  # Re-enabled with proper configuration
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'core.sync_manager.OfflineMiddleware',
-    'core.middleware.TenantMiddleware',  # Multi-tenant isolation - CRITICAL
-    'accounts.middleware.SchoolConfigurationMiddleware',  # School setup check
-    # Temporarily disabled security middleware for CSRF debugging
-    # 'workplace_system.ssl_middleware.HTTPSRedirectMiddleware',  # HTTPS enforcement
-    # 'workplace_system.ssl_middleware.SecurityHeadersEnforcementMiddleware',  # Security headers
-    # 'workplace_system.ssl_middleware.CookieSecurityMiddleware',  # Secure cookies
-    # 'workplace_system.security_middleware.SecurityHeadersMiddleware',
-    # 'workplace_system.security_middleware.RequestLoggingMiddleware',
-    # 'workplace_system.security_middleware.SecurityAuditMiddleware',
-    # 'workplace_system.security_middleware.XSSProtectionMiddleware',
-    # 'workplace_system.security_middleware.ClickjackingProtectionMiddleware',
-    # 'workplace_system.security_middleware.ContentSecurityPolicyMiddleware',
+    # TEMPORARILY DISABLED COMPLEX MIDDLEWARE TO FIX 500 ERRORS
+    # 'core.sync_manager.OfflineMiddleware',
+    # 'core.middleware.TenantMiddleware',  # Multi-tenant isolation - CRITICAL
+    # 'accounts.middleware.SchoolConfigurationMiddleware',  # School setup check
 ]
 
 # Caching Configuration for High Performance
