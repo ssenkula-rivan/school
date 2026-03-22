@@ -20,8 +20,9 @@ class CustomLoginView(auth_views.LoginView):
         # DEBUG: Log login attempt
         import logging
         logger = logging.getLogger(__name__)
-        logger.info(f"Login attempt for username: {username}")
+        logger.info(f"Login attempt for username: '{username}'")
         logger.info(f"Password provided: {'Yes' if password else 'No'}")
+        logger.info(f"Password length: {len(password) if password else 0}")
         
         # Validate inputs
         if not username:
@@ -36,8 +37,24 @@ class CustomLoginView(auth_views.LoginView):
         if username in ['system administrator', 'sysadmin', 'system admin']:
             return redirect('accounts:sysadmin_login')
         
+        # DEBUG: Check database connection and user existence
+        try:
+            from django.contrib.auth.models import User
+            user_count = User.objects.count()
+            logger.info(f"Total users in database: {user_count}")
+            
+            # List all users for debugging
+            all_users = User.objects.all()
+            logger.info(f"All users in database:")
+            for user in all_users:
+                logger.info(f"  - Username: '{user.username}', Email: '{user.email}', Active: {user.is_active}")
+                
+        except Exception as e:
+            logger.error(f"Database error: {e}")
+            messages.error(request, '❌ Database connection error. Please try again later.')
+            return render(request, self.template_name, self.get_context_data())
+        
         # DEBUG: Check if user exists
-        from django.contrib.auth.models import User
         try:
             user_obj = User.objects.get(username=username)
             logger.info(f"User found: {user_obj.username}, ID: {user_obj.id}")
