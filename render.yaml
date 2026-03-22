@@ -11,6 +11,7 @@ services:
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
       python manage.py migrate --noinput
+      python reset_to_defaults.py
     startCommand: >
       gunicorn workplace_system.wsgi:application
       --bind 0.0.0.0:$PORT
