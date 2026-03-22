@@ -1,54 +1,162 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib import messages
+import logging
+from django.contrib.auth import views as auth_views, authenticate, login
 from django.contrib.auth.models import User
-from django.db.models import Q
-from core.models import Department
-from .models import UserProfile
-from .forms import UserRegistrationForm, UserProfileForm # type: ignore
-from .decorators import role_required, can_manage_employees
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 
-def register(request):
+logger = logging.getLogger(__name__)
+
+
+class CustomLoginView(auth_views.LoginView):
     """
-    Staff registration - available for multi-tenant system
-    Users can register staff for any school
+    Custom login view that supports login by username or email.
+    Identifies user's school and stores it in the session.
     """
-    # Remove single-school restriction for multi-tenant system
-    
-    if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            try:
-                user = form.save()
-                # Get the created profile to show employee ID
-                profile = UserProfile.objects.get(user=user)
-                username = form.cleaned_data.get('username')
-                messages.success(
-                    request, 
-                    f'✅ Account created successfully! Your Employee ID is: {profile.employee_id}. Please login with username: {username}'
+    template_name = 'accounts/login.html'
+    redirect_authenticated_user = True
+
+    def get_success_url(self):
+        return reverse_lazy('accounts:dashboard')
+
+    def post(self, request, *args, **kwargs):
+        username_input = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+
+        # ------------------------------------------------------------------ #
+        # 1. Basic input validation
+        # ------------------------------------------------------------------ #
+        if not username_input:
+            messages.error(request, '❌ Username or email is required.')
+            return render(request, self.template_name, self.get_context_data())
+
+        if not password:
+            messages.error(request, '❌ Password is required.')
+            return render(request, self.template_name, self.get_context_data())
+
+        # ------------------------------------------------------------------ #
+        # 2. System-administrator shortcut
+        # ------------------------------------------------------------------ #
+        if username_input.lower() in ['system administrator', 'sysadmin', 'system admin']:
+            return redirect('accounts:sysadmin_login')
+
+        # ------------------------------------------------------------------ #
+        # 3. Resolve actual Django username (handles email login too)
+        # ------------------------------------------------------------------ #
+        resolved_username = None
+        try:
+            if '@' in username_input:
+                # Caller supplied an email address
+                user_obj = User.objects.get(email__iexact=username_input)
+                resolved_username = user_obj.username
+            else:
+                # Caller supplied a username — verify it exists
+                user_obj = User.objects.get(username__iexact=username_input)
+                resolved_username = user_obj.username
+        except User.DoesNotExist:
+            logger.warning("Login failed: no user found for input='%s'", username_input)
+            messages.error(request, 'Invalid username or password. Please try again.')
+            return render(request, self.template_name, self.get_context_data())
+        except User.MultipleObjectsReturned:
+            logger.error("Multiple users share email '%s' — using first active", username_input)
+            user_obj = User.objects.filter(
+                email__iexact=username_input, is_active=True
+            ).first()
+            if user_obj is None:
+                messages.error(request, 'Invalid username or password. Please try again.')
+                return render(request, self.template_name, self.get_context_data())
+            resolved_username = user_obj.username
+        except Exception as exc:
+            logger.error("Database error during user lookup for '%s': %s", username_input, exc)
+            messages.error(request, '❌ System error. Please try again later.')
+            return render(request, self.template_name, self.get_context_data())
+
+        # ------------------------------------------------------------------ #
+        # 4. Authenticate with Django (also runs Axes lockout check)
+        # ------------------------------------------------------------------ #
+        user = authenticate(request, username=resolved_username, password=password)
+
+        if user is None:
+            logger.warning(
+                "Authentication failed for username='%s' (resolved from '%s')",
+                resolved_username, username_input,
+            )
+            messages.error(request, 'Invalid username or password. Please try again.')
+            return render(request, self.template_name, self.get_context_data())
+
+        if not user.is_active:
+            logger.warning("Inactive user attempted login: '%s'", resolved_username)
+            messages.error(
+                request,
+                '❌ Your account is inactive. Please contact your school administrator.',
+            )
+            return render(request, self.template_name, self.get_context_data())
+
+        # ------------------------------------------------------------------ #
+        # 5. Login succeeds — create session
+        # ------------------------------------------------------------------ #
+        login(request, user)
+        logger.info("User '%s' logged in successfully.", user.username)
+
+        # ------------------------------------------------------------------ #
+        # 6. Attach school context to session
+        # ------------------------------------------------------------------ #
+        self._set_school_session(request, user)
+
+        messages.success(
+            request,
+            f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.',
+        )
+        return redirect(self.get_success_url())
+
+    # ---------------------------------------------------------------------- #
+    # Helpers
+    # ---------------------------------------------------------------------- #
+
+    @staticmethod
+    def _set_school_session(request, user):
+        """
+        Determine which school this user belongs to and store it in the
+        session so downstream views can apply per-school tenant isolation.
+        """
+        try:
+            from core.models import School
+
+            school = None
+
+            if user.is_superuser:
+                school = School.objects.filter(is_active=True).first()
+
+            elif hasattr(user, 'userprofile') and user.userprofile.school:
+                school = user.userprofile.school
+
+            else:
+                if user.email and '@' in user.email:
+                    domain = user.email.split('@')[1]
+                    school = School.objects.filter(
+                        email_domain=domain, is_active=True
+                    ).first()
+                if school is None:
+                    school = School.objects.filter(is_active=True).first()
+
+            if school:
+                request.session['school_id'] = school.id
+                request.session['school_name'] = school.name
+                logger.info(
+                    "Session school set to '%s' (id=%s) for user '%s'",
+                    school.name, school.id, user.username,
                 )
-                return redirect('accounts:login')
-            except Exception as e:
-                messages.error(request, f'❌ Error creating account: {str(e)}. Please try again.')
-        else:
-            # Display form errors
-            if form.errors:
-                error_messages = []
-                for field, errors in form.errors.items():
-                    for error in errors:
-                        if field == '__all__':
-                            error_messages.append(f'❌ {error}')
-                        else:
-                            error_messages.append(f'❌ {field.upper()}: {error}')
-                
-                for error_msg in error_messages:
-                    messages.error(request, error_msg)
-    else:
-        form = UserRegistrationForm()
-    
-    return render(request, 'accounts/register.html', {'form': form})
+            else:
+                logger.warning(
+                    "No active school found for user '%s' — session has no school context.",
+                    user.username,
+                )
+
+        except Exception as exc:
+            logger.error(
+                "Failed to set school session for user '%s': %s",
+                user.username, exc,
+            )
 
 @login_required
 def dashboard(request):
