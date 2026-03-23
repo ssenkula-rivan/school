@@ -69,6 +69,7 @@ class TenantMiddleware(MiddlewareMixin):
         '/accounts/logout/',
         '/accounts/password-reset/',
         '/accounts/reset/',
+        '/sys-admin-2024/',  # System owner panel
     )
     
     def process_request(self, request):
@@ -138,6 +139,15 @@ class TenantMiddleware(MiddlewareMixin):
             request.school = school
             request.school_source = school_source
             set_current_school(school)
+            
+            # Check if school is blocked for non-payment
+            if school.is_access_blocked and not request.user.is_superuser:
+                logger.warning(
+                    f"Access blocked - school suspended for payment: {school.code}",
+                    extra={'school_id': school.id, 'user': request.user}
+                )
+                messages.error(request, 'Account suspended - contact system administrator')
+                return redirect('accounts:login')
             
             # Update session if needed
             if request.session.get('school_id') != school.id:

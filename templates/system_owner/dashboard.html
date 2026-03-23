@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Owner Panel - School Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .schools-section {
+            padding: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .schools-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .schools-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .schools-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .schools-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-unpaid {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-blocked {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            margin: 50px auto;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .overdue {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .school-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 System Owner Panel</h1>
+            <p>School Payment & Access Management</p>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_schools }}</div>
+                <div class="stat-label">Total Schools</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ active_schools }}</div>
+                <div class="stat-label">Active Schools</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ blocked_schools }}</div>
+                <div class="stat-label">Blocked Schools</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ unpaid_schools }}</div>
+                <div class="stat-label">Unpaid Schools</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_users }}</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+        </div>
+        
+        <div class="schools-section">
+            <h2 class="section-title">📊 School Management</h2>
+            
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search schools by name, code, or email..." onkeyup="filterSchools()">
+            </div>
+            
+            <table class="schools-table" id="schoolsTable">
+                <thead>
+                    <tr>
+                        <th>School Info</th>
+                        <th>Users</th>
+                        <th>Last Payment</th>
+                        <th>Next Due</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for school in schools %}
+                    <tr class="school-row" data-name="{{ school.name|lower }}" data-code="{{ school.code|lower }}">
+                        <td>
+                            <div><strong>{{ school.name }}</strong></div>
+                            <div class="school-info">
+                                <span>📧 {{ school.email }}</span>
+                                <span>📞 {{ school.phone }}</span>
+                                <span>👤 {{ school.contact_person }}</span>
+                                <span>🆔 {{ school.code }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div>{{ school.active_users }}/{{ school.user_count }}</div>
+                            <div style="font-size: 0.8em; color: #666;">Active/Total</div>
+                        </td>
+                        <td>
+                            {% if school.last_payment %}
+                                {{ school.last_payment }}
+                            {% else %}
+                                <span style="color: #999;">No payment</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if school.next_payment_due %}
+                                {% if school.days_overdue > 0 %}
+                                    <span class="overdue">{{ school.next_payment_due }} ({{ school.days_overdue }} days overdue)</span>
+                                {% else %}
+                                    {{ school.next_payment_due }}
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #999;">Not set</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if school.is_blocked %}
+                                <span class="status-badge status-blocked">Blocked</span>
+                            {% elif school.payment_status == 'paid' %}
+                                <span class="status-badge status-paid">Paid</span>
+                            {% else %}
+                                <span class="status-badge status-unpaid">Unpaid</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="openPaymentModal({{ school.id }}, '{{ school.name }}', '{{ school.last_payment }}', '{{ school.next_payment_due }}', '{{ school.payment_status }}')">
+                                    💳 Payment
+                                </button>
+                                {% if school.is_blocked %}
+                                    <button class="btn btn-success" onclick="unblockSchool({{ school.id }}, '{{ school.name }}')">
+                                        ✅ Unblock
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-danger" onclick="blockSchool({{ school.id }}, '{{ school.name }}')">
+                                        🚫 Block
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="payment-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closePaymentModal()">&times;</span>
+            <h3>💳 Update Payment Information</h3>
+            <form id="paymentForm">
+                <input type="hidden" id="schoolId" name="school_id">
+                <div class="form-group">
+                    <label for="schoolName">School:</label>
+                    <input type="text" id="schoolName" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="lastPayment">Last Payment Date:</label>
+                    <input type="date" id="lastPayment" name="last_payment">
+                </div>
+                <div class="form-group">
+                    <label for="nextPaymentDue">Next Payment Due Date:</label>
+                    <input type="date" id="nextPaymentDue" name="next_payment_due">
+                </div>
+                <div class="form-group">
+                    <label for="paymentStatus">Payment Status:</label>
+                    <select id="paymentStatus" name="payment_status" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px;">
+                        <option value="paid">Paid</option>
+                        <option value="unpaid">Unpaid</option>
+                    </select>
+                </div>
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn" style="background: #ccc; margin-right: 10px;" onclick="closePaymentModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function filterSchools() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('schoolsTable');
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const name = row.getAttribute('data-name');
+                const code = row.getAttribute('data-code');
+                
+                if (name.includes(filter) || code.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+        
+        function openPaymentModal(schoolId, schoolName, lastPayment, nextPaymentDue, paymentStatus) {
+            document.getElementById('schoolId').value = schoolId;
+            document.getElementById('schoolName').value = schoolName;
+            document.getElementById('lastPayment').value = lastPayment;
+            document.getElementById('nextPaymentDue').value = nextPaymentDue;
+            document.getElementById('paymentStatus').value = paymentStatus;
+            document.getElementById('paymentModal').style.display = 'block';
+        }
+        
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+        
+        function blockSchool(schoolId, schoolName) {
+            if (confirm(`Are you sure you want to block ${schoolName}?\n\nThis will:\n• Suspend all user access\n• Disable login for all users\n• Show "Account suspended" message`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.innerHTML = `
+                    <input type="hidden" name="action" value="block_school">
+                    <input type="hidden" name="school_id" value="${schoolId}">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+        
+        function unblockSchool(schoolId, schoolName) {
+            if (confirm(`Are you sure you want to unblock ${schoolName}?\n\nThis will:\n• Restore all user access\n• Enable login for all users`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.innerHTML = `
+                    <input type="hidden" name="action" value="unblock_school">
+                    <input type="hidden" name="school_id" value="${schoolId}">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+        
+        // Handle payment form submission
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const schoolId = formData.get('school_id');
+            
+            fetch(`/sys-admin-2024/payment-api/${schoolId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    last_payment: formData.get('last_payment'),
+                    next_payment_due: formData.get('next_payment_due'),
+                    payment_status: formData.get('payment_status')
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Payment information updated successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error updating payment: ' + error);
+            });
+        });
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('paymentModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

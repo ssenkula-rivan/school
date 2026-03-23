@@ -47,6 +47,13 @@ class School(models.Model):
     phone = models.CharField(max_length=20)
     address = models.TextField()
     website = models.URLField(blank=True)
+    contact_person = models.CharField(max_length=100, blank=True)
+    
+    # Payment Tracking (System Owner Panel)
+    last_payment_date = models.DateField(null=True, blank=True, help_text="Date of last payment")
+    next_payment_due_date = models.DateField(null=True, blank=True, help_text="Next payment due date")
+    is_access_blocked = models.BooleanField(default=False, help_text="Block access for unpaid schools")
+    payment_notes = models.TextField(blank=True, help_text="Notes about payment status")
     
     # Subscription (for SaaS)
     is_active = models.BooleanField(default=True, db_index=True)
