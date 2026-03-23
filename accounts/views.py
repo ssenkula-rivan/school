@@ -42,6 +42,39 @@ def register(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 
+def public_school_registration(request):
+    """Public school registration for multi-tenant setup"""
+    if request.method == 'POST':
+        from .forms import UserRegistrationForm
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            try:
+                user = form.save()
+                from .models import UserProfile
+                profile = UserProfile.objects.get(user=user)
+                username = form.cleaned_data.get('username')
+                messages.success(
+                    request, 
+                    f'✅ School registered successfully! Admin username: {username}, Employee ID: {profile.employee_id}'
+                )
+                return redirect('accounts:login')
+            except Exception as e:
+                messages.error(request, f'❌ Error registering school: {str(e)}. Please try again.')
+        else:
+            if form.errors:
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        if field == '__all__':
+                            messages.error(request, f'❌ {error}')
+                        else:
+                            messages.error(request, f'❌ {field.upper()}: {error}')
+    else:
+        from .forms import UserRegistrationForm
+        form = UserRegistrationForm()
+    
+    return render(request, 'accounts/public_school_registration.html', {'form': form})
+
+
 @login_required
 def dashboard(request):
     """User dashboard"""
