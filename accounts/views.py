@@ -19,6 +19,22 @@ class CustomLoginView(auth_views.LoginView):
     def get_success_url(self):
         return reverse_lazy('accounts:dashboard')
 
+    def get(self, request, *args, **kwargs):
+        """Check if schools exist - redirect to registration if none"""
+        try:
+            from core.models import School
+            school_count = School.objects.filter(is_active=True).count()
+            
+            if school_count == 0:
+                # No schools exist - redirect to school registration
+                return redirect('accounts:register_school')
+        except Exception:
+            # If we can't check schools, continue to login
+            pass
+        
+        # Schools exist - show login page
+        return super().get(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         username_input = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
