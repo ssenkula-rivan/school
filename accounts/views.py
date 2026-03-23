@@ -81,6 +81,122 @@ def profile(request):
     return render(request, 'accounts/profile.html', {'form': form, 'user_profile': user_profile})
 
 
+@login_required
+def employee_list(request):
+    """List all employees"""
+    employees = UserProfile.objects.filter(is_active_employee=True).select_related('user', 'school')
+    return render(request, 'accounts/employee_list.html', {'employees': employees})
+
+
+@login_required
+def manage_users(request):
+    """Manage users - for HR, Director, and System Admin"""
+    try:
+        user_profile = request.user.userprofile
+    except UserProfile.DoesNotExist:
+        messages.error(request, 'User profile not found')
+        return redirect('accounts:dashboard')
+    
+    # Check permissions
+    if user_profile.role not in ['director', 'hr', 'system_admin'] and not request.user.is_superuser:
+        messages.error(request, 'Permission denied')
+        return redirect('accounts:dashboard')
+    
+    school = user_profile.school
+    users = User.objects.filter(userprofile__school=school).select_related('userprofile')
+    
+    context = {
+        'users': users,
+        'school': school,
+    }
+    return render(request, 'accounts/manage_users.html', context)
+
+
+@login_required
+def delete_user(request, user_id):
+    """Delete a user account"""
+    try:
+        manager_profile = request.user.userprofile
+    except UserProfile.DoesNotExist:
+        messages.error(request, 'User profile not found')
+        return redirect('accounts:dashboard')
+    
+    # Check permissions
+    if manager_profile.role not in ['director', 'system_admin'] and not request.user.is_superuser:
+        messages.error(request, 'Permission denied')
+        return redirect('accounts:dashboard')
+    
+    try:
+        user_to_delete = User.objects.get(id=user_id)
+        user_profile = user_to_delete.userprofile
+        
+        # Don't allow deletion of superusers or yourself
+        if user_to_delete.is_superuser or user_to_delete == request.user:
+            messages.error(request, 'Cannot delete this user')
+            return redirect('accounts:manage_users')
+        
+        if request.method == 'POST':
+            username = user_to_delete.username
+            user_to_delete.delete()
+            messages.success(request, f'User {username} has been deleted')
+            return redirect('accounts:manage_users')
+        
+        context = {
+            'user_to_delete': user_to_delete,
+            'user_profile': user_profile,
+        }
+        return render(request, 'accounts/delete_user_confirm.html', context)
+        
+    except User.DoesNotExist:
+        messages.error(request, 'User not found')
+        return redirect('accounts:manage_users')
+
+
+@login_required
+def change_user_role(request, user_id):
+    """Change a user's role"""
+    try:
+        manager_profile = request.user.userprofile
+    except UserProfile.DoesNotExist:
+        messages.error(request, 'User profile not found')
+        return redirect('accounts:dashboard')
+    
+    # Check permissions
+    if manager_profile.role not in ['director', 'system_admin'] and not request.user.is_superuser:
+        messages.error(request, 'Permission denied')
+        return redirect('accounts:dashboard')
+    
+    try:
+        target_user = User.objects.get(id=user_id)
+        target_profile = target_user.userprofile
+        
+        # Don't allow role changes for superusers or yourself
+        if target_user.is_superuser or target_user == request.user:
+            messages.error(request, 'Cannot change role for this user')
+            return redirect('accounts:manage_users')
+        
+        if request.method == 'POST':
+            new_role = request.POST.get('role')
+            if new_role in ['staff', 'teacher', 'hr', 'director']:
+                target_profile.role = new_role
+                target_profile.save()
+                messages.success(request, f'Role updated for {target_user.username}')
+            else:
+                messages.error(request, 'Invalid role')
+            return redirect('accounts:manage_users')
+        
+        context = {
+            'target_user': target_user,
+            'target_profile': target_profile,
+            'roles': ['staff', 'teacher', 'hr', 'director'],
+        }
+        return render(request, 'accounts/change_user_role.html', context)
+        
+    except User.DoesNotExist:
+        messages.error(request, 'User not found')
+        return redirect('accounts:manage_users')
+
+
 class CustomLoginView(auth_views.LoginView):
     """Custom login view that supports login by username or email."""
     template_name = 'accounts/login.html'
