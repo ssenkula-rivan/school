@@ -6,6 +6,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.shortcuts import redirect
 from django.http import HttpResponse, Http404
 from django.core.cache import cache
+from system_security_check import system_security_audit
 
 def health_check(request):
     """Health check endpoint - no DB queries"""
