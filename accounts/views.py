@@ -9,6 +9,50 @@ from django.urls import reverse_lazy
 logger = logging.getLogger(__name__)
 
 
+def register(request):
+    """
+    Staff registration - available for multi-tenant system
+    Users can register staff for any school
+    """
+    # Remove single-school restriction for multi-tenant system
+    
+    if request.method == 'POST':
+        from .forms import UserRegistrationForm
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            try:
+                user = form.save()
+                # Get created profile to show employee ID
+                from .models import UserProfile
+                profile = UserProfile.objects.get(user=user)
+                username = form.cleaned_data.get('username')
+                messages.success(
+                    request, 
+                    f'✅ Account created successfully! Your Employee ID is: {profile.employee_id}. Please login with username: {username}'
+                )
+                return redirect('accounts:login')
+            except Exception as e:
+                messages.error(request, f'❌ Error creating account: {str(e)}. Please try again.')
+        else:
+            # Display form errors
+            if form.errors:
+                error_messages = []
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        if field == '__all__':
+                            error_messages.append(f'❌ {error}')
+                        else:
+                            error_messages.append(f'❌ {field.upper()}: {error}')
+                
+                for error_msg in error_messages:
+                    messages.error(request, error_msg)
+    else:
+        from .forms import UserRegistrationForm
+        form = UserRegistrationForm()
+    
+    return render(request, 'accounts/register.html', {'form': form})
+
+
 class CustomLoginView(auth_views.LoginView):
     """
     Custom login view that supports login by username or email.
