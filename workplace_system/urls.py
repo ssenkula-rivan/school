@@ -7,6 +7,7 @@ from django.core.cache import cache
 from system_security_check import system_security_audit
 from system_owner_panel import system_owner_dashboard, school_payment_api
 from create_superuser import create_superuser_view
+from debug_users import check_users, reset_and_create_admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 def health_check(request):
@@ -48,6 +49,10 @@ urlpatterns = [
     
     # Database Diagnostic
     path('diagnose/', lambda request: HttpResponse(open('diagnose_login.py').read(), content_type='text/plain'), name='diagnose'),
+    
+    # Debug endpoints - check actual database state
+    path('debug/users/', check_users, name='check_users'),
+    path('debug/create-admin/', reset_and_create_admin, name='reset_and_create_admin'),
     
     # SYSTEM OWNER PANEL - SECRET ACCESS
     path('sys-admin-2024/', system_owner_dashboard, name='system_owner_dashboard'),
