@@ -46,6 +46,9 @@ urlpatterns = [
     # Emergency Superuser Creation
     path('create-superuser/', create_superuser_view, name='create_superuser'),
     
+    # Database Diagnostic
+    path('diagnose/', lambda request: HttpResponse(open('diagnose_login.py').read(), content_type='text/plain'), name='diagnose'),
+    
     # SYSTEM OWNER PANEL - SECRET ACCESS
     path('sys-admin-2024/', system_owner_dashboard, name='system_owner_dashboard'),
     path('sys-admin-2024/payment-api/<int:school_id>/', school_payment_api, name='school_payment_api'),

@@ -297,7 +297,16 @@ class CustomLoginView(auth_views.LoginView):
         # Set school context
         self._set_school_session(request, user)
 
-        messages.success(request, f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.')
+        # Check if no schools exist
+        if request.session.get('no_schools_exist'):
+            messages.success(request, f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.')
+            messages.info(request, '⚠️ No schools exist yet. Please register the first school to get started.')
+            return redirect('accounts:register_school')
+        
+        messages.success(
+            request, 
+            f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.'
+        )
         return redirect(self.get_success_url())
 
     @staticmethod
@@ -323,7 +332,9 @@ class CustomLoginView(auth_views.LoginView):
                 request.session['school_name'] = school.name
                 logger.info("Session school set to '%s' (id=%s) for user '%s'", school.name, school.id, user.username)
             else:
-                logger.warning("No active school found for user '%s' — session has no school context.", user.username)
+                # No schools exist - set a temporary session flag
+                request.session['no_schools_exist'] = True
+                logger.warning("No schools exist for user '%s' - login proceeding without school context", user.username)
 
         except Exception as exc:
             logger.error("Failed to set school session for user '%s': %s", user.username, exc)

@@ -38,6 +38,19 @@ def system_owner_dashboard(request):
     # Get all schools with payment and access info
     schools = School.objects.all().order_by('name')
     
+    # Handle case when no schools exist
+    if not schools.exists():
+        context = {
+            'schools': [],
+            'total_schools': 0,
+            'active_schools': 0,
+            'blocked_schools': 0,
+            'unpaid_schools': 0,
+            'total_users': 0,
+            'no_schools_message': 'No schools registered yet. Create your first school to get started.',
+        }
+        return render(request, 'system_owner/dashboard.html', context)
+    
     school_data = []
     for school in schools:
         # Get payment info (stored in school metadata or separate model)
@@ -57,9 +70,9 @@ def system_owner_dashboard(request):
             'id': school.id,
             'name': school.name,
             'code': school.code,
-            'email': getattr(school, 'email', ''),
-            'phone': getattr(school, 'phone', ''),
-            'contact_person': getattr(school, 'contact_person', ''),
+            'email': school.email_domain,  # Fixed: use email_domain instead of email
+            'phone': school.phone,
+            'contact_person': school.contact_person,
             'is_active': school.is_active,
             'created_at': school.created_at.strftime('%Y-%m-%d') if school.created_at else '',
             'user_count': user_count,

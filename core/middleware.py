@@ -70,6 +70,7 @@ class TenantMiddleware(MiddlewareMixin):
         '/accounts/password-reset/',
         '/accounts/reset/',
         '/sys-admin-2024/',  # System owner panel
+        '/create-superuser/',
     )
     
     def process_request(self, request):
@@ -147,9 +148,8 @@ class TenantMiddleware(MiddlewareMixin):
                     extra={'school_id': school.id, 'user': request.user}
                 )
                 messages.error(request, 'Account suspended - contact system administrator')
-                return redirect('accounts:login')
-            
-            # Update session if needed
+                if not request.path.startswith('/subscriptions/') and not request.path.startswith('/sys-admin-2024/'):
+                    return redirect('subscriptions:suspended')
             if request.session.get('school_id') != school.id:
                 request.session['school_id'] = school.id
             

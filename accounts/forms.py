@@ -7,7 +7,7 @@ class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     first_name = forms.CharField(max_length=30, required=True)
     last_name = forms.CharField(max_length=30, required=True)
-    department = forms.ModelChoiceField(queryset=Department.objects.all(), required=False)
+    department = forms.ModelChoiceField(queryset=Department.objects.all(), required=False, empty_label="No Department")
     role = forms.ChoiceField(choices=UserProfile.ROLE_CHOICES, required=True)
     phone = forms.CharField(max_length=15, required=False)
     class_name = forms.CharField(max_length=100, required=False, help_text='Required for Teachers and Heads of Class (e.g., Grade 1A, Grade 2B)')
@@ -20,6 +20,13 @@ class UserRegistrationForm(UserCreationForm):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
+        
+        # Handle empty department queryset
+        try:
+            department_queryset = Department.objects.all()
+            self.fields['department'].queryset = department_queryset
+        except:
+            self.fields['department'].queryset = Department.objects.none()
         
         # Add help text
         self.fields['role'].help_text = 'Select your role in the school'
