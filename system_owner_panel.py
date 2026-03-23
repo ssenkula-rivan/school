@@ -19,10 +19,8 @@ def is_superuser(user):
     """Check if user is superuser"""
     return user.is_superuser
 
-@login_required
-@user_passes_test(is_superuser)
 def system_owner_dashboard(request):
-    """System Owner Dashboard - Manage Schools and Payments"""
+    """System Owner Dashboard - Manage Schools and Payments (Dev Mode - No Auth Required)"""
     
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -218,10 +216,8 @@ def unblock_school_access(request, school_id):
     
     return redirect('system_owner:dashboard')
 
-@login_required
-@user_passes_test(is_superuser)
 def school_payment_api(request, school_id):
-    """API endpoint for payment updates"""
+    """API endpoint for payment updates (Dev Mode - No Auth Required)"""
     if request.method == 'POST':
         try:
             school = School.objects.get(id=school_id)
