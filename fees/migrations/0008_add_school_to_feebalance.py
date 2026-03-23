@@ -5,7 +5,6 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0002_add_payment_fields'),
         ('fees', '0007_add_school_to_feepayment'),
     ]
 
