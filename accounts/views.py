@@ -62,6 +62,25 @@ def dashboard(request):
     return render(request, 'dashboard/main.html', context)
 
 
+@login_required
+def profile(request):
+    """User profile management"""
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    if request.method == 'POST':
+        from .forms import UserProfileForm
+        form = UserProfileForm(request.POST, instance=user_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('accounts:profile')
+    else:
+        from .forms import UserProfileForm
+        form = UserProfileForm(instance=user_profile)
+    
+    return render(request, 'accounts/profile.html', {'form': form, 'user_profile': user_profile})
+
+
 class CustomLoginView(auth_views.LoginView):
     """Custom login view that supports login by username or email."""
     template_name = 'accounts/login.html'
