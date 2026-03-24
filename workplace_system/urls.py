@@ -31,9 +31,12 @@ def service_worker(request):
 def test_500(request):
     raise Exception("Test 500 page")
 
+from show_errors import show_errors
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', health_check, name='health'),
+    path('errors/', show_errors, name='show_errors'),
     path('sw.js', service_worker, name='service_worker'),
     path('', home_redirect, name='home'),
     
