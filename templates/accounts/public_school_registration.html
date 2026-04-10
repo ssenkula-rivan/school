@@ -376,11 +376,10 @@
                     <!-- STEP 1: School Type Selection with Sliding Subsections -->
                     <div class="form-section active" data-section="1">
                         <h2 class="section-title">Select Your School Type</h2>
-                        <p class="section-subtitle">Choose all levels and categories that apply to your institution. You can select any combination (e.g., Baby Care + Nursery + Primary for a school with Baby Class to P7)</p>
                         
                         <!-- School Levels - Always visible first -->
                         <div class="subsection-container visible" id="schoolLevelsSection">
-                            <div class="subsection-title">School Levels <span style="color: #6b7280; font-size: 0.875rem; font-weight: 400;">(Select one or more - any combination allowed)</span></div>
+                            <div class="subsection-title">School Levels</div>
                             <div class="selection-grid">
                                 {% for value, label in school_levels %}
                                 <label class="selection-card">
@@ -396,7 +395,7 @@
                         
                         <!-- Ownership Type - Slides in after school levels selected -->
                         <div class="subsection-container" id="ownershipSection">
-                            <div class="subsection-title">Ownership Type <span style="color: #6b7280; font-size: 0.875rem; font-weight: 400;">(Select one or more)</span></div>
+                            <div class="subsection-title">Ownership Type</div>
                             <div class="selection-grid">
                                 {% for value, label in ownership_types %}
                                 <label class="selection-card">
@@ -412,7 +411,7 @@
                         
                         <!-- Accommodation Type - Slides in after ownership selected -->
                         <div class="subsection-container" id="accommodationSection">
-                            <div class="subsection-title">Accommodation Type <span style="color: #6b7280; font-size: 0.875rem; font-weight: 400;">(Select one or more)</span></div>
+                            <div class="subsection-title">Accommodation Type</div>
                             <div class="selection-grid">
                                 {% for value, label in accommodation_types %}
                                 <label class="selection-card">
@@ -428,7 +427,7 @@
                         
                         <!-- Special Categories - Slides in after accommodation selected -->
                         <div class="subsection-container" id="specialSection">
-                            <div class="subsection-title">Special Categories (Optional)</div>
+                            <div class="subsection-title">Special Categories</div>
                             <div class="selection-grid">
                                 {% for value, label in special_categories %}
                                 <label class="selection-card">
@@ -452,7 +451,6 @@
                     <!-- STEP 2: School Information -->
                     <div class="form-section" data-section="2">
                         <h2 class="section-title">School Information</h2>
-                        <p class="section-subtitle">Provide your institution's basic details</p>
                         
                         <div class="row">
                             <div class="col-md-8 mb-3">
@@ -504,7 +502,6 @@
                     <!-- STEP 3: Admin Account -->
                     <div class="form-section" data-section="3">
                         <h2 class="section-title">Create Administrator Account</h2>
-                        <p class="section-subtitle">This will be the main administrator account for your school</p>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -525,7 +522,6 @@
                                 <input type="text" name="admin_username" class="form-control" required 
                                        placeholder="Choose a username" pattern="[a-zA-Z0-9_]+" 
                                        title="Only letters, numbers, and underscores">
-                                <small class="text-muted">You'll use this to login</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Phone Number</label>
@@ -551,15 +547,6 @@
                                 <input type="password" name="admin_password_confirm" id="password_confirm" class="form-control" required 
                                        minlength="8" placeholder="Re-enter password">
                             </div>
-                        </div>
-
-                        <div class="alert alert-info">
-                            <strong>What happens next:</strong>
-                            <ul class="mb-0 mt-2">
-                                <li>Your school will be registered in the system</li>
-                                <li>Default grades and classes will be created automatically</li>
-                                <li>You can login immediately and start managing your school</li>
-                            </ul>
                         </div>
 
                         <div class="d-flex gap-2 mt-4">
