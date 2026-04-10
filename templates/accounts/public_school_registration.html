@@ -576,12 +576,26 @@
             special: false
         };
         
+        let sectionTimers = {
+            ownership: null,
+            accommodation: null,
+            special: null
+        };
+        
         function checkSchoolLevels() {
             const checked = document.querySelectorAll('input[name="school_level"]:checked').length > 0;
             sectionsCompleted.schoolLevels = checked;
             
+            // Clear any existing timer
+            if (sectionTimers.ownership) {
+                clearTimeout(sectionTimers.ownership);
+            }
+            
+            // Wait 2 seconds after last selection before showing next section
             if (checked && !document.getElementById('ownershipSection').classList.contains('visible')) {
-                showSection('ownershipSection');
+                sectionTimers.ownership = setTimeout(() => {
+                    showSection('ownershipSection');
+                }, 2000);
             }
             
             updateContinueButton();
@@ -591,8 +605,16 @@
             const checked = document.querySelectorAll('input[name="ownership_type"]:checked').length > 0;
             sectionsCompleted.ownership = checked;
             
+            // Clear any existing timer
+            if (sectionTimers.accommodation) {
+                clearTimeout(sectionTimers.accommodation);
+            }
+            
+            // Wait 2 seconds after last selection before showing next section
             if (checked && !document.getElementById('accommodationSection').classList.contains('visible')) {
-                showSection('accommodationSection');
+                sectionTimers.accommodation = setTimeout(() => {
+                    showSection('accommodationSection');
+                }, 2000);
             }
             
             updateContinueButton();
@@ -602,8 +624,16 @@
             const checked = document.querySelectorAll('input[name="accommodation_type"]:checked').length > 0;
             sectionsCompleted.accommodation = checked;
             
+            // Clear any existing timer
+            if (sectionTimers.special) {
+                clearTimeout(sectionTimers.special);
+            }
+            
+            // Wait 2 seconds after last selection before showing next section
             if (checked && !document.getElementById('specialSection').classList.contains('visible')) {
-                showSection('specialSection');
+                sectionTimers.special = setTimeout(() => {
+                    showSection('specialSection');
+                }, 2000);
             }
             
             updateContinueButton();
