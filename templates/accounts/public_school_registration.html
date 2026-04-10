@@ -133,31 +133,16 @@
                         
                         <h5 class="mb-3">School Level</h5>
                         <div class="row">
-                            {% for value, label in school_types %}
+                            {% for value, label in school_levels %}
                             <div class="col-md-6 mb-3">
                                 <label class="school-type-card">
-                                    <input type="radio" name="school_type" value="{{ value }}" required>
+                                    <input type="checkbox" name="school_level" value="{{ value }}">
                                     <div class="d-flex align-items-center">
                                         <div class="me-3">
-                                            <i class="fas fa-{% if value == 'nursery' %}baby{% elif value == 'primary' %}child{% elif value == 'secondary' %}user-graduate{% elif value == 'college' %}graduation-cap{% elif value == 'university' %}university{% else %}school{% endif %} fa-2x text-primary"></i>
+                                            <i class="fas fa-{% if 'baby' in value or 'nursery' in value %}baby{% elif 'primary' in value %}child{% elif 'secondary' in value or 'level' in value %}user-graduate{% elif 'college' in value %}graduation-cap{% elif 'university' in value %}university{% else %}school{% endif %} fa-2x text-primary"></i>
                                         </div>
                                         <div>
                                             <h6 class="mb-1">{{ label }}</h6>
-                                            <small class="text-muted">
-                                                {% if value == 'nursery' %}
-                                                    Ages 2-5 • Early learning
-                                                {% elif value == 'primary' %}
-                                                    Grades 1-7 • Foundation
-                                                {% elif value == 'secondary' %}
-                                                    O & A-Level • Advanced
-                                                {% elif value == 'college' %}
-                                                    Diplomas • Certificates
-                                                {% elif value == 'university' %}
-                                                    Degrees • Research
-                                                {% else %}
-                                                    All levels combined
-                                                {% endif %}
-                                            </small>
                                         </div>
                                     </div>
                                 </label>
@@ -165,15 +150,15 @@
                             {% endfor %}
                         </div>
                         
-                        <h5 class="mb-3 mt-4">Institution Type</h5>
+                        <h5 class="mb-3 mt-4">Ownership Type *</h5>
                         <div class="row">
-                            {% for value, label in institution_types %}
+                            {% for value, label in ownership_types %}
                             <div class="col-md-4 mb-2">
                                 <label class="school-type-card" style="padding: 10px;">
-                                    <input type="radio" name="institution_type" value="{{ value }}" required>
+                                    <input type="checkbox" name="ownership_type" value="{{ value }}">
                                     <div class="d-flex align-items-center">
                                         <div class="me-2">
-                                            <i class="fas fa-{% if value == 'government' %}landmark{% elif value == 'private' %}building{% elif value == 'religious' %}church{% elif value == 'international' %}globe{% elif value == 'vocational' %}tools{% elif value == 'special_needs' %}heart{% elif value == 'boarding' %}bed{% elif value == 'day' %}sun{% else %}home{% endif %} text-primary"></i>
+                                            <i class="fas fa-{% if value == 'government' %}landmark{% elif value == 'private' %}building{% else %}church{% endif %} text-primary"></i>
                                         </div>
                                         <div>
                                             <small class="fw-bold">{{ label }}</small>
@@ -183,7 +168,50 @@
                             </div>
                             {% endfor %}
                         </div>
-                    </div>
+                        
+                        <h5 class="mb-3 mt-4">Accommodation Type *</h5>
+                        <div class="row">
+                            {% for value, label in accommodation_types %}
+                            <div class="col-md-4 mb-2">
+                                <label class="school-type-card" style="padding: 10px;">
+                                    <input type="checkbox" name="accommodation_type" value="{{ value }}">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            <i class="fas fa-{% if value == 'boarding' %}bed{% elif value == 'day' %}sun{% else %}home{% endif %} text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <small class="fw-bold">{{ label }}</small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <h5 class="mb-3 mt-4">Special Categories (Optional)</h5>
+                        <div class="row">
+                            {% for value, label in special_categories %}
+                            <div class="col-md-4 mb-2">
+                                <label class="school-type-card" style="padding: 10px;">
+                                    <input type="checkbox" name="special_category" value="{{ value }}">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            <i class="fas fa-{% if value == 'international' %}globe{% elif value == 'vocational' %}tools{% else %}heart{% endif %} text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <small class="fw-bold">{{ label }}</small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="nextStep(2)">
+                                Continue <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
 
                     <!-- STEP 2: School Information -->
                     <div class="form-step" id="step2" style="display: none;">

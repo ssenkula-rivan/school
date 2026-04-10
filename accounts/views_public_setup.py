@@ -20,8 +20,45 @@ def public_school_registration(request):
     Multi-tenant: Allows multiple schools to register
     """
     
-    # Remove single-school restriction for multi-tenant system
-    # Allow multiple schools to register
+    # Uganda School System - School Levels
+    SCHOOL_LEVELS = [
+        ('baby_care', 'Baby Day Care'),
+        ('nursery', 'Nursery School'),
+        ('pre_primary', 'Pre-Primary School'),
+        ('primary', 'Primary School (P1-P7)'),
+        ('olevel', 'O-Level Only (S1-S4)'),
+        ('alevel', 'A-Level Only (S5-S6)'),
+        ('secondary', 'Full Secondary (S1-S6)'),
+        ('technical', 'Technical School'),
+        ('vocational', 'Vocational Training'),
+        ('tertiary', 'Tertiary College'),
+        ('teachers_college', 'Teachers\' College'),
+        ('business_college', 'Business College'),
+        ('health_college', 'Health Sciences College'),
+        ('university', 'University'),
+        ('combined', 'Combined School (Multiple Levels)'),
+    ]
+    
+    # Institution Types - Ownership
+    OWNERSHIP_TYPES = [
+        ('government', 'Government'),
+        ('private', 'Private'),
+        ('religious', 'Religious'),
+    ]
+    
+    # Institution Types - Accommodation
+    ACCOMMODATION_TYPES = [
+        ('boarding', 'Boarding School'),
+        ('day', 'Day School'),
+        ('mixed', 'Mixed (Day & Boarding)'),
+    ]
+    
+    # Institution Types - Special Categories
+    SPECIAL_CATEGORIES = [
+        ('international', 'International'),
+        ('vocational', 'Vocational/Technical'),
+        ('special_needs', 'Special Needs'),
+    ]
     
     if request.method == 'POST':
         try:
@@ -96,18 +133,22 @@ def public_school_registration(request):
                 
                 # Check if school name already exists for this school type
                 if School.objects.filter(name=school_name, school_type=school_type).exists():
-                    messages.error(request, f'A school named "{school_name}" of type "{dict(SchoolConfiguration.SCHOOL_TYPE_CHOICES).get(school_type, school_type)}" already exists. Please choose a different name or contact support.')
+                    messages.error(request, f'A school named "{school_name}" of type "{school_type}" already exists. Please choose a different name or contact support.')
                     return render(request, 'accounts/public_school_registration.html', {
-                        'school_types': SchoolConfiguration.SCHOOL_TYPE_CHOICES,
-                        'institution_types': SchoolConfiguration.INSTITUTION_TYPE_CHOICES,
+                        'school_levels': SCHOOL_LEVELS,
+                        'ownership_types': OWNERSHIP_TYPES,
+                        'accommodation_types': ACCOMMODATION_TYPES,
+                        'special_categories': SPECIAL_CATEGORIES,
                     })
                 
                 # Check if admin username already exists
                 if User.objects.filter(username=admin_username).exists():
                     messages.error(request, 'Username already exists. Please choose another.')
                     return render(request, 'accounts/public_school_registration.html', {
-                        'school_types': SchoolConfiguration.SCHOOL_TYPE_CHOICES,
-                        'institution_types': SchoolConfiguration.INSTITUTION_TYPE_CHOICES,
+                        'school_levels': SCHOOL_LEVELS,
+                        'ownership_types': OWNERSHIP_TYPES,
+                        'accommodation_types': ACCOMMODATION_TYPES,
+                        'special_categories': SPECIAL_CATEGORIES,
                     })
                 
                 # Create admin user (regular user, not superuser - for school isolation)
@@ -182,8 +223,10 @@ def public_school_registration(request):
             messages.error(request, f'Registration failed: {str(e)}')
     
     context = {
-        'school_types': SchoolConfiguration.SCHOOL_TYPE_CHOICES,
-        'institution_types': SchoolConfiguration.INSTITUTION_TYPE_CHOICES,
+        'school_levels': SCHOOL_LEVELS,
+        'ownership_types': OWNERSHIP_TYPES,
+        'accommodation_types': ACCOMMODATION_TYPES,
+        'special_categories': SPECIAL_CATEGORIES,
     }
     return render(request, 'accounts/public_school_registration.html', context)
 
