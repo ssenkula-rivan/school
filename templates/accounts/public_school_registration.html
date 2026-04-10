@@ -295,6 +295,46 @@
         .footer-text a:hover {
             text-decoration: underline;
         }
+        
+        /* Sliding subsections */
+        .subsection-container {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .subsection-container.visible {
+            max-height: 2000px;
+            opacity: 1;
+            margin-bottom: 2rem;
+        }
+        
+        .subsection-container.slide-in {
+            animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .continue-button {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+        
+        .continue-button.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -333,65 +373,77 @@
                 <form method="post" id="registrationForm">
                     {% csrf_token %}
                     
-                    <!-- STEP 1: School Type Selection -->
+                    <!-- STEP 1: School Type Selection with Sliding Subsections -->
                     <div class="form-section active" data-section="1">
                         <h2 class="section-title">Select Your School Type</h2>
                         <p class="section-subtitle">Choose all levels and categories that apply to your institution</p>
                         
-                        <div class="subsection-title">School Levels</div>
-                        <div class="selection-grid">
-                            {% for value, label in school_levels %}
-                            <label class="selection-card">
-                                <input type="checkbox" name="school_level" value="{{ value }}">
-                                <div class="card-content">
-                                    <h6 class="card-title">{{ label }}</h6>
-                                </div>
-                                <span class="check-indicator">✓</span>
-                            </label>
-                            {% endfor %}
+                        <!-- School Levels - Always visible first -->
+                        <div class="subsection-container visible" id="schoolLevelsSection">
+                            <div class="subsection-title">School Levels</div>
+                            <div class="selection-grid">
+                                {% for value, label in school_levels %}
+                                <label class="selection-card">
+                                    <input type="checkbox" name="school_level" value="{{ value }}" onchange="checkSchoolLevels()">
+                                    <div class="card-content">
+                                        <h6 class="card-title">{{ label }}</h6>
+                                    </div>
+                                    <span class="check-indicator">✓</span>
+                                </label>
+                                {% endfor %}
+                            </div>
                         </div>
                         
-                        <div class="subsection-title">Ownership Type</div>
-                        <div class="selection-grid">
-                            {% for value, label in ownership_types %}
-                            <label class="selection-card">
-                                <input type="checkbox" name="ownership_type" value="{{ value }}">
-                                <div class="card-content">
-                                    <h6 class="card-title">{{ label }}</h6>
-                                </div>
-                                <span class="check-indicator">✓</span>
-                            </label>
-                            {% endfor %}
+                        <!-- Ownership Type - Slides in after school levels selected -->
+                        <div class="subsection-container" id="ownershipSection">
+                            <div class="subsection-title">Ownership Type</div>
+                            <div class="selection-grid">
+                                {% for value, label in ownership_types %}
+                                <label class="selection-card">
+                                    <input type="checkbox" name="ownership_type" value="{{ value }}" onchange="checkOwnership()">
+                                    <div class="card-content">
+                                        <h6 class="card-title">{{ label }}</h6>
+                                    </div>
+                                    <span class="check-indicator">✓</span>
+                                </label>
+                                {% endfor %}
+                            </div>
                         </div>
                         
-                        <div class="subsection-title">Accommodation Type</div>
-                        <div class="selection-grid">
-                            {% for value, label in accommodation_types %}
-                            <label class="selection-card">
-                                <input type="checkbox" name="accommodation_type" value="{{ value }}">
-                                <div class="card-content">
-                                    <h6 class="card-title">{{ label }}</h6>
-                                </div>
-                                <span class="check-indicator">✓</span>
-                            </label>
-                            {% endfor %}
+                        <!-- Accommodation Type - Slides in after ownership selected -->
+                        <div class="subsection-container" id="accommodationSection">
+                            <div class="subsection-title">Accommodation Type</div>
+                            <div class="selection-grid">
+                                {% for value, label in accommodation_types %}
+                                <label class="selection-card">
+                                    <input type="checkbox" name="accommodation_type" value="{{ value }}" onchange="checkAccommodation()">
+                                    <div class="card-content">
+                                        <h6 class="card-title">{{ label }}</h6>
+                                    </div>
+                                    <span class="check-indicator">✓</span>
+                                </label>
+                                {% endfor %}
+                            </div>
                         </div>
                         
-                        <div class="subsection-title">Special Categories (Optional)</div>
-                        <div class="selection-grid">
-                            {% for value, label in special_categories %}
-                            <label class="selection-card">
-                                <input type="checkbox" name="special_category" value="{{ value }}">
-                                <div class="card-content">
-                                    <h6 class="card-title">{{ label }}</h6>
-                                </div>
-                                <span class="check-indicator">✓</span>
-                            </label>
-                            {% endfor %}
+                        <!-- Special Categories - Slides in after accommodation selected -->
+                        <div class="subsection-container" id="specialSection">
+                            <div class="subsection-title">Special Categories (Optional)</div>
+                            <div class="selection-grid">
+                                {% for value, label in special_categories %}
+                                <label class="selection-card">
+                                    <input type="checkbox" name="special_category" value="{{ value }}" onchange="checkSpecial()">
+                                    <div class="card-content">
+                                        <h6 class="card-title">{{ label }}</h6>
+                                    </div>
+                                    <span class="check-indicator">✓</span>
+                                </label>
+                                {% endfor %}
+                            </div>
                         </div>
                         
                         <div class="d-flex justify-content-end mt-4">
-                            <button type="button" class="btn btn-primary btn-lg" onclick="nextStep(2)">
+                            <button type="button" class="btn btn-primary btn-lg continue-button" id="continueBtn" onclick="nextStep(2)" style="display: none;">
                                 Continue to School Details
                             </button>
                         </div>
@@ -530,6 +582,73 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
     <script>
+        let sectionsCompleted = {
+            schoolLevels: false,
+            ownership: false,
+            accommodation: false,
+            special: false
+        };
+        
+        function checkSchoolLevels() {
+            const checked = document.querySelectorAll('input[name="school_level"]:checked').length > 0;
+            sectionsCompleted.schoolLevels = checked;
+            
+            if (checked && !document.getElementById('ownershipSection').classList.contains('visible')) {
+                showSection('ownershipSection');
+            }
+            
+            updateContinueButton();
+        }
+        
+        function checkOwnership() {
+            const checked = document.querySelectorAll('input[name="ownership_type"]:checked').length > 0;
+            sectionsCompleted.ownership = checked;
+            
+            if (checked && !document.getElementById('accommodationSection').classList.contains('visible')) {
+                showSection('accommodationSection');
+            }
+            
+            updateContinueButton();
+        }
+        
+        function checkAccommodation() {
+            const checked = document.querySelectorAll('input[name="accommodation_type"]:checked').length > 0;
+            sectionsCompleted.accommodation = checked;
+            
+            if (checked && !document.getElementById('specialSection').classList.contains('visible')) {
+                showSection('specialSection');
+            }
+            
+            updateContinueButton();
+        }
+        
+        function checkSpecial() {
+            sectionsCompleted.special = true;
+            updateContinueButton();
+        }
+        
+        function showSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.classList.add('visible', 'slide-in');
+            
+            // Smooth scroll to the new section
+            setTimeout(() => {
+                section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+        
+        function updateContinueButton() {
+            const btn = document.getElementById('continueBtn');
+            
+            // Show button when school levels, ownership, and accommodation are selected
+            if (sectionsCompleted.schoolLevels && sectionsCompleted.ownership && sectionsCompleted.accommodation) {
+                btn.style.display = 'block';
+                setTimeout(() => {
+                    btn.classList.add('visible');
+                }, 100);
+            }
+        }
+        
         function nextStep(step) {
             // Hide all sections
             document.querySelectorAll('.form-section').forEach(section => {
@@ -576,6 +695,10 @@
                 if (e.target.tagName !== 'INPUT') {
                     const checkbox = this.querySelector('input[type="checkbox"]');
                     checkbox.checked = !checkbox.checked;
+                    
+                    // Trigger the onchange event
+                    const event = new Event('change');
+                    checkbox.dispatchEvent(event);
                 }
             });
         });
