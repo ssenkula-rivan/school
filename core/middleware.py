@@ -63,14 +63,23 @@ class TenantMiddleware(MiddlewareMixin):
         '/admin/',
         '/static/',
         '/media/',
+        '/health/',
+        '/errors/',
+        '/sw.js',
         '/accounts/register/',
         '/accounts/register-school/',
         '/accounts/login/',
         '/accounts/logout/',
         '/accounts/password-reset/',
         '/accounts/reset/',
-        '/sys-admin-2024/',  # System owner panel
+        '/accounts/lockout/',
+        '/dev/',
+        '/debug/',
+        '/diagnose/',
         '/create-superuser/',
+        '/sys-admin-2024/',  # System owner panel
+        '/test-404/',
+        '/test-500/',
     )
     
     def process_request(self, request):
@@ -158,18 +167,22 @@ class TenantMiddleware(MiddlewareMixin):
                 extra={'school_id': school.id, 'user': request.user}
             )
         else:
-            # No school context - fail securely
+            # No school context - redirect to registration
             request.school = None
             set_current_school(None)
             
-            # For authenticated users, this is an error
+            # For authenticated users without school, redirect to registration
             if request.user.is_authenticated:
-                logger.error(
-                    "No school context for authenticated user",
+                logger.warning(
+                    "No school context for authenticated user - redirecting to registration",
                     extra={'user': request.user, 'path': request.path}
                 )
-                messages.error(request, 'No school context found')
-                return redirect('accounts:login')
+                messages.info(request, 'Please register your school to continue')
+                return redirect('accounts:register_school')
+            else:
+                # Unauthenticated users should register a school first
+                logger.debug("No school context for unauthenticated user - redirecting to registration")
+                return redirect('accounts:register_school')
         
         return None
     

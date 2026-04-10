@@ -16,8 +16,8 @@ def health_check(request):
     return HttpResponse("ok", status=200)
 
 def home_redirect(request):
-    """Redirect to dev mode login"""
-    return redirect('dev_login')
+    """Redirect to school registration"""
+    return redirect('accounts:register_school')
 
 # Test error handlers in development
 def test_404(request):
@@ -40,8 +40,8 @@ urlpatterns = [
     path('sw.js', service_worker, name='service_worker'),
     path('', home_redirect, name='home'),
     
-    # Core apps - ONLY ESSENTIAL FOR FUNCTIONALITY
-    # path('accounts/', include('accounts.urls')),  # DISABLED - broken auth
+    # Core apps - ESSENTIAL FOR FUNCTIONALITY
+    path('accounts/', include('accounts.urls', namespace='accounts')),  # Re-enabled - fixed
     
     # Dev Mode Access - Simple auto-login
     path('dev/login/', dev_login, name='dev_login'),
@@ -61,15 +61,14 @@ urlpatterns = [
     path('sys-admin-2024/', system_owner_dashboard, name='system_owner_dashboard'),
     path('sys-admin-2024/payment-api/<int:school_id>/', school_payment_api, name='school_payment_api'),
     
-    # TEMPORARILY DISABLED TO FIX 500 ERRORS
-    # path('core/', include('core.urls')),
-    # path('subscriptions/', include('subscriptions.urls')),
-    # path('employees/', include('employees.urls')),
-    # path('fees/', include('fees.urls')),
-    # path('academics/', include('academics.urls')),
-    # path('library/', include('library.urls')),
-    # path('inventory/', include('inventory.urls')),
-    # path('reports/', include('reports.urls')),
+    # App URLs
+    path('core/', include('core.urls', namespace='core')),
+    path('employees/', include('employees.urls', namespace='employees')),
+    path('fees/', include('fees.urls', namespace='fees')),
+    path('academics/', include('academics.urls', namespace='academics')),
+    path('library/', include('library.urls', namespace='library')),
+    path('inventory/', include('inventory.urls', namespace='inventory')),
+    path('reports/', include('reports.urls', namespace='reports')),
     
     # Future API
     # path('api/v1/', include('api.urls', namespace='v1')),
