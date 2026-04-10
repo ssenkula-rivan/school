@@ -41,6 +41,38 @@ class School(models.Model):
     school_type = models.CharField(max_length=20, choices=SCHOOL_TYPE_CHOICES, db_index=True)
     institution_type = models.CharField(max_length=20, choices=INSTITUTION_TYPE_CHOICES)
     
+    # School Levels (Multiple Selection Support)
+    has_baby_care = models.BooleanField(default=False)
+    has_nursery = models.BooleanField(default=False)
+    has_pre_primary = models.BooleanField(default=False)
+    has_primary = models.BooleanField(default=False)
+    has_olevel = models.BooleanField(default=False)
+    has_alevel = models.BooleanField(default=False)
+    has_secondary = models.BooleanField(default=False)
+    has_technical = models.BooleanField(default=False)
+    has_vocational = models.BooleanField(default=False)
+    has_tertiary = models.BooleanField(default=False)
+    has_teachers_college = models.BooleanField(default=False)
+    has_business_college = models.BooleanField(default=False)
+    has_health_college = models.BooleanField(default=False)
+    has_university = models.BooleanField(default=False)
+    has_combined = models.BooleanField(default=False)
+    
+    # Ownership Types (Multiple Selection Support)
+    is_government = models.BooleanField(default=False)
+    is_private = models.BooleanField(default=False)
+    is_religious = models.BooleanField(default=False)
+    
+    # Accommodation Types (Multiple Selection Support)
+    has_boarding = models.BooleanField(default=False)
+    has_day = models.BooleanField(default=False)
+    has_mixed_accommodation = models.BooleanField(default=False)
+    
+    # Special Categories (Multiple Selection Support)
+    is_international = models.BooleanField(default=False)
+    is_vocational_technical = models.BooleanField(default=False)
+    is_special_needs = models.BooleanField(default=False)
+    
     # Contact
     email = models.EmailField()
     email_domain = models.CharField(max_length=100, unique=True, db_index=True, default='school.edu', help_text="Email domain for school users (e.g., kawandass.edu)")

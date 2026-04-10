@@ -64,8 +64,50 @@ def public_school_registration(request):
         try:
             with transaction.atomic():
                 school_name = request.POST.get('school_name')
-                school_type = request.POST.get('school_type')
-                institution_type = request.POST.get('institution_type')
+                
+                # Get all selected school levels
+                school_levels = request.POST.getlist('school_level')
+                
+                # Get all selected ownership types
+                ownership_types = request.POST.getlist('ownership_type')
+                
+                # Get all selected accommodation types
+                accommodation_types = request.POST.getlist('accommodation_type')
+                
+                # Get all selected special categories
+                special_categories = request.POST.getlist('special_category')
+                
+                # Determine primary school_type (use first selected or 'combined' if multiple)
+                if len(school_levels) > 1:
+                    school_type = 'combined'
+                elif len(school_levels) == 1:
+                    # Map to legacy school_type
+                    level_mapping = {
+                        'baby_care': 'nursery',
+                        'nursery': 'nursery',
+                        'pre_primary': 'nursery',
+                        'primary': 'primary',
+                        'olevel': 'secondary',
+                        'alevel': 'secondary',
+                        'secondary': 'secondary',
+                        'technical': 'college',
+                        'vocational': 'college',
+                        'tertiary': 'college',
+                        'teachers_college': 'college',
+                        'business_college': 'college',
+                        'health_college': 'college',
+                        'university': 'university',
+                        'combined': 'combined',
+                    }
+                    school_type = level_mapping.get(school_levels[0], 'primary')
+                else:
+                    school_type = 'primary'  # Default
+                
+                # Determine primary institution_type (use first selected)
+                if ownership_types:
+                    institution_type = ownership_types[0]
+                else:
+                    institution_type = 'private'  # Default
                 
                 # Generate unique school code from name
                 import re
@@ -90,7 +132,7 @@ def public_school_registration(request):
                 # Use admin email domain for school domain matching
                 email_domain = admin_email_domain
                 
-                # Step 1: Create School (for multi-tenant middleware)
+                # Step 1: Create School with all selections
                 current_date = timezone.now().date()
                 school = School.objects.create(
                     name=school_name,
@@ -108,7 +150,39 @@ def public_school_registration(request):
                     max_students=1000,
                     max_staff=100,
                     currency='UGX',
-                    timezone='Africa/Kampala'
+                    timezone='Africa/Kampala',
+                    
+                    # School Levels
+                    has_baby_care='baby_care' in school_levels,
+                    has_nursery='nursery' in school_levels,
+                    has_pre_primary='pre_primary' in school_levels,
+                    has_primary='primary' in school_levels,
+                    has_olevel='olevel' in school_levels,
+                    has_alevel='alevel' in school_levels,
+                    has_secondary='secondary' in school_levels,
+                    has_technical='technical' in school_levels,
+                    has_vocational='vocational' in school_levels,
+                    has_tertiary='tertiary' in school_levels,
+                    has_teachers_college='teachers_college' in school_levels,
+                    has_business_college='business_college' in school_levels,
+                    has_health_college='health_college' in school_levels,
+                    has_university='university' in school_levels,
+                    has_combined='combined' in school_levels,
+                    
+                    # Ownership Types
+                    is_government='government' in ownership_types,
+                    is_private='private' in ownership_types,
+                    is_religious='religious' in ownership_types,
+                    
+                    # Accommodation Types
+                    has_boarding='boarding' in accommodation_types,
+                    has_day='day' in accommodation_types,
+                    has_mixed_accommodation='mixed' in accommodation_types,
+                    
+                    # Special Categories
+                    is_international='international' in special_categories,
+                    is_vocational_technical='vocational' in special_categories,
+                    is_special_needs='special_needs' in special_categories,
                 )
                 
                 # Step 2: Create School Configuration (for feature flags)
