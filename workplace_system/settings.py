@@ -55,19 +55,6 @@ if EnvironmentConfig.is_production():
 # SECURITY CONFIGURATION
 # ============================================================================
 
-# Django Axes - Brute Force Protection
-AXES_ENABLED = True
-AXES_FAILURE_LIMIT = 5  # Lock after 5 failed attempts
-AXES_COOLOFF_TIME = 1  # Lock for 1 hour
-AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
-AXES_RESET_ON_SUCCESS = True
-AXES_LOCKOUT_TEMPLATE = 'registration/locked_out.html'
-AXES_LOCKOUT_URL = '/accounts/locked/'
-AXES_LOGIN_FAILURE_LIMIT = 5
-AXES_LOCK_OUT_AT_FAILURE = True
-AXES_USE_USER_AGENT = True
-AXES_VERBOSE = True
-
 # Custom Error Handlers - Never crash, always handle errors gracefully
 handler404 = 'core.error_handlers.handle_404'
 handler500 = 'core.error_handlers.handle_500'
@@ -110,7 +97,7 @@ INSTALLED_APPS = [
     # Third party apps
     'crispy_forms',
     'widget_tweaks',
-    'axes',  # Re-enabled with proper configuration
+    # 'axes',  # Disabled - not installed
     
     # Local apps - Core first
     'core',
@@ -131,13 +118,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'axes.middleware.AxesMiddleware',  # Re-enabled with proper configuration
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # TEMPORARILY DISABLED COMPLEX MIDDLEWARE TO FIX 500 ERRORS
-    # 'core.sync_manager.OfflineMiddleware',
-    # 'core.middleware.TenantMiddleware',  # Multi-tenant isolation - CRITICAL
-    # 'accounts.middleware.SchoolConfigurationMiddleware',  # School setup check
+    'core.middleware.TenantMiddleware',  # Multi-tenant isolation - CRITICAL
+    'accounts.middleware.SchoolConfigurationMiddleware',  # School setup check
 ]
 
 # Caching Configuration for High Performance
@@ -469,37 +453,10 @@ SYNC_ENABLED = os.environ.get('SYNC_ENABLED', 'True') == 'True'
 SYNC_INTERVAL_MINUTES = int(os.environ.get('SYNC_INTERVAL_MINUTES', '15'))
 
 # ============================================================================
-# AXES CONFIGURATION - Brute Force Protection (Professional Settings)
+# AUTHENTICATION CONFIGURATION
 # ============================================================================
-AXES_FAILURE_LIMIT = 3  # Lock after 3 failed attempts
-AXES_COOLOFF_TIME = 0.5  # 30 minutes lockout (0.5 hours)
-AXES_RESET_ON_SUCCESS = True  # Reset counter on successful login
-AXES_LOCK_OUT_AT_FAILURE = True  # Enable lockout mechanism
-AXES_LOCKOUT_TEMPLATE = 'accounts/lockout.html'  # Custom lockout page
-AXES_LOCKOUT_URL = '/accounts/lockout/'  # Lockout redirect URL
-AXES_VERBOSITY = 1  # Log important events
 
-# Authentication backend - Use Django default first, then Axes for protection
+# Authentication backend - Use Django default
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',  # Default Django backend FIRST
-    'axes.backends.AxesStandaloneBackend',  # Axes backend SECOND
+    'django.contrib.auth.backends.ModelBackend',  # Default Django backend
 ]
-
-# Lock by username + IP combination (modern setting)
-AXES_LOCKOUT_BY_USER_AND_IP = True  # Lock by username + IP combination
-
-# Allowlist for testing (remove in production)
-AXES_IP_WHITELIST = [
-    '127.0.0.1',
-    'localhost',
-] if DEBUG else []
-
-# Custom lockout handler
-def axes_custom_lockout_handler(request, credentials):
-    """Custom handler for lockout events"""
-    from django.contrib import messages
-    messages.error(
-        request, 
-        '🔒 Account locked due to too many failed attempts. Please wait 30 minutes or contact support.',
-        extra_tags='lockout'
-    )

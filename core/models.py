@@ -43,7 +43,7 @@ class School(models.Model):
     
     # Contact
     email = models.EmailField()
-    email_domain = models.CharField(max_length=100, unique=True, db_index=True, help_text="Email domain for school users (e.g., kawandass.edu)")
+    email_domain = models.CharField(max_length=100, unique=True, db_index=True, default='school.edu', help_text="Email domain for school users (e.g., kawandass.edu)")
     phone = models.CharField(max_length=20)
     address = models.TextField()
     website = models.URLField(blank=True)

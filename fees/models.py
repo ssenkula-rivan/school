@@ -51,7 +51,7 @@ class FeeStructure(TenantAwareModel):
     ]
     
     # CRITICAL: Direct school FK for database-level isolation
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='fee_structures', db_index=True)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='fee_structures', db_index=True, null=True, blank=True)
     academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, related_name='fee_structures')
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name='fee_structures')
     term = models.CharField(max_length=10, choices=TERM_CHOICES)
