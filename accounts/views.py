@@ -76,7 +76,7 @@ def public_school_registration(request):
 
 @login_required
 def dashboard(request):
-    """User dashboard"""
+    """User dashboard - redirects employees to role-specific dashboards, admins to main dashboard"""
     try:
         user_profile = request.user.userprofile
     except:
@@ -87,6 +87,38 @@ def dashboard(request):
             is_active_employee=True
         )
     
+    role = user_profile.role
+    
+    # Admin and system_admin get the main dashboard
+    if role in ['admin', 'system_admin']:
+        context = {
+            'user_profile': user_profile,
+        }
+        return render(request, 'dashboard/main.html', context)
+    
+    # Map employee roles to their specific dashboards
+    role_dashboards = {
+        'teacher': 'employees:teacher_dashboard',
+        'director': 'employees:director_dashboard',
+        'deputy_head_teacher': 'employees:director_dashboard',
+        'dos': 'employees:dos_dashboard',
+        'registrar': 'employees:registrar_dashboard',
+        'hr_manager': 'employees:hr_dashboard',
+        'head_of_class': 'employees:head_of_class_dashboard',
+        'security': 'employees:security_dashboard',
+        'receptionist': 'employees:receptionist_dashboard',
+        'nurse': 'employees:nurse_dashboard',
+        'accountant': 'accounting:dashboard',
+        'bursar': 'fees:bursar_dashboard',
+        'librarian': 'library:librarian_dashboard',
+        'staff': 'employees:employee_dashboard',  # Generic staff dashboard
+    }
+    
+    # Redirect employees to their role-specific dashboard
+    if role in role_dashboards:
+        return redirect(role_dashboards[role])
+    
+    # Fallback for parent, student, or undefined roles - show main dashboard
     context = {
         'user_profile': user_profile,
     }
