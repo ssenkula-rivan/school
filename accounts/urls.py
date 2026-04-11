@@ -5,6 +5,7 @@ from . import views
 from .views_public_setup import public_school_registration
 from .views_create_admin import create_school_admin
 from .views_test_login import test_login_debug
+from .views_reset_password import reset_employee_password, manage_users
 
 app_name = 'accounts'
 
@@ -24,6 +25,18 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('lockout/', TemplateView.as_view(template_name='accounts/lockout.html'), name='lockout'),
+    
+    # User Management (Admin only)
+    path('manage-users/', manage_users, name='manage_users'),
+    path('reset-password/<int:user_id>/', reset_employee_password, name='reset_employee_password'),
+    path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
+    path('change-role/<int:user_id>/', views.change_user_role, name='change_user_role'),
+    
+    # User Management (Admin only)
+    path('manage-users/', manage_users, name='manage_users'),
+    path('reset-password/<int:user_id>/', reset_employee_password, name='reset_employee_password'),
+    path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
+    path('change-role/<int:user_id>/', views.change_user_role, name='change_user_role'),
     
     # Password Reset URLs
     path('password-reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
@@ -47,9 +60,4 @@ urlpatterns = [
     # Profile URLs
     path('profile/', views.profile, name='profile'),
     path('employees/', views.employee_list, name='employee_list'),
-    
-    # User Management
-    path('manage-users/', views.manage_users, name='manage_users'),
-    path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
-    path('change-role/<int:user_id>/', views.change_user_role, name='change_user_role'),
 ]
