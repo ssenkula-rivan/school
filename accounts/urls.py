@@ -3,12 +3,16 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 from . import views
 from .views_public_setup import public_school_registration
+from .views_create_admin import create_school_admin
 
 app_name = 'accounts'
 
 urlpatterns = [
     # Public School Registration (no login required)
     path('register-school/', public_school_registration, name='register_school'),
+    
+    # Create Admin for Existing School (no login required)
+    path('create-admin/', create_school_admin, name='create_admin'),
     
     # Authentication URLs
     path('login/', views.CustomLoginView.as_view(template_name='accounts/login.html'), name='login'),
