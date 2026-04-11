@@ -1,4 +1,4 @@
-FROM python:3.14-slim
+FROM python:3.12-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -13,6 +13,11 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     libpq-dev \
     gcc \
+    zlib1g-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libfreetype6-dev \
+    libwebp-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies

@@ -9,7 +9,7 @@ services:
     startCommand: gunicorn workplace_system.wsgi:application
     envVars:
       - key: PYTHON_VERSION
-        value: 3.14.2
+        value: 3.12.0
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
