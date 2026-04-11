@@ -183,6 +183,11 @@
             display: block;
         }
         
+        .selection-card:has(input[type="checkbox"]:checked) {
+            background: #eff6ff;
+            border-color: var(--primary-color);
+        }
+        
         .card-content {
             transition: all 0.2s;
         }
@@ -712,6 +717,7 @@
                 if (e.target.tagName !== 'INPUT') {
                     const checkbox = this.querySelector('input[type="checkbox"]');
                     checkbox.checked = !checkbox.checked;
+                    console.log('Checkbox clicked:', checkbox.value, 'Checked:', checkbox.checked);
                     
                     // Trigger the onchange event
                     const event = new Event('change');
