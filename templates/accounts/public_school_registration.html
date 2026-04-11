@@ -331,14 +331,11 @@
         }
         
         .continue-button {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s;
+            display: none;
         }
         
         .continue-button.visible {
-            opacity: 1;
-            transform: translateY(0);
+            display: block;
         }
     </style>
 </head>
@@ -447,7 +444,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-end mt-4">
-                            <button type="button" class="btn btn-primary btn-lg continue-button" id="continueBtn" onclick="nextStep(2)" style="display: none;">
+                            <button type="button" class="btn btn-primary btn-lg continue-button" id="continueBtn" onclick="nextStep(2)">
                                 Continue to School Details
                             </button>
                         </div>
@@ -574,7 +571,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
         let sectionsCompleted = {
             schoolLevels: false,
             ownership: false,
@@ -665,10 +661,9 @@
             
             // Show button when school levels, ownership, and accommodation are selected
             if (sectionsCompleted.schoolLevels && sectionsCompleted.ownership && sectionsCompleted.accommodation) {
-                btn.style.display = 'block';
-                setTimeout(() => {
-                    btn.classList.add('visible');
-                }, 100);
+                btn.classList.add('visible');
+            } else {
+                btn.classList.remove('visible');
             }
         }
         
@@ -712,21 +707,22 @@
             }
         });
         
-        // Selection card interaction
-        document.querySelectorAll('.selection-card').forEach(card => {
-            card.addEventListener('click', function(e) {
-                if (e.target.tagName !== 'INPUT') {
-                    const checkbox = this.querySelector('input[type="checkbox"]');
-                    checkbox.checked = !checkbox.checked;
-                    console.log('Checkbox clicked:', checkbox.value, 'Checked:', checkbox.checked);
-                    
-                    // Trigger the onchange event
-                    const event = new Event('change');
-                    checkbox.dispatchEvent(event);
-                }
+        // Selection card interaction - wait for DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.selection-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.tagName !== 'INPUT') {
+                        const checkbox = this.querySelector('input[type="checkbox"]');
+                        checkbox.checked = !checkbox.checked;
+                        console.log('Checkbox clicked:', checkbox.value, 'Checked:', checkbox.checked);
+                        
+                        // Trigger the onchange event
+                        const event = new Event('change');
+                        checkbox.dispatchEvent(event);
+                    }
+                });
             });
         });
-        }); // End DOMContentLoaded
     </script>
 </body>
 </html>
