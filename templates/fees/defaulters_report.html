@@ -33,7 +33,7 @@
                                 <td><strong>{{ balance.student.get_full_name }}</strong></td>
                                 <td>{{ balance.student.admission_number }}</td>
                                 <td>{{ balance.student.grade.name|default:"N/A" }}</td>
-                                <td class="text-danger"><strong>${{ balance.balance }}</strong></td>
+                                <td class="text-danger"><strong>UGX {{ balance.balance }}</strong></td>
                                 <td>{{ balance.due_date|date:"M d, Y" }}</td>
                                 <td>
                                     <span class="badge bg-danger">

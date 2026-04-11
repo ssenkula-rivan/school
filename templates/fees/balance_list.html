@@ -30,9 +30,9 @@
                             <tr>
                                 <td>{{ balance.student.get_full_name }}</td>
                                 <td>{{ balance.student.grade.name|default:"N/A" }}</td>
-                                <td>${{ balance.total_fee }}</td>
-                                <td class="text-success">${{ balance.amount_paid }}</td>
-                                <td class="text-danger"><strong>${{ balance.balance }}</strong></td>
+                                <td>UGX {{ balance.total_fee }}</td>
+                                <td class="text-success">UGX {{ balance.amount_paid }}</td>
+                                <td class="text-danger"><strong>UGX {{ balance.balance }}</strong></td>
                                 <td>{{ balance.due_date|date:"M d, Y"|default:"Not Set" }}</td>
                             </tr>
                             {% endfor %}

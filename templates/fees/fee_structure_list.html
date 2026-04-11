@@ -45,8 +45,8 @@
                                 <td>{{ structure.academic_year.name }}</td>
                                 <td>{{ structure.grade.name }}</td>
                                 <td>{{ structure.get_term_display }}</td>
-                                <td>${{ structure.tuition_fee }}</td>
-                                <td><strong>${{ structure.total_fee }}</strong></td>
+                                <td>UGX {{ structure.tuition_fee }}</td>
+                                <td><strong>UGX {{ structure.total_fee }}</strong></td>
                                 <td>
                                     {% if structure.is_active %}
                                         <span class="badge bg-success">Active</span>

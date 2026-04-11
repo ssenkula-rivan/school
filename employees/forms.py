@@ -68,7 +68,7 @@ class EmployeeForm(forms.ModelForm):
         
         # Add help text
         self.fields['employee_id'].help_text = "Unique identifier for the employee"
-        self.fields['salary'].help_text = "Annual salary in USD"
+        self.fields['salary'].help_text = "Annual salary in UGX"
         self.fields['emergency_contact'].help_text = "Name of emergency contact person"
     
     def clean_username(self):

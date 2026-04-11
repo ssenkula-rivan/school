@@ -54,7 +54,7 @@ class JournalEntry(models.Model):
         verbose_name_plural = "Journal Entries"
 
     def __str__(self):
-        return f"{self.account.name} - {self.entry_type}: ${self.amount}"
+        return f"{self.account.name} - {self.entry_type}: UGX {self.amount:,.0f}"
 
 class Invoice(models.Model):
     STATUS_CHOICES = [
@@ -134,4 +134,4 @@ class Receipt(models.Model):
         ordering = ['-date', '-created_at']
 
     def __str__(self):
-        return f"{self.get_receipt_type_display()} - {self.vendor} - ${self.amount} - {self.date}"
+        return f"{self.get_receipt_type_display()} - {self.vendor} - UGX {self.amount:,.0f} - {self.date}"

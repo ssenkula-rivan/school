@@ -27,7 +27,7 @@
             <hr>
             <p><strong>Payment Method:</strong> {{ payment.get_payment_method_display }}</p>
             <p><strong>Transaction Reference:</strong> {{ payment.transaction_reference|default:"N/A" }}</p>
-            <p class="amount">Amount Paid: ${{ payment.amount_paid }}</p>
+            <p class="amount">Amount Paid: UGX {{ payment.amount_paid }}</p>
             <hr>
             <p><strong>Received By:</strong> {{ payment.received_by.get_full_name|default:"System" }}</p>
             <p><strong>Date Issued:</strong> {{ payment.created_at|date:"F d, Y H:i" }}</p>

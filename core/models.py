@@ -95,7 +95,7 @@ class School(models.Model):
     max_staff = models.IntegerField(default=100)
     
     # Settings
-    currency = models.CharField(max_length=3, default='USD')
+    currency = models.CharField(max_length=3, default='UGX')
     timezone = models.CharField(max_length=50, default='UTC')
     
     created_at = models.DateTimeField(auto_now_add=True)

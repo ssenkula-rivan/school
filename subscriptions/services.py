@@ -98,7 +98,7 @@ class SchoolProvisioningService:
                 subscription_end=today + timedelta(days=plan.trial_days),
                 max_students=plan.max_students,
                 max_staff=plan.max_staff,
-                currency=school_data.get('currency', 'USD'),
+                currency=school_data.get('currency', 'UGX'),
                 timezone=school_data.get('timezone', 'UTC')
             )
             

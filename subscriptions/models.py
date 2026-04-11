@@ -354,7 +354,7 @@ class SubscriptionInvoice(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
     )
-    currency = models.CharField(max_length=3, default='USD')
+    currency = models.CharField(max_length=3, default='UGX')
     
     # Status
     status = models.CharField(

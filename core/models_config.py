@@ -29,8 +29,8 @@ class SchoolSettings(TenantAwareModel):
     max_mark = models.DecimalField(max_digits=5, decimal_places=2, default=100.00, help_text='Maximum possible grade')
     
     # Financial Settings
-    currency_code = models.CharField(max_length=3, default='USD', help_text='ISO currency code')
-    currency_symbol = models.CharField(max_length=10, default='$')
+    currency_code = models.CharField(max_length=3, default='UGX', help_text='ISO currency code')
+    currency_symbol = models.CharField(max_length=10, default='UGX')
     tax_enabled = models.BooleanField(default=False)
     tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, validators=[MinValueValidator(0), MaxValueValidator(100)])
     tax_name = models.CharField(max_length=50, default='VAT', help_text='VAT, GST, Sales Tax, etc.')
