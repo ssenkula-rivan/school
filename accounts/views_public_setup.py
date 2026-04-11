@@ -221,17 +221,22 @@ def public_school_registration(request):
                 )
                 
                 # --- Create School Configuration ---
-                SchoolConfiguration.objects.create(
-                    school_name=school_name,
-                    school_type=school_type,
-                    institution_type=institution_type,
-                    school_motto=school_motto,
-                    address=address,
-                    phone=phone,
-                    email=email,
-                    website=website,
-                    is_configured=True
-                )
+                try:
+                    SchoolConfiguration.objects.create(
+                        school_name=school_name,
+                        school_type=school_type,
+                        institution_type=institution_type,
+                        school_motto=school_motto,
+                        address=address,
+                        phone=phone,
+                        email=email,
+                        website=website,
+                        is_configured=True
+                    )
+                except Exception as config_error:
+                    # SchoolConfiguration is optional, don't fail if it errors
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f'SchoolConfiguration creation failed: {config_error}')
                 
                 # --- Create Admin User with hashed password ---
                 admin_user = User.objects.create_user(
@@ -289,8 +294,16 @@ def public_school_registration(request):
             import traceback
             import logging
             logger = logging.getLogger(__name__)
-            logger.error(f'Registration error: {traceback.format_exc()}')
+            error_trace = traceback.format_exc()
+            logger.error(f'Registration error: {error_trace}')
             messages.error(request, f'Registration failed: {str(e)}. Please try again.')
+            
+            # Show specific error details
+            if 'UNIQUE constraint' in str(e):
+                messages.error(request, 'A school with this name or code already exists.')
+            elif 'NOT NULL constraint' in str(e):
+                messages.error(request, 'Missing required field. Please fill all required fields.')
+            
             return render(request, 'accounts/public_school_registration.html', context)
     
     return render(request, 'accounts/public_school_registration.html', context)
