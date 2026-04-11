@@ -89,8 +89,12 @@ def dashboard(request):
     
     role = user_profile.role
     
-    # Admin and system_admin get the main dashboard with logged-in staff
+    # Admin and system_admin get the main dashboard with logged-in staff and statistics
     if role in ['admin', 'system_admin']:
+        from core.models import Student, Grade
+        from fees.models import FeeBalance
+        from django.db.models import Sum, Count, Q
+        
         # Get all currently logged-in staff from the same school
         logged_in_staff = UserProfile.objects.filter(
             school=user_profile.school,
@@ -98,10 +102,79 @@ def dashboard(request):
             is_active_employee=True
         ).select_related('user').order_by('-last_login')
         
+        # Student statistics
+        total_students = Student.objects.filter(
+            school=user_profile.school,
+            status='active'
+        ).count()
+        
+        # Students by gender
+        male_students = Student.objects.filter(
+            school=user_profile.school,
+            status='active',
+            gender='M'
+        ).count()
+        
+        female_students = Student.objects.filter(
+            school=user_profile.school,
+            status='active',
+            gender='F'
+        ).count()
+        
+        # Students by grade
+        students_by_grade = Student.objects.filter(
+            school=user_profile.school,
+            status='active'
+        ).values('grade__name').annotate(
+            count=Count('id')
+        ).order_by('grade__name')
+        
+        # Scholarship students
+        scholarship_students = Student.objects.filter(
+            school=user_profile.school,
+            status='active'
+        ).exclude(scholarship_status='none').count()
+        
+        # Staff statistics
+        total_staff = UserProfile.objects.filter(
+            school=user_profile.school,
+            is_active_employee=True
+        ).count()
+        
+        # Fee statistics (if available)
+        try:
+            total_fees_owed = FeeBalance.objects.filter(
+                student__school=user_profile.school,
+                student__status='active'
+            ).aggregate(total=Sum('balance'))['total'] or 0
+            
+            students_with_balance = FeeBalance.objects.filter(
+                student__school=user_profile.school,
+                student__status='active',
+                balance__gt=0
+            ).count()
+        except:
+            total_fees_owed = 0
+            students_with_balance = 0
+        
         context = {
             'user_profile': user_profile,
             'logged_in_staff': logged_in_staff,
             'total_logged_in': logged_in_staff.count(),
+            
+            # Student statistics
+            'total_students': total_students,
+            'male_students': male_students,
+            'female_students': female_students,
+            'students_by_grade': students_by_grade,
+            'scholarship_students': scholarship_students,
+            
+            # Staff statistics
+            'total_staff': total_staff,
+            
+            # Financial statistics
+            'total_fees_owed': total_fees_owed,
+            'students_with_balance': students_with_balance,
         }
         return render(request, 'dashboard/main.html', context)
     
