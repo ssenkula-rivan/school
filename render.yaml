@@ -1,103 +1,30 @@
 services:
   - type: web
     name: school-management-system
-    runtime: python
-    pythonVersion: "3.11.9"
-    plan: free
+    env: python
     region: oregon
+    plan: free
     branch: main
-    buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-      python manage.py collectstatic --noinput
-      python manage.py migrate --noinput
-      python reset_to_defaults.py
-    startCommand: >
-      gunicorn workplace_system.wsgi:application
-      --bind 0.0.0.0:$PORT
-      --workers 1
-      --threads 2
-      --timeout 120
-      --max-requests 1000
-      --max-requests-jitter 100
-    healthCheckPath: /health/
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn workplace_system.wsgi:application
     envVars:
-      # CRITICAL: Correct settings module name
-      - key: DJANGO_SETTINGS_MODULE
-        value: "workplace_system.settings"
-      
-      # Database connection (auto-linked)
+      - key: PYTHON_VERSION
+        value: 3.14.2
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
       - key: DATABASE_URL
         fromDatabase:
-          name: school-postgres
+          name: school-db
           property: connectionString
-      
-      # Security credentials (set in Render dashboard)
-      - key: SECRET_KEY
-        sync: false
-      - key: SYSADMIN_PASSWORD
-        sync: false
-      
-      # Core Django settings
-      - key: DEBUG
-        value: "False"
-      - key: ENVIRONMENT
-        value: "production"
-      
-      # Security settings (CRITICAL for your domain)
-      - key: ALLOWED_HOSTS
-        value: "*.onrender.com,localhost,127.0.0.1"
-      - key: CSRF_TRUSTED_ORIGINS
-        value: "https://*.onrender.com,http://localhost:8000"
-      - key: SECURE_SSL_REDIRECT
-        value: "False"
-      - key: DISABLE_SSL_REDIRECT
-        value: "True"
-      
-      # Localization
-      - key: DJANGO_TIME_ZONE
-        value: "Africa/Kampala"
-      
-      # Email configuration
-      - key: EMAIL_BACKEND
-        value: "django.core.mail.backends.console.EmailBackend"
-      - key: DEFAULT_FROM_EMAIL
-        value: "noreply@school.com"
-      
-      # Company information
-      - key: COMPANY_NAME
-        value: "School Management System"
-      
-      # Cache and Task Queue (Redis not available on free tier)
-      - key: USE_REDIS
-        value: "False"
-      
-      # File upload limits
-      - key: FILE_UPLOAD_MAX_SIZE
-        value: "10485760"
-      - key: DATA_UPLOAD_MAX_SIZE
-        value: "10485760"
-      
-      # Optional: Sentry error tracking (recommended for production)
-      # - key: SENTRY_DSN
-      #   sync: false
-      
-      # Optional: Cloudflare R2 storage (recommended)
-      # Uncomment and set these in Render dashboard:
-      # - key: USE_R2_STORAGE
-      #   value: "True"
-      # - key: R2_ACCESS_KEY_ID
-      #   sync: false
-      # - key: R2_SECRET_ACCESS_KEY
-      #   sync: false
-      # - key: R2_BUCKET_NAME
-      #   value: "school-media-files"
-      # - key: R2_ENDPOINT_URL
-      #   value: "https://your-account-id.r2.cloudflarestorage.com"
+      - key: USE_POSTGRES
+        value: True
 
 databases:
-  - name: school-postgres
-    databaseName: workplace_management
-    user: school_admin
+  - name: school-db
+    databaseName: school_management
+    user: school_user
     plan: free
-    region: oregon
