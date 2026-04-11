@@ -22,19 +22,19 @@ def register(request):
                 username = form.cleaned_data.get('username')
                 messages.success(
                     request, 
-                    f'✅ Account created successfully! Your Employee ID is: {profile.employee_id}. Please login with username: {username}'
+                    f'Account created successfully! Your Employee ID is: {profile.employee_id}. Please login with username: {username}'
                 )
                 return redirect('accounts:login')
             except Exception as e:
-                messages.error(request, f'❌ Error creating account: {str(e)}. Please try again.')
+                messages.error(request, f'Error creating account: {str(e)}. Please try again.')
         else:
             if form.errors:
                 for field, errors in form.errors.items():
                     for error in errors:
                         if field == '__all__':
-                            messages.error(request, f'❌ {error}')
+                            messages.error(request, f'{error}')
                         else:
-                            messages.error(request, f'❌ {field.upper()}: {error}')
+                            messages.error(request, f'{field.upper()}: {error}')
     else:
         from .forms import UserRegistrationForm
         form = UserRegistrationForm()
@@ -54,19 +54,19 @@ def public_school_registration(request):
                 username = form.cleaned_data.get('username')
                 messages.success(
                     request, 
-                    f'✅ School registered successfully! Admin username: {username}, Employee ID: {profile.employee_id}'
+                    f'School registered successfully! Admin username: {username}, Employee ID: {profile.employee_id}'
                 )
                 return redirect('accounts:login')
             except Exception as e:
-                messages.error(request, f'❌ Error registering school: {str(e)}. Please try again.')
+                messages.error(request, f'Error registering school: {str(e)}. Please try again.')
         else:
             if form.errors:
                 for field, errors in form.errors.items():
                     for error in errors:
                         if field == '__all__':
-                            messages.error(request, f'❌ {error}')
+                            messages.error(request, f'{error}')
                         else:
-                            messages.error(request, f'❌ {field.upper()}: {error}')
+                            messages.error(request, f'{field.upper()}: {error}')
     else:
         from .forms import UserRegistrationForm
         form = UserRegistrationForm()
@@ -254,11 +254,11 @@ class CustomLoginView(auth_views.LoginView):
         password = request.POST.get('password', '')
 
         if not username_input:
-            messages.error(request, '❌ Username or email is required.')
+            messages.error(request, 'Username or email is required.')
             return render(request, self.template_name, self.get_context_data())
 
         if not password:
-            messages.error(request, '❌ Password is required.')
+            messages.error(request, 'Password is required.')
             return render(request, self.template_name, self.get_context_data())
 
         # Resolve username
@@ -274,7 +274,7 @@ class CustomLoginView(auth_views.LoginView):
             messages.error(request, 'Invalid username or password. Please try again.')
             return render(request, self.template_name, self.get_context_data())
         except Exception as exc:
-            messages.error(request, '❌ System error. Please try again later.')
+            messages.error(request, 'System error. Please try again later.')
             return render(request, self.template_name, self.get_context_data())
 
         # Authenticate
@@ -285,7 +285,7 @@ class CustomLoginView(auth_views.LoginView):
             return render(request, self.template_name, self.get_context_data())
 
         if not user.is_active:
-            messages.error(request, '❌ Your account is inactive. Please contact your school administrator.')
+            messages.error(request, 'Your account is inactive. Please contact your school administrator.')
             return render(request, self.template_name, self.get_context_data())
 
         # Login succeeds
@@ -297,13 +297,13 @@ class CustomLoginView(auth_views.LoginView):
 
         # Check if no schools exist
         if request.session.get('no_schools_exist'):
-            messages.success(request, f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.')
-            messages.info(request, '⚠️ No schools exist yet. Please register the first school to get started.')
+            messages.success(request, f'Welcome {user.first_name or user.username}! You have been logged in successfully.')
+            messages.info(request, 'No schools exist yet. Please register the first school to get started.')
             return redirect('accounts:register_school')
         
         messages.success(
             request, 
-            f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.'
+            f'Welcome {user.first_name or user.username}! You have been logged in successfully.'
         )
         return redirect(self.get_success_url())
 

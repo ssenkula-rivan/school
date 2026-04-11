@@ -52,7 +52,7 @@ if 'DATABASE_URL' in os.environ:
                 'NAME': BASE_DIR / 'db.sqlite3',
             }
         }
-        print("⚠️  Falling back to SQLite database")
+        print(" Falling back to SQLite database")
 
 # Static Files - Render compatible
 STATIC_URL = '/static/'
@@ -76,7 +76,7 @@ else:
     # Local storage (WARNING: Files will be lost on Render deploys!)
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    print("⚠️  WARNING: Using local media storage - files will be lost on deploy!")
+    print(" WARNING: Using local media storage - files will be lost on deploy!")
 
 # Logging for Production
 LOGGING = {
@@ -178,6 +178,6 @@ if SENTRY_DSN:
     )
     print("✅ Sentry error tracking enabled")
 else:
-    print("⚠️  Sentry not configured - production errors will not be tracked")
+    print(" Sentry not configured - production errors will not be tracked")
 
 print("✅ Production settings loaded for Render deployment")

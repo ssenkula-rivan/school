@@ -80,7 +80,7 @@ def create_superuser_view(request):
             if login_user:
                 login(request, login_user)
             
-            messages.success(request, f'✅ Superuser "{username}" created successfully!')
+            messages.success(request, f'Superuser "{username}" created successfully!')
             return redirect('/sys-admin-2024/')
             
         except Exception as e:

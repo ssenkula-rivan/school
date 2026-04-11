@@ -118,7 +118,7 @@ def public_school_registration(request):
             
             if errors:
                 for error in errors:
-                    messages.error(request, f'❌ {error}')
+                    messages.error(request, error)
                 return render(request, 'accounts/public_school_registration.html', context)
             
             # --- Start transaction ---
@@ -271,8 +271,7 @@ def public_school_registration(request):
                 
                 messages.success(
                     request,
-                    f'✅ School "{school_name}" registered successfully! '
-                    f'Login with username: {admin_username}'
+                    f'School "{school_name}" registered successfully. Login with username: {admin_username}'
                 )
                 
                 # Auto-login the admin user
@@ -291,7 +290,7 @@ def public_school_registration(request):
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f'Registration error: {traceback.format_exc()}')
-            messages.error(request, f'❌ Registration failed: {str(e)}. Please try again.')
+            messages.error(request, f'Registration failed: {str(e)}. Please try again.')
             return render(request, 'accounts/public_school_registration.html', context)
     
     return render(request, 'accounts/public_school_registration.html', context)

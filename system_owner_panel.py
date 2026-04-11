@@ -243,7 +243,7 @@ def delete_school_and_data(request, school_id):
         
         messages.success(
             request, 
-            f'✅ School "{school_name}" and all associated data deleted successfully. '
+            f'School "{school_name}" and all associated data deleted successfully. '
             f'({user_count} users and all related records removed)'
         )
         

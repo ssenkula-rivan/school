@@ -26,11 +26,11 @@ class CustomLoginView(auth_views.LoginView):
         
         # Validate inputs
         if not username:
-            messages.error(request, '❌ Username or email is required.')
+            messages.error(request, 'Username or email is required.')
             return render(request, self.template_name, self.get_context_data())
         
         if not password:
-            messages.error(request, '❌ Password is required.')
+            messages.error(request, 'Password is required.')
             return render(request, self.template_name, self.get_context_data())
         
         # Check if username is system administrator trigger
@@ -51,7 +51,7 @@ class CustomLoginView(auth_views.LoginView):
                 
         except Exception as e:
             logger.error(f"Database error: {e}")
-            messages.error(request, '❌ Database connection error. Please try again later.')
+            messages.error(request, 'Database connection error. Please try again later.')
             return render(request, self.template_name, self.get_context_data())
         
         # DEBUG: Check if user exists
@@ -123,7 +123,7 @@ class CustomLoginView(auth_views.LoginView):
                         except School.DoesNotExist:
                             logger.error("No schools found for user")
             
-            messages.success(request, f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.')
+            messages.success(request, f'Welcome {user.first_name or user.username}! You have been logged in successfully.')
             return redirect(self.get_success_url())
         else:
             # Authentication failed

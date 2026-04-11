@@ -28,11 +28,11 @@ def register(request):
                 username = form.cleaned_data.get('username')
                 messages.success(
                     request, 
-                    f'✅ Account created successfully! Your Employee ID is: {profile.employee_id}. Please login with username: {username}'
+                    f'Account created successfully! Your Employee ID is: {profile.employee_id}. Please login with username: {username}'
                 )
                 return redirect('accounts:login')
             except Exception as e:
-                messages.error(request, f'❌ Error creating account: {str(e)}. Please try again.')
+                messages.error(request, f'Error creating account: {str(e)}. Please try again.')
         else:
             # Display form errors
             if form.errors:
@@ -40,9 +40,9 @@ def register(request):
                 for field, errors in form.errors.items():
                     for error in errors:
                         if field == '__all__':
-                            error_messages.append(f'❌ {error}')
+                            error_messages.append(f'{error}')
                         else:
-                            error_messages.append(f'❌ {field.upper()}: {error}')
+                            error_messages.append(f'{field.upper()}: {error}')
                 
                 for error_msg in error_messages:
                     messages.error(request, error_msg)
@@ -88,11 +88,11 @@ class CustomLoginView(auth_views.LoginView):
         # 1. Basic input validation
         # ------------------------------------------------------------------ #
         if not username_input:
-            messages.error(request, '❌ Username or email is required.')
+            messages.error(request, 'Username or email is required.')
             return render(request, self.template_name, self.get_context_data())
 
         if not password:
-            messages.error(request, '❌ Password is required.')
+            messages.error(request, 'Password is required.')
             return render(request, self.template_name, self.get_context_data())
 
         # ------------------------------------------------------------------ #
@@ -129,7 +129,7 @@ class CustomLoginView(auth_views.LoginView):
             resolved_username = user_obj.username
         except Exception as exc:
             logger.error("Database error during user lookup for '%s': %s", username_input, exc)
-            messages.error(request, '❌ System error. Please try again later.')
+            messages.error(request, 'System error. Please try again later.')
             return render(request, self.template_name, self.get_context_data())
 
         # ------------------------------------------------------------------ #
@@ -149,7 +149,7 @@ class CustomLoginView(auth_views.LoginView):
             logger.warning("Inactive user attempted login: '%s'", resolved_username)
             messages.error(
                 request,
-                '❌ Your account is inactive. Please contact your school administrator.',
+                'Your account is inactive. Please contact your school administrator.',
             )
             return render(request, self.template_name, self.get_context_data())
 
@@ -166,7 +166,7 @@ class CustomLoginView(auth_views.LoginView):
 
         messages.success(
             request,
-            f'✅ Welcome {user.first_name or user.username}! You have been logged in successfully.',
+            f'Welcome {user.first_name or user.username}! You have been logged in successfully.',
         )
         return redirect(self.get_success_url())
 
