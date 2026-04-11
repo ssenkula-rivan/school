@@ -374,6 +374,9 @@
                                         🚫 Block
                                     </button>
                                 {% endif %}
+                                <button class="btn btn-danger" onclick="deleteSchool({{ school.id }}, '{{ school.name }}', {{ school.user_count }})" style="background: #8b0000;">
+                                    🗑️ Delete
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -473,6 +476,34 @@
                 `;
                 document.body.appendChild(form);
                 form.submit();
+            }
+        }
+        
+        function deleteSchool(schoolId, schoolName, userCount) {
+            if (confirm(`⚠️ DANGER: Are you sure you want to DELETE ${schoolName}?\n\n` +
+                        `This will PERMANENTLY DELETE:\n` +
+                        `• ${userCount} users and their accounts\n` +
+                        `• All students, teachers, and staff\n` +
+                        `• All classes, subjects, and exams\n` +
+                        `• All marks and attendance records\n` +
+                        `• All academic years and terms\n` +
+                        `• ALL school data (cannot be undone)\n\n` +
+                        `Type the school name to confirm deletion.`)) {
+                
+                const confirmName = prompt(`Type "${schoolName}" to confirm deletion:`);
+                
+                if (confirmName === schoolName) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.innerHTML = `
+                        <input type="hidden" name="action" value="delete_school">
+                        <input type="hidden" name="school_id" value="${schoolId}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                } else {
+                    alert('School name did not match. Deletion cancelled.');
+                }
             }
         }
         

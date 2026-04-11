@@ -32,6 +32,8 @@ def system_owner_dashboard(request):
             return block_school_access(request, school_id)
         elif action == 'unblock_school':
             return unblock_school_access(request, school_id)
+        elif action == 'delete_school':
+            return delete_school_and_data(request, school_id)
     
     # Get all schools with payment and access info
     schools = School.objects.all().order_by('name')
@@ -176,7 +178,7 @@ def update_payment_status(request, school_id):
     except Exception as e:
         messages.error(request, f'Error updating payment: {str(e)}')
     
-    return redirect('system_owner:dashboard')
+    return redirect('system_owner_dashboard')
 
 def block_school_access(request, school_id):
     """Block access for a school"""
@@ -195,7 +197,7 @@ def block_school_access(request, school_id):
     except Exception as e:
         messages.error(request, f'Error blocking school: {str(e)}')
     
-    return redirect('system_owner:dashboard')
+    return redirect('system_owner_dashboard')
 
 def unblock_school_access(request, school_id):
     """Unblock access for a school"""
@@ -214,7 +216,43 @@ def unblock_school_access(request, school_id):
     except Exception as e:
         messages.error(request, f'Error unblocking school: {str(e)}')
     
-    return redirect('system_owner:dashboard')
+    return redirect('system_owner_dashboard')
+
+def delete_school_and_data(request, school_id):
+    """Delete a school and all its associated data"""
+    try:
+        school = School.objects.get(id=school_id)
+        school_name = school.name
+        
+        # Get counts before deletion for confirmation message
+        user_count = UserProfile.objects.filter(school=school).count()
+        
+        # Delete all users associated with this school
+        # This will cascade delete UserProfiles due to ForeignKey relationships
+        users_to_delete = User.objects.filter(userprofile__school=school)
+        users_to_delete.delete()
+        
+        # Delete the school (this will cascade delete all related data)
+        # Due to Django's CASCADE behavior, this will delete:
+        # - All students, teachers, staff
+        # - All classes, subjects, exams, marks
+        # - All attendance records
+        # - All academic years
+        # - All other related data
+        school.delete()
+        
+        messages.success(
+            request, 
+            f'✅ School "{school_name}" and all associated data deleted successfully. '
+            f'({user_count} users and all related records removed)'
+        )
+        
+    except School.DoesNotExist:
+        messages.error(request, 'School not found.')
+    except Exception as e:
+        messages.error(request, f'Error deleting school: {str(e)}')
+    
+    return redirect('system_owner_dashboard')
 
 def school_payment_api(request, school_id):
     """API endpoint for payment updates (Dev Mode - No Auth Required)"""
