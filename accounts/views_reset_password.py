@@ -3,11 +3,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from accounts.models import UserProfile
-from accounts.decorators import admin_required
+from accounts.decorators import role_required
 
 
 @login_required
-@admin_required
+@role_required('admin', 'director', 'system_admin')
 def reset_employee_password(request, user_id):
     """Admin can reset employee password"""
     
@@ -60,7 +60,7 @@ def reset_employee_password(request, user_id):
 
 
 @login_required
-@admin_required
+@role_required('admin', 'director', 'system_admin')
 def manage_users(request):
     """List all users in the school for admin to manage"""
     
