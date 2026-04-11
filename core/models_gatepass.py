@@ -4,7 +4,6 @@ Allows head of school/security to issue gate passes for students leaving campus
 """
 from django.db import models
 from django.contrib.auth.models import User
-from .models import School, Student
 
 
 class GatePass(models.Model):
@@ -29,11 +28,11 @@ class GatePass(models.Model):
         ('other', 'Other'),
     ]
     
-    # Multi-tenant
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='gate_passes')
+    # Multi-tenant - use string reference to avoid circular import
+    school = models.ForeignKey('core.School', on_delete=models.CASCADE, related_name='gate_passes')
     
-    # Student Information
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='gate_passes')
+    # Student Information - use string reference
+    student = models.ForeignKey('core.Student', on_delete=models.CASCADE, related_name='gate_passes')
     
     # Pass Details
     pass_number = models.CharField(max_length=50, unique=True, db_index=True, help_text='Unique pass number')
@@ -182,8 +181,8 @@ class Expense(models.Model):
         ('card', 'Card Payment'),
     ]
     
-    # Multi-tenant
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='expenses')
+    # Multi-tenant - use string reference to avoid circular import
+    school = models.ForeignKey('core.School', on_delete=models.CASCADE, related_name='expenses')
     
     # Expense Details
     expense_number = models.CharField(max_length=50, unique=True, db_index=True)

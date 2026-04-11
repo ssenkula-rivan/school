@@ -4,7 +4,6 @@ Helps schools plan expenses for future terms and track visitors
 """
 from django.db import models
 from django.contrib.auth.models import User
-from .models import School, AcademicYear
 from decimal import Decimal
 
 
@@ -28,8 +27,8 @@ class Budget(models.Model):
         ('revised', 'Revised'),
     ]
     
-    # Multi-tenant
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='budgets')
+    # Multi-tenant - use string reference to avoid circular import
+    school = models.ForeignKey('core.School', on_delete=models.CASCADE, related_name='budgets')
     
     # Budget Details
     budget_number = models.CharField(max_length=50, unique=True, db_index=True)
@@ -37,8 +36,8 @@ class Budget(models.Model):
     title = models.CharField(max_length=200, help_text='e.g., Term 1 Budget 2024, Annual Budget 2024')
     description = models.TextField(blank=True)
     
-    # Period
-    academic_year = models.ForeignKey(AcademicYear, on_delete=models.SET_NULL, null=True, blank=True)
+    # Period - use string reference
+    academic_year = models.ForeignKey('core.AcademicYear', on_delete=models.SET_NULL, null=True, blank=True)
     start_date = models.DateField()
     end_date = models.DateField()
     
@@ -173,8 +172,8 @@ class Visitor(models.Model):
         ('other', 'Other'),
     ]
     
-    # Multi-tenant
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='visitors')
+    # Multi-tenant - use string reference
+    school = models.ForeignKey('core.School', on_delete=models.CASCADE, related_name='visitors')
     
     # Visitor Information
     visitor_number = models.CharField(max_length=50, unique=True, db_index=True)
@@ -268,8 +267,8 @@ class Visitor(models.Model):
 class WorkshopExpense(models.Model):
     """Track workshop and training expenses"""
     
-    # Multi-tenant
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='workshop_expenses')
+    # Multi-tenant - use string reference
+    school = models.ForeignKey('core.School', on_delete=models.CASCADE, related_name='workshop_expenses')
     
     # Workshop Details
     workshop_number = models.CharField(max_length=50, unique=True, db_index=True)
