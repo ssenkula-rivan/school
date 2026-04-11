@@ -1,0 +1,201 @@
+{% extends "accounting/base.html" %}
+{% block title %}Invoices{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-0">Invoice Management</h2>
+            <p class="text-muted">Track and manage all your invoices</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'add_invoice' %}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> New Invoice
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-secondary">
+                <i class="bi bi-printer"></i> Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Invoice Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Invoices</h6>
+                            <h3 class="mb-0">{{ current_invoices.count|add:past_due_invoices.count }}</h3>
+                        </div>
+                        <div class="text-primary">
+                            <i class="bi bi-receipt" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Current</h6>
+                            <h3 class="mb-0 text-success">{{ current_invoices.count }}</h3>
+                        </div>
+                        <div class="text-success">
+                            <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Past Due</h6>
+                            <h3 class="mb-0 text-danger">{{ past_due_invoices.count }}</h3>
+                        </div>
+                        <div class="text-danger">
+                            <i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Invoices -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-check"></i> Current Invoices</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if current_invoices %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Client</th>
+                                <th>Amount</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in current_invoices %}
+                            <tr>
+                                <td><strong>{{ invoice.client }}</strong></td>
+                                <td class="fw-bold">${{ invoice.amount|floatformat:2 }}</td>
+                                <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if invoice.status == 'PAID' %}
+                                        <span class="badge bg-success">Paid</span>
+                                    {% elif invoice.status == 'UNPAID' %}
+                                        <span class="badge bg-warning text-dark">Unpaid</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Overdue</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3">No current invoices found.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Past Due Invoices -->
+    {% if past_due_invoices %}
+    <div class="card shadow-sm mb-4 border-danger">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Past Due Invoices</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Client</th>
+                            <th>Amount</th>
+                            <th>Due Date</th>
+                            <th>Days Overdue</th>
+                            <th>Status</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in past_due_invoices %}
+                        <tr class="table-danger">
+                            <td><strong>{{ invoice.client }}</strong></td>
+                            <td class="fw-bold">${{ invoice.amount|floatformat:2 }}</td>
+                            <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+                            <td><span class="badge bg-danger">{{ invoice.days_overdue|default:"N/A" }}</span></td>
+                            <td><span class="badge bg-danger">Overdue</span></td>
+                            <td class="text-center">
+                                <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Invoice Status Chart -->
+    {% if status_summary %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Invoice Status Breakdown</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="invoiceStatusChart" height="80"></canvas>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if status_summary %}
+  const statusCtx = document.getElementById('invoiceStatusChart').getContext('2d');
+  const statusChart = new Chart(statusCtx, {
+    type: 'pie',
+    data: {
+      labels: [{% for item in status_summary %}"{{ item.status }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+      datasets: [{
+        label: 'Total by Status',
+        data: [{% for item in status_summary %}{{ item.total }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+        backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+        }
+      }
+    }
+  });
+{% endif %}
+</script>
+{% endblock %}

@@ -97,7 +97,18 @@ INSTALLED_APPS = [
     # Third party apps
     'crispy_forms',
     'widget_tweaks',
-    # 'axes',  # Disabled - not installed
+    
+    # School management apps
+    'core',
+    'accounts',
+    'employees',
+    'fees',
+    'academics',
+    'library',
+    'inventory',
+    'reports',
+    'accounting',
+]
     
     # Local apps - Core first
     'core',

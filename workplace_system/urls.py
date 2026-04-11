@@ -49,9 +49,7 @@ urlpatterns = [
     path('library/', include('library.urls', namespace='library')),
     path('inventory/', include('inventory.urls', namespace='inventory')),
     path('reports/', include('reports.urls', namespace='reports')),
-    
-    # Future API
-    # path('api/v1/', include('api.urls', namespace='v1')),
+    path('accounting/', include('accounting.urls', namespace='accounting')),
 ]
 
 # Test error pages in development

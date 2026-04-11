@@ -1,0 +1,128 @@
+{% extends "accounting/base.html" %}
+{% block title %}Add Receipt{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-0">Add New Receipt</h2>
+            <p class="text-muted">Upload and track your business expenses</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-receipt"></i> Receipt Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            {{ form.receipt_type.label_tag }}
+                            {{ form.receipt_type }}
+                            {% if form.receipt_type.errors %}
+                                <div class="text-danger small">{{ form.receipt_type.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Select the type of receipt you're creating
+                            </small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.vendor.label_tag }}
+                                {{ form.vendor }}
+                                {% if form.vendor.errors %}
+                                    <div class="text-danger small">{{ form.vendor.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.amount.label_tag }}
+                                {{ form.amount }}
+                                {% if form.amount.errors %}
+                                    <div class="text-danger small">{{ form.amount.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.date.label_tag }}
+                                {{ form.date }}
+                                {% if form.date.errors %}
+                                    <div class="text-danger small">{{ form.date.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.category.label_tag }}
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                    <div class="text-danger small">{{ form.category.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.description.label_tag }}
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.receipt_image.label_tag }}
+                            {{ form.receipt_image }}
+                            {% if form.receipt_image.errors %}
+                                <div class="text-danger small">{{ form.receipt_image.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Upload a photo or scan of your receipt for record keeping
+                            </small>
+                        </div>
+
+                        <hr class="my-4">
+                        <h6 class="text-muted mb-3"><i class="bi bi-mortarboard"></i> School Information (Optional)</h6>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.student_name.label_tag }}
+                                {{ form.student_name }}
+                                {% if form.student_name.errors %}
+                                    <div class="text-danger small">{{ form.student_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.grade_class.label_tag }}
+                                {{ form.grade_class }}
+                                {% if form.grade_class.errors %}
+                                    <div class="text-danger small">{{ form.grade_class.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.school_year.label_tag }}
+                            {{ form.school_year }}
+                            {% if form.school_year.errors %}
+                                <div class="text-danger small">{{ form.school_year.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Save Receipt
+                            </button>
+                            <a href="{% url 'receipt_list' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

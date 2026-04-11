@@ -1,0 +1,203 @@
+{% extends "accounting/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-0">Dashboard</h2>
+            <p class="text-muted">Overview of your financial activities</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'transaction_list' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> New Transaction
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Transactions</h6>
+                            <h3 class="mb-0">{{ transactions.count }}</h3>
+                        </div>
+                        <div class="text-primary">
+                            <i class="bi bi-receipt" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Active Accounts</h6>
+                            <h3 class="mb-0">{{ total_accounts|default:0 }}</h3>
+                        </div>
+                        <div class="text-success">
+                            <i class="bi bi-bank" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Pending Invoices</h6>
+                            <h3 class="mb-0">{{ pending_invoices|default:0 }}</h3>
+                        </div>
+                        <div class="text-warning">
+                            <i class="bi bi-file-earmark-text" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">This Month</h6>
+                            <h3 class="mb-0">${{ monthly_total|default:0|floatformat:2 }}</h3>
+                        </div>
+                        <div class="text-info">
+                            <i class="bi bi-graph-up" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Transactions</h5>
+            <a href="{% url 'transaction_history' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+            {% if transactions %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Reference</th>
+                                <th>Description</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr>
+                                <td>{{ transaction.date|date:"M d, Y" }}</td>
+                                <td><span class="badge bg-secondary">{{ transaction.reference_number|default:"N/A" }}</span></td>
+                                <td>{{ transaction.description }}</td>
+                                <td class="text-end fw-bold">${{ transaction.total_amount|floatformat:2 }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'transaction_detail' transaction.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3">No transactions yet. Get started by creating your first transaction.</p>
+                    <a href="{% url 'transaction_list' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Add Transaction
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Links & Reminders -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Quick Actions</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'chart_of_accounts' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-list-ul"></i> Chart of Accounts
+                    </a>
+                    <a href="{% url 'balance_sheet' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Balance Sheet
+                    </a>
+                    <a href="{% url 'profit_and_loss' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-graph-up-arrow"></i> Profit & Loss Statement
+                    </a>
+                    <a href="{% url 'invoice_list' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-receipt-cutoff"></i> Manage Invoices
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-bell"></i> Important Reminders</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Quarterly Tax Filing</h6>
+                                <small class="text-muted">Review and submit quarterly taxes</small>
+                            </div>
+                            <span class="badge bg-danger">Due Soon</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Business License Renewal</h6>
+                                <small class="text-muted">Annual business license renewal</small>
+                            </div>
+                            <span class="badge bg-warning text-dark">Upcoming</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">GST/HST Payment</h6>
+                                <small class="text-muted">Monthly tax payment due</small>
+                            </div>
+                            <span class="badge bg-danger">Due Soon</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

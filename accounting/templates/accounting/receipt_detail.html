@@ -1,0 +1,177 @@
+{% extends "accounting/base.html" %}
+{% block title %}Receipt Detail{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-0">Receipt Details</h2>
+            <p class="text-muted">View receipt information</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'edit_receipt' receipt.id %}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            <a href="{% url 'delete_receipt' receipt.id %}" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Delete
+            </a>
+            <a href="{% url 'receipt_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-receipt"></i> Receipt Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <h6 class="text-muted">Receipt Type</h6>
+                            <p>
+                                {% if receipt.receipt_type == 'SALES' %}
+                                    <span class="badge bg-success fs-6">Sales Receipt</span>
+                                {% elif receipt.receipt_type == 'PAYMENT' %}
+                                    <span class="badge bg-primary fs-6">Payment Receipt (Receive Payment)</span>
+                                {% elif receipt.receipt_type == 'STUDENT_FEES' %}
+                                    <span class="badge bg-info fs-6">Payment Receipt (Student Fees)</span>
+                                {% elif receipt.receipt_type == 'EXPENSE' %}
+                                    <span class="badge bg-warning text-dark fs-6">Expense Receipt</span>
+                                {% elif receipt.receipt_type == 'REFUND' %}
+                                    <span class="badge bg-danger fs-6">Refund Receipt</span>
+                                {% elif receipt.receipt_type == 'BILL_PAYMENT' %}
+                                    <span class="badge bg-secondary fs-6">Bill Payment Receipt</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Vendor/Merchant</h6>
+                            <p class="fs-5"><strong>{{ receipt.vendor }}</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Amount</h6>
+                            <p class="fs-5 text-success"><strong>${{ receipt.amount|floatformat:2 }}</strong></p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Date</h6>
+                            <p>{{ receipt.date|date:"F d, Y" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Category</h6>
+                            <p>
+                                {% if receipt.category == 'OFFICE' %}
+                                    <span class="badge bg-primary">Office Supplies</span>
+                                {% elif receipt.category == 'TRAVEL' %}
+                                    <span class="badge bg-info">Travel & Transportation</span>
+                                {% elif receipt.category == 'MEALS' %}
+                                    <span class="badge bg-warning text-dark">Meals & Entertainment</span>
+                                {% elif receipt.category == 'UTILITIES' %}
+                                    <span class="badge bg-secondary">Utilities</span>
+                                {% elif receipt.category == 'RENT' %}
+                                    <span class="badge bg-danger">Rent</span>
+                                {% elif receipt.category == 'EQUIPMENT' %}
+                                    <span class="badge bg-success">Equipment</span>
+                                {% elif receipt.category == 'SERVICES' %}
+                                    <span class="badge bg-dark">Professional Services</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Other</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if receipt.description %}
+                    <div class="mb-3">
+                        <h6 class="text-muted">Description</h6>
+                        <p>{{ receipt.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if receipt.student_name or receipt.grade_class or receipt.school_year %}
+                    <hr class="my-3">
+                    <h6 class="text-muted mb-3"><i class="bi bi-mortarboard"></i> School Information</h6>
+                    <div class="row mb-3">
+                        {% if receipt.student_name %}
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Student Name</h6>
+                            <p>{{ receipt.student_name }}</p>
+                        </div>
+                        {% endif %}
+                        {% if receipt.grade_class %}
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Grade/Class</h6>
+                            <p>{{ receipt.grade_class }}</p>
+                        </div>
+                        {% endif %}
+                        {% if receipt.school_year %}
+                        <div class="col-md-4">
+                            <h6 class="text-muted">School Year</h6>
+                            <p>{{ receipt.school_year }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if receipt.transaction %}
+                    <div class="mb-3">
+                        <h6 class="text-muted">Linked Transaction</h6>
+                        <p>
+                            <a href="{% url 'transaction_detail' receipt.transaction.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-link-45deg"></i> View Transaction
+                            </a>
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Created</h6>
+                            <p><small>{{ receipt.created_at|date:"F d, Y g:i A" }}</small></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Last Updated</h6>
+                            <p><small>{{ receipt.updated_at|date:"F d, Y g:i A" }}</small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            {% if receipt.receipt_image %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="bi bi-image"></i> Receipt Image</h6>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ receipt.receipt_image.url }}" alt="Receipt" class="img-fluid rounded" style="max-height: 500px;">
+                    <div class="mt-3">
+                        <a href="{{ receipt.receipt_image.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-arrows-fullscreen"></i> View Full Size
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3">No receipt image uploaded</p>
+                    <a href="{% url 'edit_receipt' receipt.id %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-upload"></i> Upload Image
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

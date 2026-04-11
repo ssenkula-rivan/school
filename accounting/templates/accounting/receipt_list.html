@@ -1,0 +1,333 @@
+{% extends "accounting/base.html" %}
+{% block title %}Receipts{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-0">Receipt Management</h2>
+            <p class="text-muted">Track and organize all your business receipts</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'add_receipt' %}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Add Receipt
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-secondary">
+                <i class="bi bi-printer"></i> Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Receipts</h6>
+                            <h3 class="mb-0">{{ receipts.count }}</h3>
+                        </div>
+                        <div class="text-primary">
+                            <i class="bi bi-receipt" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Amount</h6>
+                            <h3 class="mb-0">${{ total_amount|floatformat:2 }}</h3>
+                        </div>
+                        <div class="text-success">
+                            <i class="bi bi-cash-stack" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">This Month</h6>
+                            <h3 class="mb-0">{{ receipts.count }}</h3>
+                        </div>
+                        <div class="text-info">
+                            <i class="bi bi-calendar-month" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Categories</h6>
+                            <h3 class="mb-0">{{ category_totals.count }}</h3>
+                        </div>
+                        <div class="text-warning">
+                            <i class="bi bi-tags" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Receipt Type</label>
+                    <select name="receipt_type" class="form-select">
+                        <option value="">All Types</option>
+                        <option value="SALES" {% if selected_receipt_type == 'SALES' %}selected{% endif %}>Sales Receipt</option>
+                        <option value="PAYMENT" {% if selected_receipt_type == 'PAYMENT' %}selected{% endif %}>Payment Receipt (Receive Payment)</option>
+                        <option value="STUDENT_FEES" {% if selected_receipt_type == 'STUDENT_FEES' %}selected{% endif %}>Payment Receipt (Student Fees)</option>
+                        <option value="EXPENSE" {% if selected_receipt_type == 'EXPENSE' %}selected{% endif %}>Expense Receipt</option>
+                        <option value="REFUND" {% if selected_receipt_type == 'REFUND' %}selected{% endif %}>Refund Receipt</option>
+                        <option value="BILL_PAYMENT" {% if selected_receipt_type == 'BILL_PAYMENT' %}selected{% endif %}>Bill Payment Receipt</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        <optgroup label="General Business">
+                            <option value="OFFICE" {% if selected_category == 'OFFICE' %}selected{% endif %}>Office Supplies</option>
+                            <option value="TRAVEL" {% if selected_category == 'TRAVEL' %}selected{% endif %}>Travel & Transportation</option>
+                            <option value="MEALS" {% if selected_category == 'MEALS' %}selected{% endif %}>Meals & Entertainment</option>
+                            <option value="UTILITIES" {% if selected_category == 'UTILITIES' %}selected{% endif %}>Utilities</option>
+                            <option value="RENT" {% if selected_category == 'RENT' %}selected{% endif %}>Rent</option>
+                            <option value="EQUIPMENT" {% if selected_category == 'EQUIPMENT' %}selected{% endif %}>Equipment</option>
+                            <option value="SERVICES" {% if selected_category == 'SERVICES' %}selected{% endif %}>Professional Services</option>
+                        </optgroup>
+                        <optgroup label="School Expenses">
+                            <option value="TUITION" {% if selected_category == 'TUITION' %}selected{% endif %}>Tuition Fees</option>
+                            <option value="BOOKS" {% if selected_category == 'BOOKS' %}selected{% endif %}>Books & Educational Materials</option>
+                            <option value="SCHOOL_SUPPLIES" {% if selected_category == 'SCHOOL_SUPPLIES' %}selected{% endif %}>School Supplies</option>
+                            <option value="UNIFORMS" {% if selected_category == 'UNIFORMS' %}selected{% endif %}>Uniforms & Clothing</option>
+                            <option value="SPORTS" {% if selected_category == 'SPORTS' %}selected{% endif %}>Sports & Athletics</option>
+                            <option value="FIELD_TRIPS" {% if selected_category == 'FIELD_TRIPS' %}selected{% endif %}>Field Trips & Excursions</option>
+                            <option value="LAB_FEES" {% if selected_category == 'LAB_FEES' %}selected{% endif %}>Laboratory Fees</option>
+                            <option value="TECHNOLOGY" {% if selected_category == 'TECHNOLOGY' %}selected{% endif %}>Technology & Computer</option>
+                            <option value="MUSIC_ARTS" {% if selected_category == 'MUSIC_ARTS' %}selected{% endif %}>Music & Arts Programs</option>
+                            <option value="AFTER_SCHOOL" {% if selected_category == 'AFTER_SCHOOL' %}selected{% endif %}>After School Programs</option>
+                            <option value="LUNCH" {% if selected_category == 'LUNCH' %}selected{% endif %}>School Lunch & Cafeteria</option>
+                            <option value="TRANSPORTATION" {% if selected_category == 'TRANSPORTATION' %}selected{% endif %}>School Transportation</option>
+                            <option value="FUNDRAISING" {% if selected_category == 'FUNDRAISING' %}selected{% endif %}>Fundraising Expenses</option>
+                            <option value="FACILITY" {% if selected_category == 'FACILITY' %}selected{% endif %}>Facility & Maintenance</option>
+                            <option value="STAFF_TRAINING" {% if selected_category == 'STAFF_TRAINING' %}selected{% endif %}>Staff Training & Development</option>
+                        </optgroup>
+                        <option value="OTHER" {% if selected_category == 'OTHER' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">End Date</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                    <a href="{% url 'receipt_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Receipts Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-receipt-cutoff"></i> All Receipts</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if receipts %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Vendor/School</th>
+                                <th>Student</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Image</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for receipt in receipts %}
+                            <tr>
+                                <td>{{ receipt.date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if receipt.receipt_type == 'SALES' %}
+                                        <span class="badge bg-success">Sales</span>
+                                    {% elif receipt.receipt_type == 'PAYMENT' %}
+                                        <span class="badge bg-primary">Payment</span>
+                                    {% elif receipt.receipt_type == 'STUDENT_FEES' %}
+                                        <span class="badge bg-info">Student Fees</span>
+                                    {% elif receipt.receipt_type == 'EXPENSE' %}
+                                        <span class="badge bg-warning text-dark">Expense</span>
+                                    {% elif receipt.receipt_type == 'REFUND' %}
+                                        <span class="badge bg-danger">Refund</span>
+                                    {% elif receipt.receipt_type == 'BILL_PAYMENT' %}
+                                        <span class="badge bg-secondary">Bill Payment</span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ receipt.vendor }}</strong></td>
+                                <td>
+                                    {% if receipt.student_name %}
+                                        {{ receipt.student_name }}
+                                        {% if receipt.grade_class %}
+                                            <br><small class="text-muted">{{ receipt.grade_class }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if receipt.category == 'TUITION' %}
+                                        <span class="badge bg-primary">Tuition</span>
+                                    {% elif receipt.category == 'BOOKS' %}
+                                        <span class="badge bg-info">Books</span>
+                                    {% elif receipt.category == 'SCHOOL_SUPPLIES' %}
+                                        <span class="badge bg-success">School Supplies</span>
+                                    {% elif receipt.category == 'UNIFORMS' %}
+                                        <span class="badge bg-secondary">Uniforms</span>
+                                    {% elif receipt.category == 'SPORTS' %}
+                                        <span class="badge bg-warning text-dark">Sports</span>
+                                    {% elif receipt.category == 'FIELD_TRIPS' %}
+                                        <span class="badge bg-info">Field Trips</span>
+                                    {% elif receipt.category == 'LAB_FEES' %}
+                                        <span class="badge bg-danger">Lab Fees</span>
+                                    {% elif receipt.category == 'TECHNOLOGY' %}
+                                        <span class="badge bg-dark">Technology</span>
+                                    {% elif receipt.category == 'MUSIC_ARTS' %}
+                                        <span class="badge" style="background-color: #6f42c1;">Music & Arts</span>
+                                    {% elif receipt.category == 'AFTER_SCHOOL' %}
+                                        <span class="badge" style="background-color: #fd7e14;">After School</span>
+                                    {% elif receipt.category == 'LUNCH' %}
+                                        <span class="badge" style="background-color: #20c997;">Lunch</span>
+                                    {% elif receipt.category == 'TRANSPORTATION' %}
+                                        <span class="badge" style="background-color: #0dcaf0;">Transportation</span>
+                                    {% elif receipt.category == 'FUNDRAISING' %}
+                                        <span class="badge" style="background-color: #d63384;">Fundraising</span>
+                                    {% elif receipt.category == 'FACILITY' %}
+                                        <span class="badge bg-secondary">Facility</span>
+                                    {% elif receipt.category == 'STAFF_TRAINING' %}
+                                        <span class="badge bg-primary">Staff Training</span>
+                                    {% elif receipt.category == 'OFFICE' %}
+                                        <span class="badge bg-primary">Office</span>
+                                    {% elif receipt.category == 'TRAVEL' %}
+                                        <span class="badge bg-info">Travel</span>
+                                    {% elif receipt.category == 'MEALS' %}
+                                        <span class="badge bg-warning text-dark">Meals</span>
+                                    {% elif receipt.category == 'UTILITIES' %}
+                                        <span class="badge bg-secondary">Utilities</span>
+                                    {% elif receipt.category == 'RENT' %}
+                                        <span class="badge bg-danger">Rent</span>
+                                    {% elif receipt.category == 'EQUIPMENT' %}
+                                        <span class="badge bg-success">Equipment</span>
+                                    {% elif receipt.category == 'SERVICES' %}
+                                        <span class="badge bg-dark">Services</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Other</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold">${{ receipt.amount|floatformat:2 }}</td>
+                                <td>
+                                    {% if receipt.receipt_image %}
+                                        <i class="bi bi-image text-success"></i>
+                                    {% else %}
+                                        <i class="bi bi-dash-circle text-muted"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'receipt_detail' receipt.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'edit_receipt' receipt.id %}" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'delete_receipt' receipt.id %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3">No receipts found. Start by adding your first receipt.</p>
+                    <a href="{% url 'add_receipt' %}" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Add Receipt
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    {% if category_totals %}
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Spending by Category</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="categoryChart" height="80"></canvas>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if category_totals %}
+  const ctx = document.getElementById('categoryChart').getContext('2d');
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: [{% for item in category_totals %}"{{ item.get_category_display }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+      datasets: [{
+        label: 'Amount ($)',
+        data: [{% for item in category_totals %}{{ item.total }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+        backgroundColor: ['#0d6efd', '#6c757d', '#198754', '#dc3545', '#ffc107', '#0dcaf0', '#6610f2', '#d63384'],
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+{% endif %}
+</script>
+{% endblock %}
