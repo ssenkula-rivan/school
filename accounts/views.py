@@ -89,10 +89,19 @@ def dashboard(request):
     
     role = user_profile.role
     
-    # Admin and system_admin get the main dashboard
+    # Admin and system_admin get the main dashboard with logged-in staff
     if role in ['admin', 'system_admin']:
+        # Get all currently logged-in staff from the same school
+        logged_in_staff = UserProfile.objects.filter(
+            school=user_profile.school,
+            is_currently_logged_in=True,
+            is_active_employee=True
+        ).select_related('user').order_by('-last_login')
+        
         context = {
             'user_profile': user_profile,
+            'logged_in_staff': logged_in_staff,
+            'total_logged_in': logged_in_staff.count(),
         }
         return render(request, 'dashboard/main.html', context)
     
@@ -267,6 +276,16 @@ class CustomLoginView(auth_views.LoginView):
 
     def get_success_url(self):
         return reverse_lazy('accounts:dashboard')
+    
+    @staticmethod
+    def get_client_ip(request):
+        """Get client IP address from request"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
 
     def get(self, request, *args, **kwargs):
         """Check if schools exist - redirect to registration if none"""
@@ -323,6 +342,17 @@ class CustomLoginView(auth_views.LoginView):
         # Login succeeds
         login(request, user)
         logger.info("User '%s' logged in successfully.", user.username)
+        
+        # Track login in UserProfile
+        try:
+            from django.utils import timezone
+            user_profile = user.userprofile
+            user_profile.last_login = timezone.now()
+            user_profile.is_currently_logged_in = True
+            user_profile.login_ip = self.get_client_ip(request)
+            user_profile.save(update_fields=['last_login', 'is_currently_logged_in', 'login_ip'])
+        except Exception as e:
+            logger.warning(f"Could not update login tracking for {user.username}: {e}")
 
         # Set school context
         self._set_school_session(request, user)

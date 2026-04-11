@@ -59,6 +59,11 @@ class UserProfile(models.Model):
     is_active_employee = models.BooleanField(default=True)
     force_password_reset = models.BooleanField(default=False, help_text='Force user to reset password on next login')
     
+    # Login tracking
+    last_login = models.DateTimeField(null=True, blank=True, help_text='Last login timestamp')
+    is_currently_logged_in = models.BooleanField(default=False, help_text='Currently logged in')
+    login_ip = models.GenericIPAddressField(null=True, blank=True, help_text='Last login IP address')
+    
     # For Head of Class and Teachers
     class_name = models.CharField(max_length=100, blank=True, help_text='Class assigned to Head of Class or Teacher (e.g., Grade 1A, Grade 2B)')
     

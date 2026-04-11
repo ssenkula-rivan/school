@@ -6,6 +6,7 @@ from .views_public_setup import public_school_registration
 from .views_create_admin import create_school_admin
 from .views_test_login import test_login_debug
 from .views_reset_password import reset_employee_password, manage_users
+from .views_logout import custom_logout
 
 app_name = 'accounts'
 
@@ -21,7 +22,7 @@ urlpatterns = [
     
     # Authentication URLs
     path('login/', views.CustomLoginView.as_view(template_name='accounts/login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='accounts:login'), name='logout'),
+    path('logout/', custom_logout, name='logout'),
     path('register/', views.register, name='register'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('lockout/', TemplateView.as_view(template_name='accounts/lockout.html'), name='lockout'),

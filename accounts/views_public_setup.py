@@ -61,11 +61,18 @@ def public_school_registration(request):
         ('special_needs', 'Special Needs'),
     ]
     
+    # Get curriculum and timezone choices from School model
+    from core.models import School
+    CURRICULUM_CHOICES = School.CURRICULUM_CHOICES
+    TIMEZONE_CHOICES = School.TIMEZONE_CHOICES
+    
     context = {
         'school_levels': SCHOOL_LEVELS,
         'ownership_types': OWNERSHIP_TYPES,
         'accommodation_types': ACCOMMODATION_TYPES,
         'special_categories': SPECIAL_CATEGORIES,
+        'curriculum_choices': CURRICULUM_CHOICES,
+        'timezone_choices': TIMEZONE_CHOICES,
     }
     
     if request.method == 'POST':
@@ -90,6 +97,11 @@ def public_school_registration(request):
             ownership_types = request.POST.getlist('ownership_type')
             accommodation_types = request.POST.getlist('accommodation_type')
             special_categories = request.POST.getlist('special_category')
+            
+            # Get curriculum and timezone
+            curriculum = request.POST.get('curriculum', 'uganda_primary')
+            secondary_curriculum = request.POST.get('secondary_curriculum', '')
+            timezone_choice = request.POST.get('timezone', 'Africa/Kampala')
             
             # --- Validate required fields ---
             errors = []
@@ -185,7 +197,9 @@ def public_school_registration(request):
                     max_students=1000,
                     max_staff=100,
                     currency='UGX',
-                    timezone='Africa/Kampala',
+                    timezone=timezone_choice,
+                    curriculum=curriculum,
+                    secondary_curriculum=secondary_curriculum,
                     
                     # School Levels
                     has_baby_care='baby_care' in school_levels,

@@ -11,6 +11,9 @@ from .managers import TenantAwareModel
 # from .models_assessment import *
 # from .models_analytics import *
 
+# Import gate pass and expense models
+from .models_gatepass import GatePass, Expense
+
 
 class School(models.Model):
     """Multi-tenant school model - CRITICAL for SaaS"""
@@ -33,6 +36,49 @@ class School(models.Model):
         ('boarding', 'Boarding'),
         ('day', 'Day School'),
         ('mixed', 'Mixed'),
+    ]
+    
+    CURRICULUM_CHOICES = [
+        # Uganda National Curricula
+        ('uganda_primary', 'Uganda Primary Curriculum (P1-P7)'),
+        ('uganda_olevel', 'Uganda O-Level Curriculum (S1-S4)'),
+        ('uganda_alevel', 'Uganda A-Level Curriculum (S5-S6)'),
+        ('uganda_thematic', 'Uganda Thematic Curriculum (Lower Primary)'),
+        ('uganda_btvet', 'Uganda BTVET Curriculum'),
+        
+        # International Curricula
+        ('cambridge_primary', 'Cambridge Primary Programme'),
+        ('cambridge_lower_secondary', 'Cambridge Lower Secondary'),
+        ('cambridge_igcse', 'Cambridge IGCSE (O-Level)'),
+        ('cambridge_as_a_level', 'Cambridge AS & A Level'),
+        ('ib_pyp', 'IB Primary Years Programme (PYP)'),
+        ('ib_myp', 'IB Middle Years Programme (MYP)'),
+        ('ib_dp', 'IB Diploma Programme (DP)'),
+        ('british_national', 'British National Curriculum'),
+        ('american_curriculum', 'American Curriculum'),
+        ('montessori', 'Montessori Method'),
+        
+        # Regional African Curricula
+        ('eac_curriculum', 'East African Community Curriculum'),
+        ('kenyan_curriculum', 'Kenyan Curriculum (CBC)'),
+        ('tanzanian_curriculum', 'Tanzanian Curriculum'),
+        ('rwandan_curriculum', 'Rwandan Curriculum'),
+        
+        # Other
+        ('custom', 'Custom/Mixed Curriculum'),
+    ]
+    
+    TIMEZONE_CHOICES = [
+        ('Africa/Kampala', 'East Africa Time (EAT) - Uganda, Kenya, Tanzania'),
+        ('Africa/Nairobi', 'East Africa Time (EAT) - Kenya'),
+        ('Africa/Dar_es_Salaam', 'East Africa Time (EAT) - Tanzania'),
+        ('Africa/Kigali', 'Central Africa Time (CAT) - Rwanda'),
+        ('Africa/Lagos', 'West Africa Time (WAT) - Nigeria'),
+        ('Africa/Johannesburg', 'South Africa Standard Time (SAST)'),
+        ('Europe/London', 'Greenwich Mean Time (GMT) - UK'),
+        ('America/New_York', 'Eastern Time (ET) - USA'),
+        ('Asia/Dubai', 'Gulf Standard Time (GST) - UAE'),
+        ('UTC', 'Coordinated Universal Time (UTC)'),
     ]
     
     # Basic Info
@@ -95,8 +141,25 @@ class School(models.Model):
     max_staff = models.IntegerField(default=100)
     
     # Settings
+    curriculum = models.CharField(
+        max_length=50, 
+        choices=CURRICULUM_CHOICES, 
+        default='uganda_primary',
+        help_text='Primary curriculum system used by the school'
+    )
+    secondary_curriculum = models.CharField(
+        max_length=50, 
+        choices=CURRICULUM_CHOICES, 
+        blank=True,
+        help_text='Secondary curriculum (for schools with multiple levels)'
+    )
     currency = models.CharField(max_length=3, default='UGX')
-    timezone = models.CharField(max_length=50, default='UTC')
+    timezone = models.CharField(
+        max_length=50, 
+        choices=TIMEZONE_CHOICES, 
+        default='Africa/Kampala',
+        help_text='School timezone for scheduling and reports'
+    )
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -260,12 +323,27 @@ class Student(TenantAwareModel):
     phone = models.CharField(max_length=15, blank=True)
     address = models.TextField()
     
-    # Guardian Information
+    # Guardian Information (Primary Guardian)
     guardian_name = models.CharField(max_length=200)
     guardian_relationship = models.CharField(max_length=50)
     guardian_phone = models.CharField(max_length=15, db_index=True)
     guardian_email = models.EmailField(blank=True)
     guardian_address = models.TextField(blank=True)
+    guardian_occupation = models.CharField(max_length=100, blank=True)
+    guardian_workplace = models.CharField(max_length=200, blank=True)
+    
+    # Secondary Guardian/Parent Information
+    parent2_name = models.CharField(max_length=200, blank=True, help_text='Second parent/guardian name')
+    parent2_relationship = models.CharField(max_length=50, blank=True, help_text='e.g., Mother, Father')
+    parent2_phone = models.CharField(max_length=15, blank=True, db_index=True, help_text='Second parent phone')
+    parent2_email = models.EmailField(blank=True, help_text='Second parent email')
+    parent2_occupation = models.CharField(max_length=100, blank=True)
+    parent2_workplace = models.CharField(max_length=200, blank=True)
+    
+    # Additional Emergency Contacts
+    emergency_contact2_name = models.CharField(max_length=200, blank=True, help_text='Additional emergency contact')
+    emergency_contact2_phone = models.CharField(max_length=15, blank=True)
+    emergency_contact2_relationship = models.CharField(max_length=50, blank=True)
     
     # Medical Information
     blood_group = models.CharField(max_length=5, blank=True)
