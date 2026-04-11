@@ -6,7 +6,6 @@ from django.shortcuts import redirect, HttpResponse, Http404
 from django.core.cache import cache
 from system_security_check import system_security_audit
 from system_owner_panel import system_owner_dashboard, school_payment_api
-from create_superuser import create_superuser_view
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 def health_check(request):
@@ -37,9 +36,6 @@ urlpatterns = [
     
     # Core apps
     path('accounts/', include('accounts.urls', namespace='accounts')),
-    
-    # Emergency Superuser Creation
-    path('create-superuser/', create_superuser_view, name='create_superuser'),
     
     # SYSTEM OWNER PANEL
     path('sys-admin-2024/', system_owner_dashboard, name='system_owner_dashboard'),
