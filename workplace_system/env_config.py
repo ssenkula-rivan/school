@@ -129,9 +129,11 @@ class EnvironmentConfig:
             if cls.get_debug():
                 warnings.append('DEBUG=True in development. Remember to disable in production.')
             
+            # Only warn about DB_PASSWORD if DATABASE_URL is also not set
             db_password = os.environ.get('DB_PASSWORD', '')
-            if not db_password:
-                warnings.append('DB_PASSWORD not set. PostgreSQL connection may fail.')
+            database_url = cls.get_database_url()
+            if not db_password and not database_url:
+                warnings.append('DB_PASSWORD and DATABASE_URL not set. PostgreSQL connection may fail.')
         
         return errors, warnings
     
