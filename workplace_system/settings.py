@@ -109,18 +109,6 @@ INSTALLED_APPS = [
     'reports',
     'accounting',
 ]
-    
-    # Local apps - Core first
-    'core',
-    'subscriptions',  # SaaS subscription management
-    'accounts',
-    'employees',
-    'fees',
-    'academics',
-    'library',
-    'inventory',
-    'reports',
-]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
