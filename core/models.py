@@ -14,6 +14,9 @@ from .managers import TenantAwareModel
 # Import gate pass and expense models
 from .models_gatepass import GatePass, Expense
 
+# Import budget and visitor tracking models
+from .models_budget import Budget, BudgetLine, Visitor, WorkshopExpense
+
 
 class School(models.Model):
     """Multi-tenant school model - CRITICAL for SaaS"""

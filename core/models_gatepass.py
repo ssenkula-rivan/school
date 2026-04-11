@@ -216,20 +216,38 @@ class Expense(models.Model):
         User,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='requested_expenses'
+        related_name='requested_expenses',
+        help_text='Person who requested the expense'
     )
     approved_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='approved_expenses'
+        related_name='approved_expenses',
+        help_text='Person who approved the expense (Admin/Director)'
     )
     approved_at = models.DateTimeField(null=True, blank=True)
     
+    # Payment Processing
+    paid_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='paid_expenses',
+        help_text='Bursar/Accountant who processed the payment'
+    )
+    paid_at = models.DateTimeField(null=True, blank=True, help_text='When payment was processed')
+    
+    # Bank/Account Information
+    payment_reference = models.CharField(max_length=100, blank=True, help_text='Transaction reference number')
+    bank_account = models.CharField(max_length=100, blank=True, help_text='Bank account used for payment')
+    
     # Status
     is_approved = models.BooleanField(default=False)
-    is_paid = models.BooleanField(default=True, help_text='Payment completed')
+    is_paid = models.BooleanField(default=False, help_text='Payment completed')
+    is_verified = models.BooleanField(default=False, help_text='Payment verified by accountant')
     
     # Notes
     notes = models.TextField(blank=True)
@@ -262,3 +280,37 @@ class Expense(models.Model):
             self.expense_number = f"EXP-{self.school.code}-{date_str}-{count:04d}"
         
         super().save(*args, **kwargs)
+    
+    def approve(self, approved_by_user):
+        """Approve the expense"""
+        from django.utils import timezone
+        self.is_approved = True
+        self.approved_by = approved_by_user
+        self.approved_at = timezone.now()
+        self.save()
+    
+    def mark_as_paid(self, paid_by_user, payment_reference='', bank_account=''):
+        """Mark expense as paid by bursar/accountant"""
+        from django.utils import timezone
+        self.is_paid = True
+        self.paid_by = paid_by_user
+        self.paid_at = timezone.now()
+        self.payment_reference = payment_reference
+        self.bank_account = bank_account
+        self.save()
+    
+    def verify_payment(self):
+        """Verify payment (usually by accountant)"""
+        self.is_verified = True
+        self.save()
+    
+    def get_status_display_text(self):
+        """Get human-readable status"""
+        if not self.is_approved:
+            return 'Pending Approval'
+        elif not self.is_paid:
+            return 'Approved - Awaiting Payment'
+        elif not self.is_verified:
+            return 'Paid - Awaiting Verification'
+        else:
+            return 'Completed'
