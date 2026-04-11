@@ -95,7 +95,7 @@ class GradingScale(TenantAwareModel):
     Configurable grading scales per school
     Supports percentage, GPA, letter grades, or custom
     """
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='grading_scales')
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='grading_scales', db_index=True)
     name = models.CharField(max_length=100, help_text='e.g., Primary Scale, O-Level Scale, University Scale')
     is_default = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -141,7 +141,7 @@ class ExamType(TenantAwareModel):
     Configurable exam types per school
     No hardcoded exam types
     """
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='exam_types')
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='exam_types', db_index=True)
     name = models.CharField(max_length=100, help_text='Midterm, Final, Quiz, Assignment, CAT, etc.')
     code = models.CharField(max_length=20, blank=True)
     weight = models.DecimalField(max_digits=5, decimal_places=2, default=100.00, help_text='Percentage weight in final grade')
@@ -161,7 +161,7 @@ class UserRoleDefinition(TenantAwareModel):
     Configurable user roles per school
     Schools can define their own roles beyond the basic ones
     """
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='custom_roles')
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='custom_roles', db_index=True)
     name = models.CharField(max_length=50, help_text='e.g., Head of Department, Subject Coordinator')
     code = models.CharField(max_length=20)
     description = models.TextField(blank=True)
@@ -187,7 +187,7 @@ class MessageTemplate(TenantAwareModel):
         ('notification', 'In-App Notification'),
     ]
     
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='message_templates')
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='message_templates', db_index=True)
     name = models.CharField(max_length=100, help_text='e.g., Fee Reminder, Exam Results, Absence Alert')
     template_type = models.CharField(max_length=20, choices=TEMPLATE_TYPE_CHOICES)
     
@@ -222,7 +222,7 @@ class StudentCategory(TenantAwareModel):
     Configurable student categories per school
     Day, Boarding, Scholarship, International, etc. - all configurable
     """
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='student_categories')
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='student_categories', db_index=True)
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=20)
     description = models.TextField(blank=True)
@@ -246,7 +246,7 @@ class AdmissionRequirement(TenantAwareModel):
     """
     Configurable admission requirements per school and level
     """
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='admission_requirements')
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='admission_requirements', db_index=True)
     level_name = models.CharField(max_length=100, help_text='Which level/grade this applies to')
     
     requirement_name = models.CharField(max_length=200)

@@ -143,7 +143,7 @@ class Translation(models.Model):
 class SchoolLanguage(models.Model):
     """Languages supported by a specific school"""
     
-    school = models.ForeignKey('core.School', on_delete=models.CASCADE)
+    school = models.ForeignKey('core.School', on_delete=models.CASCADE, db_index=True)
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
     is_primary = models.BooleanField(default=False)
     is_teaching_language = models.BooleanField(default=True)

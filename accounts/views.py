@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from .models import UserProfile
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,6 @@ def register(request):
         if form.is_valid():
             try:
                 user = form.save()
-                from .models import UserProfile
                 profile = UserProfile.objects.get(user=user)
                 username = form.cleaned_data.get('username')
                 messages.success(
@@ -50,7 +50,6 @@ def public_school_registration(request):
         if form.is_valid():
             try:
                 user = form.save()
-                from .models import UserProfile
                 profile = UserProfile.objects.get(user=user)
                 username = form.cleaned_data.get('username')
                 messages.success(
@@ -81,7 +80,6 @@ def dashboard(request):
     try:
         user_profile = request.user.userprofile
     except:
-        from .models import UserProfile
         user_profile = UserProfile.objects.create(
             user=request.user,
             employee_id=f'EMP{request.user.id:04d}',

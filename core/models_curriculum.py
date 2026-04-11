@@ -108,7 +108,7 @@ class Curriculum(models.Model):
 class SchoolCurriculum(models.Model):
     """Link between schools and their curricula"""
     
-    school = models.ForeignKey('core.School', on_delete=models.CASCADE)
+    school = models.ForeignKey('core.School', on_delete=models.CASCADE, db_index=True)
     curriculum = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     is_primary = models.BooleanField(default=True)
     implementation_year = models.IntegerField()

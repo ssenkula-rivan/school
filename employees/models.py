@@ -52,7 +52,7 @@ class Employee(TenantAwareModel):
     ]
     
     # Basic Information
-    school = models.ForeignKey('core.School', on_delete=models.PROTECT, related_name='direct_employees')
+    school = models.ForeignKey('core.School', on_delete=models.PROTECT, related_name='direct_employees', db_index=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     employee_id = models.CharField(max_length=20, unique=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')

@@ -3,6 +3,7 @@ dj-database-url==3.0.1
 Django==4.2.29
 django-crispy-forms==2.1
 django-widget-tweaks==1.5.1
+djangorestframework==3.14.0
 gunicorn==23.0.0
 psycopg2-binary==2.9.10
 python-dotenv==1.0.1

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 class AcademicAnalytics(models.Model):
     """Advanced academic analytics for schools"""
     
-    school = models.ForeignKey('core.School', on_delete=models.CASCADE)
+    school = models.ForeignKey('core.School', on_delete=models.CASCADE, db_index=True)
     
     # Time period
     academic_year = models.ForeignKey('core.AcademicYear', on_delete=models.CASCADE)
@@ -202,7 +202,7 @@ class StudentPerformanceTrend(models.Model):
 class SchoolMetrics(models.Model):
     """Comprehensive school performance metrics"""
     
-    school = models.ForeignKey('core.School', on_delete=models.CASCADE)
+    school = models.ForeignKey('core.School', on_delete=models.CASCADE, db_index=True)
     
     # Time period
     metric_date = models.DateField()
@@ -288,7 +288,7 @@ class CustomReport(models.Model):
         ('custom', 'Custom Report'),
     ]
     
-    school = models.ForeignKey('core.School', on_delete=models.CASCADE)
+    school = models.ForeignKey('core.School', on_delete=models.CASCADE, db_index=True)
     name = models.CharField(max_length=200)
     report_type = models.CharField(max_length=50, choices=REPORT_TYPES)
     description = models.TextField()
