@@ -458,6 +458,7 @@
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.innerHTML = `
+                    {% csrf_token %}
                     <input type="hidden" name="action" value="block_school">
                     <input type="hidden" name="school_id" value="${schoolId}">
                 `;
@@ -471,6 +472,7 @@
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.innerHTML = `
+                    {% csrf_token %}
                     <input type="hidden" name="action" value="unblock_school">
                     <input type="hidden" name="school_id" value="${schoolId}">
                 `;
@@ -496,6 +498,7 @@
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.innerHTML = `
+                        {% csrf_token %}
                         <input type="hidden" name="action" value="delete_school">
                         <input type="hidden" name="school_id" value="${schoolId}">
                     `;
