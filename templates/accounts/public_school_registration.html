@@ -707,20 +707,18 @@
             }
         });
         
-        // Selection card interaction - wait for DOM
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.selection-card').forEach(card => {
-                card.addEventListener('click', function(e) {
-                    if (e.target.tagName !== 'INPUT') {
-                        const checkbox = this.querySelector('input[type="checkbox"]');
-                        checkbox.checked = !checkbox.checked;
-                        console.log('Checkbox clicked:', checkbox.value, 'Checked:', checkbox.checked);
-                        
-                        // Trigger the onchange event
-                        const event = new Event('change');
-                        checkbox.dispatchEvent(event);
-                    }
-                });
+        // Selection card interaction
+        document.querySelectorAll('.selection-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'INPUT') {
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    checkbox.checked = !checkbox.checked;
+                    console.log('Checkbox clicked:', checkbox.value, 'Checked:', checkbox.checked);
+                    
+                    // Trigger the onchange event
+                    const event = new Event('change');
+                    checkbox.dispatchEvent(event);
+                }
             });
         });
     </script>
