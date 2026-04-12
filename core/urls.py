@@ -1,11 +1,16 @@
 from django.urls import path
-from . import views, views_backup, views_sync
+from . import views, views_backup, views_sync, views_departments
 
 app_name = 'core'
 
 urlpatterns = [
     # Health check
     path('health/', views.health_check, name='health_check'),
+    
+    # Department Management
+    path('departments/', views_departments.department_list, name='department_list'),
+    path('departments/create/', views_departments.department_create, name='department_create'),
+    path('departments/<int:pk>/edit/', views_departments.department_edit, name='department_edit'),
     
     # Backup URLs
     path('backup/', views_backup.backup_dashboard, name='backup_dashboard'),
