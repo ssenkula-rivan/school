@@ -169,21 +169,25 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
         }
         
-        .selection-card input[type="checkbox"] {
+        .selection-card input[type="checkbox"],
+        .selection-card input[type="radio"] {
             position: absolute;
             opacity: 0;
         }
         
-        .selection-card input[type="checkbox"]:checked + .card-content {
+        .selection-card input[type="checkbox"]:checked + .card-content,
+        .selection-card input[type="radio"]:checked + .card-content {
             border-left: 4px solid var(--primary-color);
             padding-left: 1rem;
         }
         
-        .selection-card input[type="checkbox"]:checked ~ .check-indicator {
+        .selection-card input[type="checkbox"]:checked ~ .check-indicator,
+        .selection-card input[type="radio"]:checked ~ .check-indicator {
             display: block;
         }
         
-        .selection-card:has(input[type="checkbox"]:checked) {
+        .selection-card:has(input[type="checkbox"]:checked),
+        .selection-card:has(input[type="radio"]:checked) {
             background: #eff6ff;
             border-color: var(--primary-color);
         }
@@ -381,7 +385,7 @@
                         
                         <!-- School Levels - Always visible first -->
                         <div class="subsection-container visible" id="schoolLevelsSection">
-                            <div class="subsection-title">School Levels</div>
+                            <div class="subsection-title">School Levels (Select all that apply)</div>
                             <div class="selection-grid">
                                 {% for value, label in school_levels %}
                                 <label class="selection-card">

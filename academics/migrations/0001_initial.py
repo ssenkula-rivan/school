@@ -200,7 +200,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['student', 'subject'],
                 'indexes': [models.Index(fields=['student', 'exam'], name='academics_m_student_b5b37d_idx'), models.Index(fields=['exam', 'subject'], name='academics_m_exam_id_5cbb53_idx')],
-                'constraints': [models.CheckConstraint(check=models.Q(('marks_obtained__gte', 0)), name='marks_non_negative')],
+                'constraints': [models.CheckConstraint(condition=models.Q(('marks_obtained__gte', 0)), name='marks_non_negative')],
                 'unique_together': {('student', 'subject', 'exam')},
             },
         ),

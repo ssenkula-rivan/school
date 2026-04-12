@@ -68,11 +68,18 @@ class TenantMiddleware(MiddlewareMixin):
         '/sw.js',
         '/accounts/register/',
         '/accounts/register-school/',
+        '/accounts/create-admin/',
+        '/accounts/make-superuser/',
+        '/accounts/db-check/',  # Database diagnostic
         '/accounts/login/',
         '/accounts/logout/',
         '/accounts/password-reset/',
+        '/accounts/password-reset-confirm/',
+        '/accounts/password-reset-complete/',
+        '/accounts/password-reset/done/',
         '/accounts/reset/',
         '/accounts/lockout/',
+        '/accounts/debug-login/',
         '/dev/',
         '/debug/',
         '/diagnose/',
@@ -85,6 +92,7 @@ class TenantMiddleware(MiddlewareMixin):
     def process_request(self, request):
         # Skip exempt paths
         if any(request.path.startswith(path) for path in self.EXEMPT_PATHS):
+            logger.debug(f"TenantMiddleware: Skipping exempt path: {request.path}")
             return None
         
         school = None
@@ -167,22 +175,22 @@ class TenantMiddleware(MiddlewareMixin):
                 extra={'school_id': school.id, 'user': request.user}
             )
         else:
-            # No school context - redirect to registration
+            # No school context
             request.school = None
             set_current_school(None)
             
-            # For authenticated users without school, redirect to registration
+            # For authenticated users without school, allow access but log warning
             if request.user.is_authenticated:
                 logger.warning(
-                    "No school context for authenticated user - redirecting to registration",
+                    "No school context for authenticated user",
                     extra={'user': request.user, 'path': request.path}
                 )
-                messages.info(request, 'Please register your school to continue')
-                return redirect('accounts:register_school')
+                # Don't redirect - let the view handle it
+                # Superusers and system admins can access without school context
             else:
-                # Unauthenticated users should register a school first
-                logger.debug("No school context for unauthenticated user - redirecting to registration")
-                return redirect('accounts:register_school')
+                # Unauthenticated users - allow access to login and registration
+                # Don't redirect here - let them access login page
+                logger.debug("No school context for unauthenticated user")
         
         return None
     

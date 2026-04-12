@@ -8,10 +8,14 @@ from .views_test_login import test_login_debug
 from .views_reset_password import reset_employee_password, manage_users
 from .views_logout import custom_logout
 from .views_make_superuser import make_superuser_web
+from .views_database_check import database_diagnostic
 
 app_name = 'accounts'
 
 urlpatterns = [
+    # Database diagnostic (for Render free tier - no shell access)
+    path('db-check/', database_diagnostic, name='database_check'),
+    
     # Public School Registration (no login required)
     path('register-school/', public_school_registration, name='register_school'),
     

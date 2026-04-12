@@ -64,7 +64,7 @@ handler400 = 'core.error_handlers.handle_400'
 # CSRF Settings
 CSRF_COOKIE_SECURE = True if not DEBUG else False
 CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = 'Strict' if not DEBUG else 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # CSRF Trusted Origins - Allow localhost for local production
 DISABLE_SSL_REDIRECT = os.environ.get('DISABLE_SSL_REDIRECT', 'False').lower() == 'true'
@@ -80,6 +80,7 @@ if DEBUG or DISABLE_SSL_REDIRECT:
 else:
     CSRF_TRUSTED_ORIGINS = [
         'https://*.onrender.com',
+        'https://school-management-system-bwfu.onrender.com',
         'https://school-management-system-vipe.onrender.com',
     ]
 
@@ -269,8 +270,8 @@ SESSION_COOKIE_SECURE = False if DISABLE_SSL_REDIRECT else (not DEBUG)
 CSRF_COOKIE_SECURE = False if DISABLE_SSL_REDIRECT else (not DEBUG)
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax' if DEBUG else 'Strict'
-CSRF_COOKIE_SAMESITE = 'Lax' if DEBUG else 'Strict'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # HSTS (HTTP Strict Transport Security)
 SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0  # 1 year in production

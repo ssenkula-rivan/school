@@ -42,36 +42,6 @@ def register(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 
-def public_school_registration(request):
-    """Public school registration for multi-tenant setup"""
-    if request.method == 'POST':
-        from .forms import UserRegistrationForm
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            try:
-                user = form.save()
-                profile = UserProfile.objects.get(user=user)
-                username = form.cleaned_data.get('username')
-                messages.success(
-                    request, 
-                    f'School registered successfully! Admin username: {username}, Employee ID: {profile.employee_id}'
-                )
-                return redirect('accounts:login')
-            except Exception as e:
-                messages.error(request, f'Error registering school: {str(e)}. Please try again.')
-        else:
-            if form.errors:
-                for field, errors in form.errors.items():
-                    for error in errors:
-                        if field == '__all__':
-                            messages.error(request, f'{error}')
-                        else:
-                            messages.error(request, f'{field.upper()}: {error}')
-    else:
-        from .forms import UserRegistrationForm
-        form = UserRegistrationForm()
-    
-    return render(request, 'accounts/public_school_registration.html', {'form': form})
 
 
 @login_required
@@ -361,16 +331,12 @@ class CustomLoginView(auth_views.LoginView):
         return ip
 
     def get(self, request, *args, **kwargs):
-        """Check if schools exist - redirect to registration if none"""
-        try:
-            from core.models import School
-            school_count = School.objects.filter(is_active=True).count()
-            
-            if school_count == 0:
-                return redirect('accounts:register_school')
-        except Exception:
-            pass
-        
+        """Display login page"""
+        # Don't redirect to registration - let users login even if no schools exist
+        # Superusers need to be able to login to create schools
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"CustomLoginView.get() called - path: {request.path}, user: {request.user}")
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -430,16 +396,16 @@ class CustomLoginView(auth_views.LoginView):
         # Set school context
         self._set_school_session(request, user)
 
-        # Check if no schools exist
+        # If no schools exist, inform the user but don't force redirect
         if request.session.get('no_schools_exist'):
             messages.success(request, f'Welcome {user.first_name or user.username}! You have been logged in successfully.')
-            messages.info(request, 'No schools exist yet. Please register the first school to get started.')
-            return redirect('accounts:register_school')
+            messages.info(request, 'No schools registered yet. You can register a school from the dashboard.')
+        else:
+            messages.success(
+                request, 
+                f'Welcome {user.first_name or user.username}! You have been logged in successfully.'
+            )
         
-        messages.success(
-            request, 
-            f'Welcome {user.first_name or user.username}! You have been logged in successfully.'
-        )
         return redirect(self.get_success_url())
 
     @staticmethod

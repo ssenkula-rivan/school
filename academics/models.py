@@ -225,7 +225,7 @@ class Mark(models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(marks_obtained__gte=0),
+                condition=models.Q(marks_obtained__gte=0),
                 name='marks_non_negative'
             )
         ]

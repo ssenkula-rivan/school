@@ -5,11 +5,87 @@ from .models import (
 )
 
 
+class SchoolFilteredAdmin(admin.ModelAdmin):
+    """Base admin class that filters by school for non-superusers"""
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        # Filter by user's school
+        try:
+            user_school = request.user.userprofile.school
+            return qs.filter(school=user_school)
+        except:
+            return qs.none()
+    
+    def has_add_permission(self, request):
+        return request.user.is_staff
+    
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+        try:
+            user_school = request.user.userprofile.school
+            return obj.school == user_school
+        except:
+            return False
+    
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+        try:
+            user_school = request.user.userprofile.school
+            return obj.school == user_school
+        except:
+            return False
+
+
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'employee_id', 'role', 'department', 'is_active_employee']
-    list_filter = ['role', 'is_active_employee', 'department']
+    list_display = ['user', 'employee_id', 'role', 'school', 'department', 'is_active_employee']
+    list_filter = ['role', 'is_active_employee', 'school', 'department']
     search_fields = ['user__username', 'user__first_name', 'user__last_name', 'employee_id']
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        # Filter by user's school
+        try:
+            user_school = request.user.userprofile.school
+            return qs.filter(school=user_school)
+        except:
+            return qs.none()
+    
+    def has_add_permission(self, request):
+        return request.user.is_staff
+    
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+        try:
+            user_school = request.user.userprofile.school
+            return obj.school == user_school
+        except:
+            return False
+    
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+        try:
+            user_school = request.user.userprofile.school
+            return obj.school == user_school
+        except:
+            return False
 
 
 @admin.register(SchoolConfiguration)

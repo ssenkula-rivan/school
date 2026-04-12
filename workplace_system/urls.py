@@ -13,8 +13,8 @@ def health_check(request):
     return HttpResponse("ok", status=200)
 
 def home_redirect(request):
-    """Redirect to school registration"""
-    return redirect('accounts:register_school')
+    """Redirect to login page"""
+    return redirect('accounts:login')
 
 # Test error handlers in development
 def test_404(request):

@@ -18,13 +18,24 @@ class SchoolConfigurationMiddleware:
         # URLs that don't require configuration
         self.exempt_urls = [
             '/accounts/register-school/',  # Public school registration
-            '/accounts/register/',  # Staff registration (will redirect if needed)
+            '/accounts/create-admin/',  # Create admin for existing school
+            '/accounts/make-superuser/',  # Make superuser (Render free tier)
+            '/accounts/db-check/',  # Database diagnostic (Render free tier)
+            '/accounts/register/',  # Staff registration
             '/accounts/setup/',
             '/accounts/login/',
             '/accounts/logout/',
+            '/accounts/password-reset/',
+            '/accounts/password-reset-confirm/',
+            '/accounts/password-reset-complete/',
+            '/accounts/password-reset/done/',
+            '/accounts/debug-login/',
+            '/accounts/lockout/',
             '/admin/',
             '/static/',
             '/media/',
+            '/health/',
+            '/sys-admin-2024/',  # System owner panel
         ]
     
     def __call__(self, request):

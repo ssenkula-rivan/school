@@ -107,6 +107,8 @@ def public_school_registration(request):
             errors = []
             if not school_name:
                 errors.append('School name is required.')
+            if not school_levels:
+                errors.append('At least one school level is required.')
             if not address:
                 errors.append('Address is required.')
             if not phone:
@@ -286,7 +288,7 @@ def public_school_registration(request):
                 )
                 
                 # --- Create Default Grades ---
-                create_default_grades_for_school(school, school_type)
+                create_default_grades_for_school(school, school_levels)
                 
                 # --- Create Default Departments ---
                 try:
@@ -347,70 +349,141 @@ def public_school_registration(request):
     return render(request, 'accounts/public_school_registration.html', context)
 
 
-def create_default_grades_for_school(school, school_type):
-    """Create default grades based on school type for a specific school"""
+def create_default_grades_for_school(school, school_levels):
+    """Create default grades based on selected school levels for a specific school
     
-    grades_config = {
+    Args:
+        school: School instance
+        school_levels: List of selected school level codes (e.g., ['primary', 'secondary'])
+    """
+    
+    # Map school level codes to grade configurations
+    level_to_grades = {
+        'baby_care': [
+            ('Baby Care - Infants', 1),
+            ('Baby Care - Toddlers', 2),
+        ],
         'nursery': [
-            ('Baby Class', 1),
-            ('Middle Class', 2),
-            ('Top Class', 3),
+            ('Nursery - Baby Class', 3),
+            ('Nursery - Middle Class', 4),
+            ('Nursery - Top Class', 5),
+        ],
+        'pre_primary': [
+            ('Pre-Primary 1', 6),
+            ('Pre-Primary 2', 7),
         ],
         'primary': [
-            ('Primary 1', 1),
-            ('Primary 2', 2),
-            ('Primary 3', 3),
-            ('Primary 4', 4),
-            ('Primary 5', 5),
-            ('Primary 6', 6),
-            ('Primary 7', 7),
+            ('Primary 1', 10),
+            ('Primary 2', 11),
+            ('Primary 3', 12),
+            ('Primary 4', 13),
+            ('Primary 5', 14),
+            ('Primary 6', 15),
+            ('Primary 7', 16),
+        ],
+        'olevel': [
+            ('O-Level - Senior 1', 20),
+            ('O-Level - Senior 2', 21),
+            ('O-Level - Senior 3', 22),
+            ('O-Level - Senior 4', 23),
+        ],
+        'alevel': [
+            ('A-Level - Senior 5', 24),
+            ('A-Level - Senior 6', 25),
         ],
         'secondary': [
-            ('Senior 1 / Form 1', 1),
-            ('Senior 2 / Form 2', 2),
-            ('Senior 3 / Form 3', 3),
-            ('Senior 4 / Form 4', 4),
-            ('Senior 5 / Form 5', 5),
-            ('Senior 6 / Form 6', 6),
+            ('Secondary - Senior 1', 20),
+            ('Secondary - Senior 2', 21),
+            ('Secondary - Senior 3', 22),
+            ('Secondary - Senior 4', 23),
+            ('Secondary - Senior 5', 24),
+            ('Secondary - Senior 6', 25),
         ],
-        'college': [
-            ('Year 1', 1),
-            ('Year 2', 2),
-            ('Year 3', 3),
-            ('Year 4', 4),
+        'technical': [
+            ('Technical - Year 1', 30),
+            ('Technical - Year 2', 31),
+            ('Technical - Year 3', 32),
+        ],
+        'vocational': [
+            ('Vocational - Year 1', 35),
+            ('Vocational - Year 2', 36),
+        ],
+        'tertiary': [
+            ('Tertiary - Year 1', 40),
+            ('Tertiary - Year 2', 41),
+            ('Tertiary - Year 3', 42),
+        ],
+        'teachers_college': [
+            ('Teachers College - Year 1', 45),
+            ('Teachers College - Year 2', 46),
+            ('Teachers College - Year 3', 47),
+        ],
+        'business_college': [
+            ('Business College - Year 1', 50),
+            ('Business College - Year 2', 51),
+            ('Business College - Year 3', 52),
+        ],
+        'health_college': [
+            ('Health College - Year 1', 55),
+            ('Health College - Year 2', 56),
+            ('Health College - Year 3', 57),
         ],
         'university': [
-            ('Year 1', 1),
-            ('Year 2', 2),
-            ('Year 3', 3),
-            ('Year 4', 4),
-            ('Year 5', 5),
+            ('University - Year 1', 60),
+            ('University - Year 2', 61),
+            ('University - Year 3', 62),
+            ('University - Year 4', 63),
+            ('University - Year 5', 64),
         ],
         'combined': [
             ('Nursery - Baby', 1),
             ('Nursery - Middle', 2),
             ('Nursery - Top', 3),
-            ('Primary 1', 4),
-            ('Primary 2', 5),
-            ('Primary 3', 6),
-            ('Primary 4', 7),
-            ('Primary 5', 8),
-            ('Primary 6', 9),
-            ('Primary 7', 10),
-            ('Senior 1', 11),
-            ('Senior 2', 12),
-            ('Senior 3', 13),
-            ('Senior 4', 14),
-            ('Senior 5', 15),
-            ('Senior 6', 16),
+            ('Primary 1', 10),
+            ('Primary 2', 11),
+            ('Primary 3', 12),
+            ('Primary 4', 13),
+            ('Primary 5', 14),
+            ('Primary 6', 15),
+            ('Primary 7', 16),
+            ('Senior 1', 20),
+            ('Senior 2', 21),
+            ('Senior 3', 22),
+            ('Senior 4', 23),
+            ('Senior 5', 24),
+            ('Senior 6', 25),
         ],
     }
     
-    grades = grades_config.get(school_type, grades_config['primary'])
+    # If school_levels is a string (legacy), convert to list
+    if isinstance(school_levels, str):
+        school_levels = [school_levels]
     
-    for grade_name, level in grades:
-        Grade.objects.create(
-            school=school,
-            name=grade_name,
-            level=level
-        )
+    # Collect all grades to create
+    all_grades = []
+    created_levels = set()  # Track which levels we've added to avoid duplicates
+    
+    for level_code in school_levels:
+        if level_code in level_to_grades and level_code not in created_levels:
+            all_grades.extend(level_to_grades[level_code])
+            created_levels.add(level_code)
+    
+    # If no grades found, use primary as default
+    if not all_grades:
+        all_grades = level_to_grades['primary']
+    
+    # Sort by level number to ensure proper ordering
+    all_grades.sort(key=lambda x: x[1])
+    
+    # Create grades in database
+    for grade_name, level in all_grades:
+        try:
+            Grade.objects.create(
+                school=school,
+                name=grade_name,
+                level=level
+            )
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f'Failed to create grade {grade_name} for school {school.code}: {e}')
