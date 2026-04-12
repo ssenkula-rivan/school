@@ -4,7 +4,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect, HttpResponse, Http404
 from django.core.cache import cache
-from system_security_check import system_security_audit
 from system_owner_panel import system_owner_dashboard, school_payment_api
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
