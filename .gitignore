@@ -62,14 +62,14 @@ backups/
 *_old.py
 *_copy.py
 
-# Diagnostic and test scripts (use web-based tools instead)
-diagnose_*.py
-fix_*.py
-test_*.py
-status_report.py
-read_production_db.py
-reset_to_defaults.py
-get_exact_school_count.py
+# Diagnostic and test scripts in root directory only (use web-based tools instead)
+/diagnose_*.py
+/fix_*.py
+/test_*.py
+/status_report.py
+/read_production_db.py
+/reset_to_defaults.py
+/get_exact_school_count.py
 
 # Old database files
 school_management
