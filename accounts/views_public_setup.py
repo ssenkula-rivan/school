@@ -259,7 +259,7 @@ def public_school_registration(request):
                     password=admin_password,  # create_user calls set_password internally
                     first_name=admin_first,
                     last_name=admin_last,
-                    is_staff=True,
+                    is_staff=True,  # Allow access to admin panel
                     is_active=True,
                 )
                 

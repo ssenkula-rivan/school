@@ -5,12 +5,75 @@ from .models import (
 )
 
 
+class SchoolFilteredAdmin(admin.ModelAdmin):
+    """Base admin class that filters by school for non-superusers"""
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        # Filter by user's school
+        try:
+            user_school = request.user.userprofile.school
+            return qs.filter(school=user_school)
+        except:
+            return qs.none()
+    
+    def has_add_permission(self, request):
+        # School admins can add
+        return request.user.is_staff
+    
+    def has_change_permission(self, request, obj=None):
+        # School admins can edit their own school's data
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+        try:
+            user_school = request.user.userprofile.school
+            return obj.school == user_school
+        except:
+            return False
+    
+    def has_delete_permission(self, request, obj=None):
+        # School admins can delete their own school's data
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+        try:
+            user_school = request.user.userprofile.school
+            return obj.school == user_school
+        except:
+            return False
+
+
 @admin.register(School)
 class SchoolAdmin(admin.ModelAdmin):
     list_display = ['code', 'name', 'school_type', 'curriculum', 'is_active', 'subscription_end']
     list_filter = ['is_active', 'school_type', 'institution_type', 'curriculum']
     search_fields = ['name', 'code', 'email']
     readonly_fields = ['created_at', 'updated_at']
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        # School admins can only see their own school
+        try:
+            user_school = request.user.userprofile.school
+            return qs.filter(id=user_school.id)
+        except:
+            return qs.none()
+    
+    def has_add_permission(self, request):
+        # Only superusers can add schools
+        return request.user.is_superuser
+    
+    def has_delete_permission(self, request, obj=None):
+        # Only superusers can delete schools
+        return request.user.is_superuser
+    
     fieldsets = (
         ('Basic Information', {
             'fields': ('name', 'code', 'school_type', 'institution_type', 'email', 'email_domain', 'phone', 'address', 'website', 'contact_person')
@@ -34,28 +97,28 @@ class SchoolAdmin(admin.ModelAdmin):
 
 
 @admin.register(Department)
-class DepartmentAdmin(admin.ModelAdmin):
+class DepartmentAdmin(SchoolFilteredAdmin):
     list_display = ['name', 'school', 'head', 'is_active']
     list_filter = ['school', 'is_active']
     search_fields = ['name', 'school__name']
 
 
 @admin.register(AcademicYear)
-class AcademicYearAdmin(admin.ModelAdmin):
+class AcademicYearAdmin(SchoolFilteredAdmin):
     list_display = ['name', 'school', 'start_date', 'end_date', 'is_current']
     list_filter = ['school', 'is_current']
     search_fields = ['name', 'school__name']
 
 
 @admin.register(Grade)
-class GradeAdmin(admin.ModelAdmin):
+class GradeAdmin(SchoolFilteredAdmin):
     list_display = ['name', 'school', 'level', 'capacity']
     list_filter = ['school', 'level']
     search_fields = ['name', 'school__name']
 
 
 @admin.register(Student)
-class StudentAdmin(admin.ModelAdmin):
+class StudentAdmin(SchoolFilteredAdmin):
     list_display = ['admission_number', 'get_full_name', 'school', 'grade', 'status', 'guardian_phone']
     list_filter = ['school', 'status', 'grade', 'scholarship_status', 'gender']
     search_fields = ['admission_number', 'first_name', 'last_name', 'school__name', 'guardian_name', 'guardian_phone']
@@ -89,7 +152,7 @@ class StudentAdmin(admin.ModelAdmin):
 
 
 @admin.register(GatePass)
-class GatePassAdmin(admin.ModelAdmin):
+class GatePassAdmin(SchoolFilteredAdmin):
     list_display = ['pass_number', 'student', 'exit_date', 'status', 'approved_by']
     list_filter = ['school', 'status', 'reason', 'exit_date']
     search_fields = ['pass_number', 'student__first_name', 'student__last_name', 'parent_name']
@@ -97,7 +160,7 @@ class GatePassAdmin(admin.ModelAdmin):
 
 
 @admin.register(Expense)
-class ExpenseAdmin(admin.ModelAdmin):
+class ExpenseAdmin(SchoolFilteredAdmin):
     list_display = ['expense_number', 'vendor_name', 'amount', 'expense_type', 'is_approved', 'is_paid', 'paid_by']
     list_filter = ['school', 'expense_type', 'is_approved', 'is_paid', 'is_verified', 'expense_date']
     search_fields = ['expense_number', 'vendor_name', 'description']
@@ -125,7 +188,7 @@ class ExpenseAdmin(admin.ModelAdmin):
 
 
 @admin.register(Budget)
-class BudgetAdmin(admin.ModelAdmin):
+class BudgetAdmin(SchoolFilteredAdmin):
     list_display = ['budget_number', 'title', 'budget_type', 'total_budget', 'total_spent', 'status']
     list_filter = ['school', 'budget_type', 'status', 'start_date']
     search_fields = ['budget_number', 'title']
@@ -137,10 +200,20 @@ class BudgetLineAdmin(admin.ModelAdmin):
     list_display = ['budget', 'category', 'subcategory', 'allocated_amount', 'spent_amount', 'priority']
     list_filter = ['budget__school', 'category', 'priority', 'is_essential']
     search_fields = ['category', 'subcategory', 'description']
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        try:
+            user_school = request.user.userprofile.school
+            return qs.filter(budget__school=user_school)
+        except:
+            return qs.none()
 
 
 @admin.register(Visitor)
-class VisitorAdmin(admin.ModelAdmin):
+class VisitorAdmin(SchoolFilteredAdmin):
     list_display = ['visitor_number', 'full_name', 'visitor_type', 'visit_date', 'is_checked_out']
     list_filter = ['school', 'visitor_type', 'purpose', 'visit_date', 'is_checked_out']
     search_fields = ['visitor_number', 'full_name', 'phone', 'company']
@@ -148,7 +221,7 @@ class VisitorAdmin(admin.ModelAdmin):
 
 
 @admin.register(WorkshopExpense)
-class WorkshopExpenseAdmin(admin.ModelAdmin):
+class WorkshopExpenseAdmin(SchoolFilteredAdmin):
     list_display = ['workshop_number', 'title', 'start_date', 'facilitator_name', 'total_cost', 'is_completed']
     list_filter = ['school', 'start_date', 'is_completed']
     search_fields = ['workshop_number', 'title', 'facilitator_name']
