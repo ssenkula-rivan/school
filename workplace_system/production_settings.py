@@ -42,9 +42,9 @@ if 'DATABASE_URL' in os.environ:
         DATABASES['default']['OPTIONS'] = {
             'sslmode': 'require',
         }
-        print("✅ Using Render PostgreSQL database")
+        print(" Using Render PostgreSQL database")
     except Exception as e:
-        print(f"❌ Database configuration error: {e}")
+        print(f" Database configuration error: {e}")
         # Don't crash - use SQLite fallback
         DATABASES = {
             'default': {
@@ -71,7 +71,7 @@ use_r2 = os.environ.get('USE_R2_STORAGE', 'False').lower() == 'true'
 if use_r2:
     # Media URLs for R2
     MEDIA_URL = f"https://{os.environ.get('R2_BUCKET_NAME')}.{os.environ.get('R2_CUSTOM_DOMAIN', 'r2.dev')}/"
-    print("✅ Using Cloudflare R2 for media storage")
+    print(" Using Cloudflare R2 for media storage")
 else:
     # Local storage (WARNING: Files will be lost on Render deploys!)
     MEDIA_URL = '/media/'
@@ -176,8 +176,8 @@ if SENTRY_DSN:
         send_default_pii=False,
         environment='production',
     )
-    print("✅ Sentry error tracking enabled")
+    print(" Sentry error tracking enabled")
 else:
     print(" Sentry not configured - production errors will not be tracked")
 
-print("✅ Production settings loaded for Render deployment")
+print(" Production settings loaded for Render deployment")

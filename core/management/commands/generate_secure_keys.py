@@ -49,4 +49,4 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Generated Password ({length} chars):'))
             self.stdout.write(self.style.WARNING(key))
         
-        self.stdout.write(self.style.SUCCESS('\n✅ Key generated successfully'))
+        self.stdout.write(self.style.SUCCESS('\n Key generated successfully'))

@@ -21,10 +21,10 @@ class Command(BaseCommand):
         
         self.stdout.write(
             self.style.SUCCESS(
-                f'✅ Cleared {attempts_count} failed login attempts and unlocked {users_updated} users'
+                f' Cleared {attempts_count} failed login attempts and unlocked {users_updated} users'
             )
         )
         
         self.stdout.write(
-            self.style.SUCCESS('🔓 All accounts are now unlocked and can login normally')
+            self.style.SUCCESS(' All accounts are now unlocked and can login normally')
         )

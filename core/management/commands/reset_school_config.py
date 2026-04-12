@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(
-            self.style.WARNING('🔄 Resetting school configuration...')
+            self.style.WARNING(' Resetting school configuration...')
         )
 
         # Delete existing school configuration
@@ -18,16 +18,16 @@ class Command(BaseCommand):
         
         if deleted_count > 0:
             self.stdout.write(
-                self.style.SUCCESS(f'✅ Deleted {deleted_count} school configuration(s)')
+                self.style.SUCCESS(f' Deleted {deleted_count} school configuration(s)')
             )
         else:
             self.stdout.write(
-                self.style.WARNING('⚠️  No school configuration found to delete')
+                self.style.WARNING('  No school configuration found to delete')
             )
 
         self.stdout.write(
-            self.style.SUCCESS('✅ School configuration reset completed!')
+            self.style.SUCCESS(' School configuration reset completed!')
         )
         self.stdout.write(
-            self.style.SUCCESS('🎯 Now visit your site to see the school registration page')
+            self.style.SUCCESS(' Now visit your site to see the school registration page')
         )

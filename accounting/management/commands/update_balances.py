@@ -22,4 +22,4 @@ class Command(BaseCommand):
 
             account.save()
 
-        self.stdout.write(self.style.SUCCESS('✅ Account balances updated successfully.'))
+        self.stdout.write(self.style.SUCCESS(' Account balances updated successfully.'))

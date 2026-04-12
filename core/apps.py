@@ -24,12 +24,12 @@ class CoreConfig(AppConfig):
             
             # Print warnings
             if warnings:
-                print("\n" + "⚠️ " * 20)
+                print("\n" + " " * 20)
                 print("CONFIGURATION WARNINGS:")
-                print("⚠️ " * 20)
+                print(" " * 20)
                 for warning in warnings:
-                    print(f"⚠️  {warning}")
-                print("⚠️ " * 20 + "\n")
+                    print(f"  {warning}")
+                print(" " * 20 + "\n")
             
             # Handle errors
             if errors:
@@ -37,14 +37,14 @@ class CoreConfig(AppConfig):
                 print("CONFIGURATION ERRORS:")
                 print("!" * 40)
                 for error in errors:
-                    print(f"❌ {error}")
+                    print(f" {error}")
                 print("!" * 40 + "\n")
                 
                 # Only raise in development - production should try to continue
                 if not EnvironmentConfig.is_production():
                     raise ImproperlyConfigured(f"Configuration errors: {'; '.join(errors)}")
                 else:
-                    print("⚠️  Production mode: Continuing despite configuration errors")
+                    print("  Production mode: Continuing despite configuration errors")
                     
         except Exception as e:
             # Never let config validation break the app

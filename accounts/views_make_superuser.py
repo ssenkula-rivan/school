@@ -44,7 +44,7 @@ def make_superuser_web(request):
         
         messages.success(
             request,
-            f'✅ Success! User "{username}" is now a superuser with full admin access. '
+            f' Success! User "{username}" is now a superuser with full admin access. '
             f'You can now log in to /admin/ with this account.'
         )
         

@@ -28,13 +28,13 @@ class Command(BaseCommand):
         
         # Check if credentials are set
         if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
-            self.stdout.write(self.style.WARNING('⚠️  WARNING: Email credentials not configured'))
+            self.stdout.write(self.style.WARNING('  WARNING: Email credentials not configured'))
             self.stdout.write(self.style.WARNING('   EMAIL_HOST_USER and EMAIL_HOST_PASSWORD are empty'))
             self.stdout.write(self.style.WARNING('   Email sending will use console backend (development mode)'))
             self.stdout.write()
             
             if 'console' in settings.EMAIL_BACKEND:
-                self.stdout.write(self.style.SUCCESS('✅ Console backend active (development mode)'))
+                self.stdout.write(self.style.SUCCESS(' Console backend active (development mode)'))
                 self.stdout.write(self.style.SUCCESS('   Emails will be printed to console instead of sent'))
                 self.stdout.write()
                 
@@ -47,15 +47,15 @@ class Command(BaseCommand):
                         recipient_list=['test@example.com'],
                         fail_silently=False,
                     )
-                    self.stdout.write(self.style.SUCCESS('✅ SUCCESS: Test email sent to console'))
+                    self.stdout.write(self.style.SUCCESS(' SUCCESS: Test email sent to console'))
                 except Exception as e:
-                    self.stdout.write(self.style.ERROR(f'❌ ERROR: {str(e)}'))
+                    self.stdout.write(self.style.ERROR(f' ERROR: {str(e)}'))
             else:
-                self.stdout.write(self.style.ERROR('❌ ERROR: SMTP backend configured but credentials missing'))
+                self.stdout.write(self.style.ERROR(' ERROR: SMTP backend configured but credentials missing'))
                 self.stdout.write(self.style.ERROR('   Set EMAIL_HOST_USER and EMAIL_HOST_PASSWORD in .env'))
         else:
             # Test SMTP
-            self.stdout.write(self.style.SUCCESS('✅ Email credentials configured'))
+            self.stdout.write(self.style.SUCCESS(' Email credentials configured'))
             self.stdout.write()
             
             try:
@@ -67,10 +67,10 @@ class Command(BaseCommand):
                     recipient_list=['test@example.com'],
                     fail_silently=False,
                 )
-                self.stdout.write(self.style.SUCCESS('✅ SUCCESS: Test email sent successfully'))
+                self.stdout.write(self.style.SUCCESS(' SUCCESS: Test email sent successfully'))
                 self.stdout.write(self.style.SUCCESS('   Email configuration is working correctly'))
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f'❌ ERROR: {str(e)}'))
+                self.stdout.write(self.style.ERROR(f' ERROR: {str(e)}'))
                 self.stdout.write(self.style.ERROR('   Check your email credentials and SMTP settings'))
         
         self.stdout.write()

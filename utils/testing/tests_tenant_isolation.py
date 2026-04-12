@@ -470,5 +470,5 @@ class UniqueConstraintsTest(TestCase):
         clear_current_school()
 
 
-print("✅ All enterprise-grade tenant isolation tests defined")
+print(" All enterprise-grade tenant isolation tests defined")
 print("Run with: python manage.py test core.tests_tenant_isolation")

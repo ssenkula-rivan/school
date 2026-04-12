@@ -15,7 +15,7 @@ class OpenAITestCase(TestCase):
                 ]
             )
             content = response['choices'][0]['message']['content']
-            print("✅ GPT Response:", content)
+            print(" GPT Response:", content)
         except Exception as e:
-            print("❌ ERROR from OpenAI:", e)
+            print(" ERROR from OpenAI:", e)
             self.fail(f"OpenAI API call failed: {e}")

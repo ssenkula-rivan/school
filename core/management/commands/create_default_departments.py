@@ -103,7 +103,7 @@ class Command(BaseCommand):
                 )
                 if created:
                     total_created += 1
-                    self.stdout.write(self.style.SUCCESS(f'  ✓ Created: {dept_name}'))
+                    self.stdout.write(self.style.SUCCESS(f'   Created: {dept_name}'))
             
             # Create school-specific departments
             specific_depts = school_specific.get(school.school_type, [])
@@ -115,10 +115,10 @@ class Command(BaseCommand):
                 )
                 if created:
                     total_created += 1
-                    self.stdout.write(self.style.SUCCESS(f'  ✓ Created: {dept_name}'))
+                    self.stdout.write(self.style.SUCCESS(f'   Created: {dept_name}'))
         
         self.stdout.write(
             self.style.SUCCESS(
-                f'\n✅ Successfully created {total_created} departments for {schools.count()} school(s)'
+                f'\n Successfully created {total_created} departments for {schools.count()} school(s)'
             )
         )

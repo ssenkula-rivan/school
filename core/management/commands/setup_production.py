@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(
-            self.style.SUCCESS('🚀 Setting up production environment...')
+            self.style.SUCCESS(' Setting up production environment...')
         )
 
         # REMOVED: Admin user creation - multi-tenant system uses school-specific admins
@@ -29,14 +29,14 @@ class Command(BaseCommand):
 
         # REMOVED: Sample users creation for production
         self.stdout.write(
-            self.style.SUCCESS('✅ Production setup completed successfully!')
+            self.style.SUCCESS(' Production setup completed successfully!')
         )
 
     def create_school_config(self):
         """Create school configuration if it doesn't exist - DISABLED for proper registration flow"""
         # Skip automatic school creation to allow proper registration
         self.stdout.write(
-            self.style.SUCCESS('✅ Skipping automatic school setup - use registration page instead')
+            self.style.SUCCESS(' Skipping automatic school setup - use registration page instead')
         )
 
     # REMOVED: create_admin_user method - no global admin in multi-tenant system

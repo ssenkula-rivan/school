@@ -39,7 +39,7 @@ if not SECRET_KEY:
 
 # Validate production settings
 if not DEBUG and EnvironmentConfig.is_production():
-    print("✅ Production mode enabled with DEBUG=False")
+    print(" Production mode enabled with DEBUG=False")
 elif DEBUG and EnvironmentConfig.is_production():
     raise ValueError(
         'CRITICAL SECURITY ERROR: DEBUG=True in production! '

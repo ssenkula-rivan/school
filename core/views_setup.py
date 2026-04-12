@@ -25,16 +25,16 @@ def setup_school_data(request):
             
             if action == 'departments':
                 call_command('create_default_departments', school_code=school_code, stdout=output)
-                messages.success(request, f'✅ Departments created successfully!\n{output.getvalue()}')
+                messages.success(request, f' Departments created successfully!\n{output.getvalue()}')
             
             elif action == 'positions':
                 call_command('create_default_positions', school_code=school_code, stdout=output)
-                messages.success(request, f'✅ Positions created successfully!\n{output.getvalue()}')
+                messages.success(request, f' Positions created successfully!\n{output.getvalue()}')
             
             elif action == 'both':
                 call_command('create_default_departments', school_code=school_code, stdout=output)
                 call_command('create_default_positions', school_code=school_code, stdout=output)
-                messages.success(request, f'✅ Departments and Positions created successfully!\n{output.getvalue()}')
+                messages.success(request, f' Departments and Positions created successfully!\n{output.getvalue()}')
             
         except Exception as e:
             messages.error(request, f'Error: {str(e)}')

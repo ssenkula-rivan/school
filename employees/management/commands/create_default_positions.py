@@ -116,10 +116,10 @@ class Command(BaseCommand):
                 )
                 if created:
                     total_created += 1
-                    self.stdout.write(self.style.SUCCESS(f'  ✓ Created: {title} ({category})'))
+                    self.stdout.write(self.style.SUCCESS(f'   Created: {title} ({category})'))
         
         self.stdout.write(
             self.style.SUCCESS(
-                f'\n✅ Successfully created {total_created} positions for {schools.count()} school(s)'
+                f'\n Successfully created {total_created} positions for {schools.count()} school(s)'
             )
         )
