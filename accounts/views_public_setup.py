@@ -262,6 +262,7 @@ def public_school_registration(request):
                     first_name=admin_first,
                     last_name=admin_last,
                     is_staff=True,  # Allow access to admin panel
+                    is_superuser=False,  # NOT superuser - restricted to their school only
                     is_active=True,
                 )
                 
