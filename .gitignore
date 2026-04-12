@@ -33,7 +33,10 @@ db.sqlite3
 db.sqlite3-journal
 /media
 /staticfiles
-/static
+# Allow static source files but ignore collected staticfiles
+!/static/
+/static/admin/
+/static/rest_framework/
 
 # Environment variables
 .env
