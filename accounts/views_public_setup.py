@@ -288,6 +288,30 @@ def public_school_registration(request):
                 # --- Create Default Grades ---
                 create_default_grades_for_school(school, school_type)
                 
+                # --- Create Default Departments ---
+                try:
+                    from django.core.management import call_command
+                    from io import StringIO
+                    output = StringIO()
+                    call_command('create_default_departments', school_code=school.code, stdout=output)
+                    logger = logging.getLogger(__name__)
+                    logger.info(f'Created default departments for {school.code}')
+                except Exception as dept_error:
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f'Failed to create default departments: {dept_error}')
+                
+                # --- Create Default Positions ---
+                try:
+                    from django.core.management import call_command
+                    from io import StringIO
+                    output = StringIO()
+                    call_command('create_default_positions', school_code=school.code, stdout=output)
+                    logger = logging.getLogger(__name__)
+                    logger.info(f'Created default positions for {school.code}')
+                except Exception as pos_error:
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f'Failed to create default positions: {pos_error}')
+                
                 messages.success(
                     request,
                     f'School "{school_name}" registered successfully. Login with username: {admin_username}'
