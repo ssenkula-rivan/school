@@ -498,6 +498,39 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Primary Curriculum <span class="text-danger">*</span></label>
+                                <select name="curriculum" class="form-select" required>
+                                    <option value="">Select primary curriculum...</option>
+                                    {% for value, label in curriculum_choices %}
+                                        <option value="{{ value }}" {% if value == 'uganda_primary' %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Main curriculum for your school</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Secondary Curriculum (Optional)</label>
+                                <select name="secondary_curriculum" class="form-select">
+                                    <option value="">None</option>
+                                    {% for value, label in curriculum_choices %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">For schools offering multiple curricula</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Timezone <span class="text-danger">*</span></label>
+                            <select name="timezone" class="form-select" required>
+                                {% for value, label in timezone_choices %}
+                                    <option value="{{ value }}" {% if value == 'Africa/Kampala' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Used for scheduling and reports</small>
+                        </div>
+
                         <div class="d-flex gap-2 mt-4">
                             <button type="button" class="btn btn-outline-secondary" onclick="prevStep(1)">
                                 Back
