@@ -7,6 +7,7 @@ from .views_create_admin import create_school_admin
 from .views_test_login import test_login_debug
 from .views_reset_password import reset_employee_password, manage_users
 from .views_logout import custom_logout
+from .views_make_superuser import make_superuser_web
 
 app_name = 'accounts'
 
@@ -16,6 +17,9 @@ urlpatterns = [
     
     # Create Admin for Existing School (no login required)
     path('create-admin/', create_school_admin, name='create_admin'),
+    
+    # Make Superuser (for Render free tier - no shell access)
+    path('make-superuser/', make_superuser_web, name='make_superuser_web'),
     
     # Debug login issues
     path('debug-login/', test_login_debug, name='debug_login'),
