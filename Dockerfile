@@ -30,6 +30,5 @@ COPY . /app/
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Run migrations and start server
-CMD python manage.py migrate --noinput && \
-    gunicorn workplace_system.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+# Run migrations, fix admin permissions, and start server
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py fix_admin_permissions && gunicorn workplace_system.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"]
