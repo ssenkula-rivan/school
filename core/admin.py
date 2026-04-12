@@ -19,6 +19,24 @@ class SchoolFilteredAdmin(admin.ModelAdmin):
         except:
             return qs.none()
     
+    def save_model(self, request, obj, form, change):
+        """Auto-assign school when saving"""
+        if not request.user.is_superuser:
+            try:
+                if hasattr(obj, 'school') and not obj.school_id:
+                    obj.school = request.user.userprofile.school
+            except Exception:
+                pass
+        super().save_model(request, obj, form, change)
+    
+    def has_module_permission(self, request):
+        """Allow school admins to see the module"""
+        return request.user.is_active and request.user.is_staff
+    
+    def has_view_permission(self, request, obj=None):
+        """Allow school admins to view"""
+        return request.user.is_active and request.user.is_staff
+    
     def has_add_permission(self, request):
         # School admins can add
         return request.user.is_staff

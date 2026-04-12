@@ -382,6 +382,17 @@ class CustomLoginView(auth_views.LoginView):
         login(request, user)
         logger.info("User '%s' logged in successfully.", user.username)
         
+        # Ensure school admins always have is_staff=True
+        try:
+            profile = user.userprofile
+            if profile.role in ['admin', 'system_admin', 'director']:
+                if not user.is_staff:
+                    user.is_staff = True
+                    user.save(update_fields=['is_staff'])
+                    logger.info(f"Auto-promoted {user.username} to is_staff=True")
+        except Exception as e:
+            logger.warning(f"Could not check admin role for {user.username}: {e}")
+        
         # Track login in UserProfile
         try:
             from django.utils import timezone
