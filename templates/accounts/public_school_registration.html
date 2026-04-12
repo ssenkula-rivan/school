@@ -500,24 +500,24 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Primary Curriculum <span class="text-danger">*</span></label>
+                                <label class="form-label" id="curriculumLabel">Main Curriculum <span class="text-danger">*</span></label>
                                 <select name="curriculum" class="form-select" required>
-                                    <option value="">Select primary curriculum...</option>
+                                    <option value="">Select curriculum...</option>
                                     {% for value, label in curriculum_choices %}
                                         <option value="{{ value }}" {% if value == 'uganda_primary' %}selected{% endif %}>{{ label }}</option>
                                     {% endfor %}
                                 </select>
-                                <small class="text-muted">Main curriculum for your school</small>
+                                <small class="text-muted" id="curriculumHelp">Main curriculum/program for your institution</small>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Secondary Curriculum (Optional)</label>
+                                <label class="form-label" id="secondaryCurriculumLabel">Additional Curriculum (Optional)</label>
                                 <select name="secondary_curriculum" class="form-select">
                                     <option value="">None</option>
                                     {% for value, label in curriculum_choices %}
                                         <option value="{{ value }}">{{ label }}</option>
                                     {% endfor %}
                                 </select>
-                                <small class="text-muted">For schools offering multiple curricula</small>
+                                <small class="text-muted" id="secondaryCurriculumHelp">For institutions offering multiple programs</small>
                             </div>
                         </div>
 
@@ -727,8 +727,56 @@
                 }
             });
             
+            // Update curriculum labels based on selected school levels
+            if (step === 2) {
+                updateCurriculumLabels();
+            }
+            
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function updateCurriculumLabels() {
+            // Check which school levels are selected
+            const selectedLevels = [];
+            document.querySelectorAll('input[name="school_level"]:checked').forEach(cb => {
+                selectedLevels.push(cb.value);
+            });
+            
+            const hasUniversity = selectedLevels.includes('university');
+            const hasCollege = selectedLevels.includes('teachers_college') || 
+                              selectedLevels.includes('business_college') || 
+                              selectedLevels.includes('health_college') ||
+                              selectedLevels.includes('tertiary');
+            const hasTechnical = selectedLevels.includes('technical') || selectedLevels.includes('vocational');
+            
+            // Update labels based on institution type
+            const mainLabel = document.getElementById('curriculumLabel');
+            const mainHelp = document.getElementById('curriculumHelp');
+            const secondaryLabel = document.getElementById('secondaryCurriculumLabel');
+            const secondaryHelp = document.getElementById('secondaryCurriculumHelp');
+            
+            if (hasUniversity) {
+                mainLabel.innerHTML = 'Main Academic Program <span class="text-danger">*</span>';
+                mainHelp.textContent = 'Primary academic program offered';
+                secondaryLabel.textContent = 'Additional Program (Optional)';
+                secondaryHelp.textContent = 'For universities offering multiple programs';
+            } else if (hasCollege) {
+                mainLabel.innerHTML = 'Main Program/Curriculum <span class="text-danger">*</span>';
+                mainHelp.textContent = 'Primary program or curriculum';
+                secondaryLabel.textContent = 'Additional Program (Optional)';
+                secondaryHelp.textContent = 'For colleges offering multiple programs';
+            } else if (hasTechnical) {
+                mainLabel.innerHTML = 'Main Training Program <span class="text-danger">*</span>';
+                mainHelp.textContent = 'Primary vocational/technical program';
+                secondaryLabel.textContent = 'Additional Program (Optional)';
+                secondaryHelp.textContent = 'For institutions offering multiple training programs';
+            } else {
+                mainLabel.innerHTML = 'Main Curriculum <span class="text-danger">*</span>';
+                mainHelp.textContent = 'Main curriculum/program for your institution';
+                secondaryLabel.textContent = 'Additional Curriculum (Optional)';
+                secondaryHelp.textContent = 'For institutions offering multiple programs';
+            }
         }
         
         function prevStep(step) {
