@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Employee Approvals - {{ school.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-user-check"></i> Pending Employee Approvals</h2>
+            <p class="text-muted">Review and approve employee self-registrations for {{ school.name }}</p>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if pending_profiles %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock"></i> {{ pending_profiles.count }} Pending Registration{{ pending_profiles.count|pluralize }}
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Role</th>
+                                <th>Department</th>
+                                <th>Position</th>
+                                <th>Registered</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for profile in pending_profiles %}
+                            <tr>
+                                <td><strong>{{ profile.employee_id }}</strong></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-secondary text-white me-2">
+                                            {{ profile.user.first_name|first }}{{ profile.user.last_name|first }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ profile.user.get_full_name }}</strong>
+                                            <br>
+                                            <small class="text-muted">@{{ profile.user.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ profile.user.email }}</td>
+                                <td>{{ profile.phone|default:"-" }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ profile.get_role_display }}</span>
+                                </td>
+                                <td>{{ profile.department.name|default:"-" }}</td>
+                                <td>{{ profile.position.title|default:"-" }}</td>
+                                <td>
+                                    <small>{{ profile.user.date_joined|date:"M d, Y" }}</small>
+                                    <br>
+                                    <small class="text-muted">{{ profile.user.date_joined|timesince }} ago</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'accounts:view_employee_details' profile.user.id %}" 
+                                           class="btn btn-sm btn-outline-info" 
+                                           title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <form method="post" action="{% url 'accounts:approve_employee' profile.user.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" 
+                                                    class="btn btn-sm btn-success" 
+                                                    title="Approve"
+                                                    onclick="return confirm('Approve {{ profile.user.get_full_name }}?')">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{% url 'accounts:reject_employee' profile.user.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" 
+                                                    class="btn btn-sm btn-danger" 
+                                                    title="Reject"
+                                                    onclick="return confirm('Reject and delete {{ profile.user.get_full_name }}? This cannot be undone.')">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No pending employee registrations at this time.
+        </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'accounts:dashboard' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}

@@ -9,6 +9,13 @@ from .views_reset_password import reset_employee_password, manage_users
 from .views_logout import custom_logout
 from .views_make_superuser import make_superuser_web
 from .views_database_check import database_diagnostic
+from .views_employee_registration import employee_self_registration
+from .views_hr_approval import (
+    pending_employee_approvals, 
+    approve_employee, 
+    reject_employee,
+    view_employee_details
+)
 
 app_name = 'accounts'
 
@@ -18,6 +25,15 @@ urlpatterns = [
     
     # Public School Registration (no login required)
     path('register-school/', public_school_registration, name='register_school'),
+    
+    # Employee Self-Registration (no login required)
+    path('register/', employee_self_registration, name='employee_register'),
+    
+    # HR Approval System (login required - HR/Admin only)
+    path('pending-approvals/', pending_employee_approvals, name='pending_approvals'),
+    path('approve-employee/<int:user_id>/', approve_employee, name='approve_employee'),
+    path('reject-employee/<int:user_id>/', reject_employee, name='reject_employee'),
+    path('employee-details/<int:user_id>/', view_employee_details, name='view_employee_details'),
     
     # Create Admin for Existing School (no login required)
     path('create-admin/', create_school_admin, name='create_admin'),

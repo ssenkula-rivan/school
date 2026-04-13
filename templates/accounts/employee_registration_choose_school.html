@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your School - Employee Registration</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .registration-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .card-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .card-body {
+            padding: 2rem;
+        }
+        .school-item {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .school-item:hover {
+            border-color: #667eea;
+            background: #f9fafb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        .school-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+        .school-info {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .school-info i {
+            margin-right: 0.5rem;
+            color: #667eea;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="registration-card">
+            <div class="card-header">
+                <h1><i class="fas fa-school"></i> Multiple Schools Found</h1>
+                <p class="mb-0">Please select your school from the list below</p>
+            </div>
+            
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    We found {{ schools.count }} schools matching "{{ search_term }}". Click on your school to continue:
+                </p>
+
+                {% for school in schools %}
+                <form method="post" action="{% url 'accounts:employee_register' %}" style="display: inline-block; width: 100%;">
+                    {% csrf_token %}
+                    <input type="hidden" name="school_id" value="{{ school.id }}">
+                    <input type="hidden" name="show_form" value="1">
+                    
+                    <div class="school-item" onclick="this.closest('form').submit()">
+                        <div class="school-name">
+                            <i class="fas fa-graduation-cap"></i> {{ school.name }}
+                        </div>
+                        <div class="school-info">
+                            <div><i class="fas fa-map-marker-alt"></i> {{ school.address }}</div>
+                            {% if school.phone %}
+                            <div><i class="fas fa-phone"></i> {{ school.phone }}</div>
+                            {% endif %}
+                            <div><i class="fas fa-tag"></i> Code: {{ school.code }}</div>
+                        </div>
+                    </div>
+                </form>
+                {% endfor %}
+
+                <div class="back-link">
+                    <a href="{% url 'accounts:employee_register' %}">
+                        <i class="fas fa-arrow-left"></i> Search Again
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
