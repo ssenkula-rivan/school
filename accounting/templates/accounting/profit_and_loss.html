@@ -34,13 +34,13 @@
   <div class="col-md-3 align-self-end">
     <a href="{% url 'export_profit_loss_pdf' %}?start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}"
        class="btn btn-outline-danger mt-2" target="_blank">
-      📄 Download PDF
+       Download PDF
     </a>
   </div>
   <div class="col-md-3 align-self-end">
     <a href="{% url 'export_profit_loss_excel' %}?start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}"
        class="btn btn-outline-success mt-2" target="_blank">
-      📥 Download Excel
+       Download Excel
     </a>
   </div>
 </form>
@@ -48,7 +48,7 @@
 <!-- Print Button -->
 <div class="d-flex justify-content-end mb-3">
   <button onclick="window.print()" class="btn btn-outline-dark">
-    🖨️ Print Report
+     Print Report
   </button>
 </div>
 

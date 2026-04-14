@@ -83,25 +83,25 @@ def database_diagnostic(request):
             # Check password hash
             pw_hashed = u.password.startswith(('pbkdf2_sha256$', 'argon2$', 'bcrypt$'))
             if pw_hashed:
-                output.append(f"  Password: ✅ HASHED (secure)")
+                output.append(f"  Password:  HASHED (secure)")
                 output.append(f"  Password Preview: {u.password[:50]}...")
             else:
-                output.append(f"  Password: ❌ PLAIN TEXT (INSECURE!)")
+                output.append(f"  Password:  PLAIN TEXT (INSECURE!)")
                 output.append(f"  Password Value: {u.password}")
             
             # Check profile
             try:
                 profile = u.userprofile
-                output.append(f"  Profile: ✅ EXISTS")
+                output.append(f"  Profile:  EXISTS")
                 output.append(f"    Employee ID: {profile.employee_id}")
                 output.append(f"    Role: {profile.role}")
                 output.append(f"    School: {profile.school.name if profile.school else 'NO SCHOOL'}")
                 output.append(f"    Active Employee: {profile.is_active_employee}")
                 output.append(f"    Currently Logged In: {profile.is_currently_logged_in}")
             except UserProfile.DoesNotExist:
-                output.append(f"  Profile: ❌ MISSING")
+                output.append(f"  Profile:  MISSING")
             except Exception as e:
-                output.append(f"  Profile: ⚠️  ERROR - {str(e)}")
+                output.append(f"  Profile:   ERROR - {str(e)}")
     
     output.append("")
     output.append("-" * 80)
