@@ -51,6 +51,34 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-primary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .btn-outline-secondary {
+            border: 2px solid #6c757d;
+            color: #6c757d;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -135,10 +163,23 @@
                                 </small>
                             </p>
                             <hr>
-                            <p class="mb-0">Don't have a school account? 
-                                <a href="{% url 'accounts:register_school' %}" class="text-decoration-none fw-bold">
-                                    <i class="fas fa-school me-1"></i>Register your school here
-                                </a>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <a href="{% url 'accounts:employee_register' %}" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-user-plus me-1"></i>Employee Registration
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="{% url 'accounts:register_school' %}" class="btn btn-outline-secondary w-100">
+                                        <i class="fas fa-school me-1"></i>Register School
+                                    </a>
+                                </div>
+                            </div>
+                            <p class="mt-3 mb-0">
+                                <small class="text-muted">
+                                    <strong>New Employee?</strong> Register with your school name above.<br>
+                                    <strong>New School?</strong> Register your institution to get started.
+                                </small>
                             </p>
                         </div>
                     </div>
