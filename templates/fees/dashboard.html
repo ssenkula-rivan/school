@@ -1,186 +1,568 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fee Management - School Management System</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .sidebar {
-            background: white;
-            min-height: calc(100vh - 56px);
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-        }
-        .sidebar .nav-link {
-            color: #495057;
-            padding: 12px 20px;
-            margin: 5px 10px;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        .sidebar .nav-link:hover {
-            background: #f8f9fa;
-            color: #667eea;
-            transform: translateX(5px);
-        }
-        .sidebar .nav-link.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .sidebar .nav-link i {
-            width: 20px;
-            margin-right: 10px;
-        }
-        .stat-card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-    </style>
-</head>
-<body>
-    <!-- Top Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'accounts:dashboard' %}">
-                <i class="fas fa-graduation-cap me-2"></i>
-                School Management System
-            </a>
-            <div class="ms-auto d-flex align-items-center">
-                <span class="text-white me-3">
-                    <i class="fas fa-user-circle me-2"></i>
-                    {{ user.get_full_name|default:user.username }}
-                </span>
-                <form method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-light btn-sm">
-                        <i class="fas fa-sign-out-alt me-1"></i>Logout
-                    </button>
-                </form>
-            </div>
-        </div>
-    </nav>
+{% extends 'base.html' %}
+{% load static %}
 
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-2 sidebar p-0">
-                <nav class="nav flex-column py-3">
-                    <a class="nav-link" href="{% url 'accounts:dashboard' %}">
-                        <i class="fas fa-home"></i>Dashboard
-                    </a>
-                    <a class="nav-link" href="{% url 'employees:list' %}">
-                        <i class="fas fa-users"></i>Staff Management
-                    </a>
-                    <a class="nav-link active" href="{% url 'fees:dashboard' %}">
-                        <i class="fas fa-money-bill-wave"></i>Fee Management
-                    </a>
-                    <a class="nav-link" href="{% url 'fees:student_list' %}">
-                        <i class="fas fa-user-graduate"></i>Students
-                    </a>
-                    <hr class="my-2">
-                    <a class="nav-link" href="{% url 'accounts:profile' %}">
-                        <i class="fas fa-user-circle"></i>My Profile
-                    </a>
-                    <a class="nav-link" href="/admin/">
-                        <i class="fas fa-cog"></i>Admin Panel
-                    </a>
+{% block title %}Fee Management - School Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* International Professional Fee Management Styles */
+    .fee-header {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .fee-header:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 35px;
+    }
+    
+    .stat-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        color: white;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+    }
+    
+    .stat-card.revenue::before { background: var(--success-gradient); }
+    .stat-card.pending::before { background: var(--warning-gradient); }
+    .stat-card.overdue::before { background: var(--secondary-gradient); }
+    .stat-card.collected::before { background: var(--info-gradient); }
+    
+    .stat-number {
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        color: rgba(255,255,255,0.8);
+        font-size: 1rem;
+        font-weight: 500;
+        margin-bottom: 15px;
+    }
+    
+    .stat-icon {
+        font-size: 3rem;
+        color: rgba(255,255,255,0.3);
+        margin-bottom: 20px;
+    }
+    
+    .fee-table-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .fee-table-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    .fee-table-card .card-header {
+        background: var(--glass-bg);
+        border-bottom: 1px solid var(--glass-border);
+        padding: 25px 30px;
+    }
+    
+    .fee-table-card .card-body {
+        padding: 30px;
+        color: white;
+    }
+    
+    .modern-table {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .modern-table thead th {
+        background: var(--primary-gradient);
+        color: white;
+        font-weight: 600;
+        border: none;
+        padding: 15px;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .modern-table tbody td {
+        color: white;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding: 15px;
+        vertical-align: middle;
+    }
+    
+    .modern-table tbody tr:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border: none;
+    }
+    
+    .status-paid {
+        background: var(--success-gradient);
+        color: white;
+    }
+    
+    .status-pending {
+        background: var(--warning-gradient);
+        color: white;
+    }
+    
+    .status-overdue {
+        background: var(--secondary-gradient);
+        color: white;
+    }
+    
+    .amount-display {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #13B497;
+    }
+    
+    .action-btn {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid var(--glass-border);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        margin-right: 5px;
+    }
+    
+    .action-btn:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .quick-actions-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .quick-actions-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    .quick-action-btn {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        text-decoration: none;
+        display: block;
+        margin-bottom: 15px;
+    }
+    
+    .quick-action-btn:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateY(-3px);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .quick-action-btn i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        display: block;
+        color: rgba(255,255,255,0.8);
+    }
+    
+    .chart-container {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .chart-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    .chart-title {
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .fee-header {
+            margin: 10px;
+            padding: 20px;
+        }
+        
+        .stats-row {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .stat-card {
+            padding: 20px;
+        }
+        
+        .fee-table-card {
+            margin: 10px;
+        }
+        
+        .quick-actions-card {
+            margin: 10px;
+            padding: 20px;
+        }
+        
+        .chart-container {
+            margin: 10px;
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="fee-header" data-aos="fade-down" data-aos-delay="100">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-3">
+                    <i class="fas fa-dollar-sign me-3"></i>Fee Management
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'accounts:dashboard' %}" style="color: rgba(255,255,255,0.8);">Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item active" style="color: rgba(255,255,255,0.6);">Fee Management</li>
+                    </ol>
                 </nav>
             </div>
-
-            <!-- Main Content -->
-            <div class="col-md-10 p-4">
-                <h2><i class="fas fa-money-bill-wave me-2"></i>Fee Management Dashboard</h2>
-                <p class="text-muted mb-4">Overview of school fees and payments</p>
-
-                <!-- Statistics Cards -->
-                <div class="row g-4 mb-4">
-                    <div class="col-md-3">
-                        <div class="stat-card card bg-primary text-white">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h3 class="mb-1">{{ total_students }}</h3>
-                                        <p class="mb-0">Total Students</p>
-                                    </div>
-                                    <div>
-                                        <i class="fas fa-user-graduate fa-3x opacity-75"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="stat-card card bg-success text-white">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h3 class="mb-1">UGX {{ total_collected|floatformat:0 }}</h3>
-                                        <p class="mb-0">Total Collected</p>
-                                    </div>
-                                    <div>
-                                        <i class="fas fa-money-bill fa-3x opacity-75"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="stat-card card bg-warning text-white">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h3 class="mb-1">UGX {{ total_outstanding|floatformat:0 }}</h3>
-                                        <p class="mb-0">Outstanding</p>
-                                    </div>
-                                    <div>
-                                        <i class="fas fa-exclamation-triangle fa-3x opacity-75"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="stat-card card bg-info text-white">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h3 class="mb-1">{{ pending_payments }}</h3>
-                                        <p class="mb-0">Pending Payments</p>
-                                    </div>
-                                    <div>
-                                        <i class="fas fa-clock fa-3x opacity-75"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-plus me-2"></i>Quick Actions
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'fees:student_create' %}"><i class="fas fa-user-plus me-2"></i>Add Student</a></li>
+                        <li><a class="dropdown-item" href="{% url 'fees:invoice_create' %}"><i class="fas fa-file-invoice me-2"></i>Create Invoice</a></li>
+                        <li><a class="dropdown-item" href="{% url 'fees:payment_create' %}"><i class="fas fa-credit-card me-2"></i>Record Payment</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'fees:reports' %}"><i class="fas fa-chart-bar me-2"></i>View Reports</a></li>
+                    </ul>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Quick Actions -->
-                <div class="card mb-4">
-                    <div class="card-body">
+    <!-- Statistics Cards -->
+    <div class="stats-row" data-aos="fade-up" data-aos-delay="200">
+        <div class="stat-card revenue">
+            <div class="stat-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-number">$284,750</div>
+            <div class="stat-label">Total Revenue This Month</div>
+        </div>
+        <div class="stat-card pending">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-number">$45,230</div>
+            <div class="stat-label">Pending Payments</div>
+        </div>
+        <div class="stat-card overdue">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-number">$12,450</div>
+            <div class="stat-label">Overdue Amount</div>
+        </div>
+        <div class="stat-card collected">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-number">89.2%</div>
+            <div class="stat-label">Collection Rate</div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-card" data-aos="fade-up" data-aos-delay="300">
+        <h5 class="mb-4" style="color: white;">
+            <i class="fas fa-bolt me-2"></i>Quick Actions
+        </h5>
+        <div class="row">
+            <div class="col-md-3">
+                <a href="{% url 'fees:student_create' %}" class="quick-action-btn">
+                    <i class="fas fa-user-plus"></i>
+                    <div>Add Student</div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'fees:invoice_create' %}" class="quick-action-btn">
+                    <i class="fas fa-file-invoice"></i>
+                    <div>Create Invoice</div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'fees:payment_create' %}" class="quick-action-btn">
+                    <i class="fas fa-credit-card"></i>
+                    <div>Record Payment</div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'fees:reports' %}" class="quick-action-btn">
+                    <i class="fas fa-chart-bar"></i>
+                    <div>View Reports</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div class="chart-container" data-aos="fade-up" data-aos-delay="400">
+        <h5 class="chart-title">
+            <i class="fas fa-chart-line me-2"></i>Revenue Overview
+        </h5>
+        <canvas id="revenueChart" height="100"></canvas>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="fee-table-card" data-aos="fade-up" data-aos-delay="500">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-history me-2"></i>Recent Transactions
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table modern-table">
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Student</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-aos="fade-up" data-aos-delay="600">
+                            <td><strong>#INV-2024-001</strong></td>
+                            <td>John Smith</td>
+                            <td><span class="amount-display">$1,250</span></td>
+                            <td>2024-04-15</td>
+                            <td><span class="status-badge status-paid">Paid</span></td>
+                            <td>
+                                <a href="#" class="action-btn" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#" class="action-btn" title="Download Receipt">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr data-aos="fade-up" data-aos-delay="700">
+                            <td><strong>#INV-2024-002</strong></td>
+                            <td>Sarah Johnson</td>
+                            <td><span class="amount-display">$850</span></td>
+                            <td>2024-04-14</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td>
+                                <a href="#" class="action-btn" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#" class="action-btn" title="Send Reminder">
+                                    <i class="fas fa-bell"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr data-aos="fade-up" data-aos-delay="800">
+                            <td><strong>#INV-2024-003</strong></td>
+                            <td>Michael Brown</td>
+                            <td><span class="amount-display">$1,500</span></td>
+                            <td>2024-04-13</td>
+                            <td><span class="status-badge status-overdue">Overdue</span></td>
+                            <td>
+                                <a href="#" class="action-btn" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#" class="action-btn" title="Send Notice">
+                                    <i class="fas fa-exclamation"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Initialize AOS
+    AOS.init({
+        duration: 1000,
+        once: true,
+        offset: 100
+    });
+    
+    // Revenue Chart
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const revenueChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Revenue',
+                data: [220000, 245000, 268000, 284750, 295000, 310000],
+                borderColor: '#13B497',
+                backgroundColor: 'rgba(19, 180, 151, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'rgba(255,255,255,0.8)',
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255,255,255,0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: 'rgba(255,255,255,0.8)'
+                    },
+                    grid: {
+                        color: 'rgba(255,255,255,0.1)'
+                    }
+                }
+            }
+        }
+    });
+    
+    // Add particle effect
+    function createParticle() {
+        const particle = document.createElement('div');
+        particle.style.cssText = `
+            position: fixed;
+            pointer-events: none;
+            opacity: 0.3;
+            background: white;
+            border-radius: 50%;
+            width: 3px;
+            height: 3px;
+            z-index: 1;
+            animation: float-up 8s linear;
+        `;
+        
+        particle.style.left = Math.random() * window.innerWidth + 'px';
+        particle.style.top = window.innerHeight + 'px';
+        
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 8000);
+    }
+    
+    setInterval(createParticle, 3000);
+    
+    // Add floating animation CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes float-up {
+            to {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}
                         <h5 class="card-title mb-4">
                             <i class="fas fa-bolt text-warning me-2"></i>Quick Actions
                         </h5>
