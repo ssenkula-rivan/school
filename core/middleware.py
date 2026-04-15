@@ -164,9 +164,12 @@ class TenantMiddleware(MiddlewareMixin):
                     f"Access blocked - school suspended for payment: {school.code}",
                     extra={'school_id': school.id, 'user': request.user}
                 )
-                messages.error(request, 'Account suspended - contact system administrator')
-                if not request.path.startswith('/subscriptions/') and not request.path.startswith('/sys-admin-2024/'):
-                    return redirect('subscriptions:suspended')
+                # Allow access to payment suspended page and logout
+                if not request.path.startswith('/accounts/payment-suspended/') and \
+                   not request.path.startswith('/accounts/logout/') and \
+                   not request.path.startswith('/sys-admin-2024/'):
+                    messages.error(request, 'Your school account is suspended. Please renew your payment to continue.')
+                    return redirect('accounts:payment_suspended')
             if request.session.get('school_id') != school.id:
                 request.session['school_id'] = school.id
             

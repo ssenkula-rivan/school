@@ -10,6 +10,7 @@ from .views_logout import custom_logout
 from .views_make_superuser import make_superuser_web
 from .views_database_check import database_diagnostic
 from .views_employee_registration import employee_self_registration
+from .views_payment_suspended import payment_suspended
 from .views_hr_approval import (
     pending_employee_approvals, 
     approve_employee, 
@@ -28,6 +29,9 @@ urlpatterns = [
     
     # Employee Self-Registration (no login required)
     path('register/', employee_self_registration, name='employee_register'),
+    
+    # Payment Suspended Page
+    path('payment-suspended/', payment_suspended, name='payment_suspended'),
     
     # HR Approval System (login required - HR/Admin only)
     path('pending-approvals/', pending_employee_approvals, name='pending_approvals'),
