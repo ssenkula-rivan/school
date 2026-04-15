@@ -528,6 +528,85 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
+        
+        /* Enhanced Business Card Styles */
+        .revenue-card {
+            background: var(--success-gradient);
+        }
+        
+        .growth-card {
+            background: var(--info-gradient);
+        }
+        
+        .health-card {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .uptime-card {
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+        }
+        
+        .performance-card {
+            background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+        }
+        
+        .revenue-icon, .growth-icon, .health-icon, .uptime-icon, .performance-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .health-bar {
+            transition: width 1.5s ease-in-out;
+        }
+        
+        /* Enhanced table styles */
+        .schools-table {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .schools-table thead th {
+            background: var(--primary-gradient);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 15px;
+        }
+        
+        .schools-table tbody td {
+            color: white;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 15px;
+        }
+        
+        .schools-table tbody tr:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        /* Enhanced search bar */
+        .search-bar input {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+        
+        .search-bar input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .search-bar input:focus {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.4);
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
     </style>
 </head>
 <body>
@@ -546,6 +625,107 @@
             {% endfor %}
         {% endif %}
         
+        <!-- Demo Mode Alert -->
+        {% if demo_mode %}
+        <div class="alert alert-info" data-aos="fade-down" data-aos-delay="50">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Demo Mode:</strong> {{ demo_message }}
+        </div>
+        {% endif %}
+
+        <!-- Revenue & Performance Overview -->
+        <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="50">
+            <div class="col-md-6">
+                <div class="stat-card revenue-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-white opacity-75 mb-2">Revenue This Month</h6>
+                            <div class="stat-number">${% if demo_mode %}{{ revenue_this_month }}{% else %}0{% endif %}</div>
+                            <div class="text-white opacity-75">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                +{% if demo_mode %}{{ revenue_growth }}{% else %}0{% endif %}% from last month
+                            </div>
+                        </div>
+                        <div class="stat-icon revenue-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card growth-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-white opacity-75 mb-2">New Schools This Month</h6>
+                            <div class="stat-number">{% if demo_mode %}{{ new_schools_this_month }}{% else %}0{% endif %}</div>
+                            <div class="text-white opacity-75">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                +{% if demo_mode %}{{ active_growth }}{% else %}0{% endif %}% growth rate
+                            </div>
+                        </div>
+                        <div class="stat-icon growth-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Health & Performance -->
+        <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="col-md-4">
+                <div class="stat-card health-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white opacity-75 mb-2">System Health</h6>
+                            <div class="stat-number">{% if demo_mode %}{{ system_health }}{% else %}100{% endif %}%</div>
+                            <div class="progress health-progress" style="height: 8px;">
+                                <div class="progress-bar bg-success health-bar" data-health="{% if demo_mode %}{{ system_health }}{% else %}100{% endif %}"></div>
+                            </div>
+                        </div>
+                        <div class="stat-icon health-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card uptime-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white opacity-75 mb-2">Server Uptime</h6>
+                            <div class="stat-number">{% if demo_mode %}{{ server_uptime }}{% else %}100{% endif %}%</div>
+                            <div class="text-white opacity-75">
+                                <i class="fas fa-check-circle me-1"></i>
+                                Excellent
+                            </div>
+                        </div>
+                        <div class="stat-icon uptime-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card performance-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white opacity-75 mb-2">API Response</h6>
+                            <div class="stat-number">45ms</div>
+                            <div class="text-white opacity-75">
+                                <i class="fas fa-tachometer-alt me-1"></i>
+                                Optimal
+                            </div>
+                        </div>
+                        <div class="stat-icon performance-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Statistics Grid -->
         <div class="stats-grid">
             <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
                 <div class="stat-icon">
@@ -951,7 +1131,92 @@
                     setTimeout(() => ripple.remove(), 600);
                 });
             });
+            
+            // Animate health bars
+            const healthBars = document.querySelectorAll('.health-bar');
+            healthBars.forEach(bar => {
+                const health = bar.getAttribute('data-health');
+                if (health) {
+                    setTimeout(() => {
+                        bar.style.width = health + '%';
+                    }, 500);
+                }
+            });
+            
+            // Add real-time clock
+            function updateClock() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+                const dateString = now.toLocaleDateString();
+                
+                let clockElement = document.getElementById('realtime-clock');
+                if (!clockElement) {
+                    clockElement = document.createElement('div');
+                    clockElement.id = 'realtime-clock';
+                    clockElement.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 10px 20px; border-radius: 10px; color: white; font-size: 0.9em; z-index: 1000;';
+                    document.body.appendChild(clockElement);
+                }
+                
+                clockElement.innerHTML = `<i class="fas fa-clock me-2"></i>${dateString} ${timeString}`;
+            }
+            
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Add particle effects
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: fixed;
+                    pointer-events: none;
+                    opacity: 0.3;
+                    background: white;
+                    border-radius: 50%;
+                    width: 4px;
+                    height: 4px;
+                    z-index: 1;
+                    animation: float-up 10s linear;
+                `;
+                
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                particle.style.top = window.innerHeight + 'px';
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 10000);
+            }
+            
+            // Create particles periodically
+            setInterval(createParticle, 2000);
         });
+        
+        // Add floating animation CSS
+        const particleStyle = document.createElement('style');
+        particleStyle.textContent = `
+            @keyframes float-up {
+                to {
+                    transform: translateY(-100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+            
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.6);
+                transform: scale(0);
+                animation: ripple-animation 0.6s ease-out;
+                pointer-events: none;
+            }
+            
+            @keyframes ripple-animation {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(particleStyle);
     </script>
 </body>
 </html>
