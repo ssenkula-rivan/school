@@ -4,7 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Owner Panel - School Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #13B497 0%, #59D4A8 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -12,173 +25,308 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             padding: 20px;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+            background-size: cover;
+            pointer-events: none;
+            z-index: -1;
         }
         
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.15);
             overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 80px rgba(0,0,0,0.2);
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-gradient);
             color: white;
-            padding: 30px;
+            padding: 40px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
         
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
         }
         
         .header p {
-            font-size: 1.1em;
+            font-size: 1.2em;
             opacity: 0.9;
+            position: relative;
+            z-index: 1;
         }
         
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 30px;
-            background: #f8f9fa;
+            gap: 25px;
+            padding: 40px;
+            background: rgba(255,255,255,0.05);
         }
         
         .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 20px;
             text-align: center;
-            transition: transform 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
         }
         
         .stat-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        .stat-card .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover .stat-icon {
+            transform: scale(1.2) rotate(10deg);
+            opacity: 1;
         }
         
         .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: white;
         }
         
         .stat-label {
-            color: #666;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 1.1em;
+            font-weight: 500;
         }
         
         .schools-section {
-            padding: 30px;
+            padding: 40px;
         }
         
         .section-title {
-            font-size: 1.8em;
-            margin-bottom: 20px;
-            color: #333;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: white;
+            font-weight: 700;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
         }
         
         .search-bar {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
         
         .search-bar input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            padding: 15px 20px;
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
             font-size: 1em;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .search-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .search-bar input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
         
         .schools-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
         
         .schools-table th {
-            background: #667eea;
+            background: var(--primary-gradient);
             color: white;
-            padding: 15px;
+            padding: 20px 15px;
             text-align: left;
             font-weight: 600;
+            border: none;
         }
         
         .schools-table td {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
+            padding: 20px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
         }
         
         .schools-table tr:hover {
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .schools-table tr:last-child td {
+            border-bottom: none;
         }
         
         .status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.8em;
             font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         
         .status-paid {
-            background: #d4edda;
-            color: #155724;
+            background: var(--success-gradient);
+            color: white;
         }
         
         .status-unpaid {
-            background: #f8d7da;
-            color: #721c24;
+            background: var(--warning-gradient);
+            color: white;
         }
         
         .status-blocked {
-            background: #fff3cd;
-            color: #856404;
+            background: var(--secondary-gradient);
+            color: white;
         }
         
         .action-buttons {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         
         .btn {
-            padding: 8px 16px;
+            padding: 10px 18px;
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
         
         .btn-primary {
-            background: #667eea;
+            background: var(--primary-gradient);
             color: white;
         }
         
         .btn-danger {
-            background: #dc3545;
+            background: var(--secondary-gradient);
             color: white;
         }
         
         .btn-success {
-            background: #28a745;
+            background: var(--success-gradient);
             color: white;
         }
         
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         
         .payment-modal {
@@ -188,239 +336,397 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
             z-index: 1000;
         }
         
         .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 500px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            border-radius: 25px;
+            max-width: 550px;
             margin: 50px auto;
             position: relative;
+            color: white;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
         }
         
         .close-modal {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 1.5em;
+            top: 20px;
+            right: 20px;
+            font-size: 1.8em;
             cursor: pointer;
-            color: #666;
+            color: rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            color: white;
+            transform: rotate(90deg);
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             font-weight: 600;
-            color: #333;
+            color: rgba(255,255,255,0.9);
         }
         
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
+            padding: 12px 15px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
             font-size: 1em;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: rgba(255,255,255,0.5);
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
+        
+        .form-group select option {
+            background: var(--primary-gradient);
+            color: white;
         }
         
         .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: none;
+            position: relative;
+            overflow: hidden;
         }
         
         .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: var(--success-gradient);
+            color: white;
+            box-shadow: 0 8px 32px rgba(19, 180, 151, 0.3);
         }
         
         .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: var(--secondary-gradient);
+            color: white;
+            box-shadow: 0 8px 32px rgba(240, 147, 251, 0.3);
+        }
+        
+        .alert-warning {
+            background: var(--warning-gradient);
+            color: white;
+            box-shadow: 0 8px 32px rgba(250, 112, 154, 0.3);
         }
         
         .overdue {
-            color: #dc3545;
+            color: #ff6b6b;
             font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .school-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            font-size: 0.9em;
-            color: #666;
+            gap: 8px;
+            font-size: 0.85em;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .school-info span {
+            background: rgba(255,255,255,0.1);
+            padding: 4px 8px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 20px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+                gap: 15px;
+            }
+            
+            .schools-section {
+                padding: 20px;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .schools-table {
+                font-size: 0.85em;
+            }
+            
+            .schools-table th,
+            .schools-table td {
+                padding: 12px 8px;
+            }
+            
+            .modal-content {
+                margin: 20px;
+                padding: 30px;
+            }
+        }
+        
+        /* Floating animation for key elements */
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Pulse animation for important elements */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>System Owner Panel</h1>
+        <div class="header" data-aos="fade-down">
+            <h1><i class="fas fa-crown me-3 floating"></i>System Owner Panel</h1>
             <p>School Payment & Access Management</p>
         </div>
         
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
+                <div class="alert alert-{{ message.tags }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
                     {{ message }}
                 </div>
             {% endfor %}
         {% endif %}
         
         <div class="stats-grid">
-            <div class="stat-card">
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-icon">
+                    <i class="fas fa-school"></i>
+                </div>
                 <div class="stat-number">{{ total_schools }}</div>
                 <div class="stat-label">Total Schools</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
                 <div class="stat-number">{{ active_schools }}</div>
                 <div class="stat-label">Active Schools</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-icon">
+                    <i class="fas fa-ban"></i>
+                </div>
                 <div class="stat-number">{{ blocked_schools }}</div>
                 <div class="stat-label">Blocked Schools</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
                 <div class="stat-number">{{ unpaid_schools }}</div>
                 <div class="stat-label">Unpaid Schools</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
                 <div class="stat-number">{{ total_users }}</div>
                 <div class="stat-label">Total Users</div>
             </div>
         </div>
         
-        <div class="schools-section">
-            <h2 class="section-title">School Management</h2>
+        <div class="schools-section" data-aos="fade-up" data-aos-delay="600">
+            <h2 class="section-title"><i class="fas fa-school me-2"></i>School Management</h2>
             
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Search schools by name, code, or email..." onkeyup="filterSchools()">
+            <div class="search-bar" data-aos="fade-up" data-aos-delay="700">
+                <div class="input-group">
+                    <span class="input-group-text" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: white;">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search schools by name, code, or email..." onkeyup="filterSchools()" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: white;">
+                </div>
             </div>
             
-            <table class="schools-table" id="schoolsTable">
-                <thead>
-                    <tr>
-                        <th>School Info</th>
-                        <th>Users</th>
-                        <th>Last Payment</th>
-                        <th>Next Due</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for school in schools %}
-                    <tr class="school-row" data-name="{{ school.name|lower }}" data-code="{{ school.code|lower }}">
-                        <td>
-                            <div><strong>{{ school.name }}</strong></div>
-                            <div class="school-info">
-                                <span>{{ school.email }}</span>
-                                <span>{{ school.phone }}</span>
-                                <span>{{ school.contact_person }}</span>
-                                <span>{{ school.code }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div>{{ school.active_users }}/{{ school.user_count }}</div>
-                            <div style="font-size: 0.8em; color: #666;">Active/Total</div>
-                        </td>
-                        <td>
-                            {% if school.last_payment %}
-                                {{ school.last_payment }}
-                            {% else %}
-                                <span style="color: #999;">No payment</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if school.next_payment_due %}
-                                {% if school.days_overdue > 0 %}
-                                    <span class="overdue">{{ school.next_payment_due }} ({{ school.days_overdue }} days overdue)</span>
+            <div class="table-responsive" data-aos="fade-up" data-aos-delay="800">
+                <table class="schools-table" id="schoolsTable">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-info-circle me-2"></i>School Info</th>
+                            <th><i class="fas fa-users me-2"></i>Users</th>
+                            <th><i class="fas fa-calendar-check me-2"></i>Last Payment</th>
+                            <th><i class="fas fa-calendar-alt me-2"></i>Next Due</th>
+                            <th><i class="fas fa-flag me-2"></i>Status</th>
+                            <th><i class="fas fa-cog me-2"></i>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for school in schools %}
+                        <tr class="school-row" data-name="{{ school.name|lower }}" data-code="{{ school.code|lower }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:900 }}">
+                            <td>
+                                <div><strong>{{ school.name }}</strong></div>
+                                <div class="school-info">
+                                    <span><i class="fas fa-envelope me-1"></i>{{ school.email }}</span>
+                                    <span><i class="fas fa-phone me-1"></i>{{ school.phone }}</span>
+                                    <span><i class="fas fa-user me-1"></i>{{ school.contact_person }}</span>
+                                    <span><i class="fas fa-hashtag me-1"></i>{{ school.code }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div>{{ school.active_users }}/{{ school.user_count }}</div>
+                                <div style="font-size: 0.8em; opacity: 0.7;">Active/Total</div>
+                            </td>
+                            <td>
+                                {% if school.last_payment %}
+                                    <i class="fas fa-check-circle me-1"></i>{{ school.last_payment }}
                                 {% else %}
-                                    {{ school.next_payment_due }}
+                                    <span style="opacity: 0.5;"><i class="fas fa-times-circle me-1"></i>No payment</span>
                                 {% endif %}
-                            {% else %}
-                                <span style="color: #999;">Not set</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if school.is_blocked %}
-                                <span class="status-badge status-blocked">Blocked</span>
-                            {% elif school.payment_status == 'paid' %}
-                                <span class="status-badge status-paid">Paid</span>
-                            {% else %}
-                                <span class="status-badge status-unpaid">Unpaid</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn btn-primary" onclick="openPaymentModal({{ school.id }}, '{{ school.name }}', '{{ school.last_payment }}', '{{ school.next_payment_due }}', '{{ school.payment_status }}')">
-                                    Payment
-                                </button>
+                            </td>
+                            <td>
+                                {% if school.next_payment_due %}
+                                    {% if school.days_overdue > 0 %}
+                                        <span class="overdue pulse"><i class="fas fa-exclamation-triangle me-1"></i>{{ school.next_payment_due }} ({{ school.days_overdue }} days overdue)</span>
+                                    {% else %}
+                                        <i class="fas fa-calendar me-1"></i>{{ school.next_payment_due }}
+                                    {% endif %}
+                                {% else %}
+                                    <span style="opacity: 0.5;"><i class="fas fa-clock me-1"></i>Not set</span>
+                                {% endif %}
+                            </td>
+                            <td>
                                 {% if school.is_blocked %}
-                                    <button class="btn btn-success" onclick="unblockSchool({{ school.id }}, '{{ school.name }}')">
-                                        Unblock
-                                    </button>
+                                    <span class="status-badge status-blocked pulse"><i class="fas fa-ban me-1"></i>Blocked</span>
+                                {% elif school.payment_status == 'paid' %}
+                                    <span class="status-badge status-paid"><i class="fas fa-check me-1"></i>Paid</span>
                                 {% else %}
-                                    <button class="btn btn-danger" onclick="blockSchool({{ school.id }}, '{{ school.name }}')">
-                                        Block
-                                    </button>
+                                    <span class="status-badge status-unpaid"><i class="fas fa-clock me-1"></i>Unpaid</span>
                                 {% endif %}
-                                <button class="btn btn-danger" onclick="deleteSchool({{ school.id }}, '{{ school.name }}', {{ school.user_count }})" style="background: #8b0000;">
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary" onclick="openPaymentModal({{ school.id }}, '{{ school.name }}', '{{ school.last_payment }}', '{{ school.next_payment_due }}', '{{ school.payment_status }}')">
+                                        <i class="fas fa-credit-card me-1"></i>Payment
+                                    </button>
+                                    {% if school.is_blocked %}
+                                        <button class="btn btn-success" onclick="unblockSchool({{ school.id }}, '{{ school.name }}')">
+                                            <i class="fas fa-unlock me-1"></i>Unblock
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-danger" onclick="blockSchool({{ school.id }}, '{{ school.name }}')">
+                                            <i class="fas fa-lock me-1"></i>Block
+                                        </button>
+                                    {% endif %}
+                                    <button class="btn btn-danger" onclick="deleteSchool({{ school.id }}, '{{ school.name }}', {{ school.user_count }})" style="background: linear-gradient(135deg, #8b0000 0%, #dc3545 100%);">
+                                        <i class="fas fa-trash me-1"></i>Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     
     <!-- Payment Modal -->
     <div id="paymentModal" class="payment-modal">
-        <div class="modal-content">
+        <div class="modal-content" data-aos="zoom-in">
             <span class="close-modal" onclick="closePaymentModal()">&times;</span>
-            <h3>Update Payment Information</h3>
+            <h3><i class="fas fa-credit-card me-2"></i>Update Payment Information</h3>
             <form id="paymentForm">
                 <input type="hidden" id="schoolId" name="school_id">
                 <div class="form-group">
-                    <label for="schoolName">School:</label>
+                    <label for="schoolName"><i class="fas fa-school me-2"></i>School:</label>
                     <input type="text" id="schoolName" readonly>
                 </div>
                 <div class="form-group">
-                    <label for="lastPayment">Last Payment Date:</label>
+                    <label for="lastPayment"><i class="fas fa-calendar-check me-2"></i>Last Payment Date:</label>
                     <input type="date" id="lastPayment" name="last_payment">
                 </div>
                 <div class="form-group">
-                    <label for="nextPaymentDue">Next Payment Due Date:</label>
+                    <label for="nextPaymentDue"><i class="fas fa-calendar-alt me-2"></i>Next Payment Due Date:</label>
                     <input type="date" id="nextPaymentDue" name="next_payment_due">
                 </div>
                 <div class="form-group">
-                    <label for="paymentStatus">Payment Status:</label>
-                    <select id="paymentStatus" name="payment_status" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px;">
+                    <label for="paymentStatus"><i class="fas fa-flag me-2"></i>Payment Status:</label>
+                    <select id="paymentStatus" name="payment_status">
                         <option value="paid">Paid</option>
                         <option value="unpaid">Unpaid</option>
                     </select>
                 </div>
-                <div style="text-align: right; margin-top: 20px;">
-                    <button type="button" class="btn" style="background: #ccc; margin-right: 10px;" onclick="closePaymentModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Payment</button>
+                <div class="text-end" style="margin-top: 30px;">
+                    <button type="button" class="btn btn-secondary me-2" onclick="closePaymentModal()">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Update Payment
+                    </button>
                 </div>
             </form>
         </div>
     </div>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+        
+        // Enhanced search functionality
         function filterSchools() {
             const input = document.getElementById('searchInput');
             const filter = input.value.toLowerCase();
@@ -434,12 +740,15 @@
                 
                 if (name.includes(filter) || code.includes(filter)) {
                     row.style.display = '';
+                    // Add fade-in animation
+                    row.style.animation = 'fadeIn 0.3s ease-in';
                 } else {
                     row.style.display = 'none';
                 }
             }
         }
         
+        // Enhanced modal functions
         function openPaymentModal(schoolId, schoolName, lastPayment, nextPaymentDue, paymentStatus) {
             document.getElementById('schoolId').value = schoolId;
             document.getElementById('schoolName').value = schoolName;
@@ -447,75 +756,72 @@
             document.getElementById('nextPaymentDue').value = nextPaymentDue;
             document.getElementById('paymentStatus').value = paymentStatus;
             document.getElementById('paymentModal').style.display = 'block';
+            // Reinitialize AOS for modal content
+            AOS.refresh();
         }
         
         function closePaymentModal() {
             document.getElementById('paymentModal').style.display = 'none';
         }
         
+        // Enhanced confirmation dialogs
         function blockSchool(schoolId, schoolName) {
-            if (confirm(`Are you sure you want to block ${schoolName}?\n\nThis will:\n• Suspend all user access\n• Disable login for all users\n• Show "Account suspended" message`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.innerHTML = `
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="block_school">
-                    <input type="hidden" name="school_id" value="${schoolId}">
-                `;
-                document.body.appendChild(form);
-                form.submit();
+            if (confirm(`Are you sure you want to block ${schoolName}?\n\nThis will:\n· Suspend all user access\n· Disable login for all users\n· Show "Account suspended" message`)) {
+                submitForm('block_school', schoolId);
             }
         }
         
         function unblockSchool(schoolId, schoolName) {
-            if (confirm(`Are you sure you want to unblock ${schoolName}?\n\nThis will:\n• Restore all user access\n• Enable login for all users`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.innerHTML = `
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="unblock_school">
-                    <input type="hidden" name="school_id" value="${schoolId}">
-                `;
-                document.body.appendChild(form);
-                form.submit();
+            if (confirm(`Are you sure you want to unblock ${schoolName}?\n\nThis will:\n· Restore all user access\n· Enable login for all users`)) {
+                submitForm('unblock_school', schoolId);
             }
         }
         
         function deleteSchool(schoolId, schoolName, userCount) {
             if (confirm(`DANGER: Are you sure you want to DELETE ${schoolName}?\n\n` +
                         `This will PERMANENTLY DELETE:\n` +
-                        `• ${userCount} users and their accounts\n` +
-                        `• All students, teachers, and staff\n` +
-                        `• All classes, subjects, and exams\n` +
-                        `• All marks and attendance records\n` +
-                        `• All academic years and terms\n` +
-                        `• ALL school data (cannot be undone)\n\n` +
+                        `· ${userCount} users and their accounts\n` +
+                        `· All students, teachers, and staff\n` +
+                        `· All classes, subjects, and exams\n` +
+                        `· All marks and attendance records\n` +
+                        `· All academic years and terms\n` +
+                        `· ALL school data (cannot be undone)\n\n` +
                         `Type the school name to confirm deletion.`)) {
-                
-                const confirmName = prompt(`Type "${schoolName}" to confirm deletion:`);
-                
-                if (confirmName === schoolName) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.innerHTML = `
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="delete_school">
-                        <input type="hidden" name="school_id" value="${schoolId}">
-                    `;
-                    document.body.appendChild(form);
-                    form.submit();
-                } else {
-                    alert('School name did not match. Deletion cancelled.');
-                }
+            
+            const confirmName = prompt(`Type "${schoolName}" to confirm deletion:`);
+            
+            if (confirmName === schoolName) {
+                submitForm('delete_school', schoolId);
+            } else {
+                showNotification('School name did not match. Deletion cancelled.', 'error');
             }
         }
         
-        // Handle payment form submission
+        // Helper function to submit forms
+        function submitForm(action, schoolId) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.innerHTML = `
+                {% csrf_token %}
+                <input type="hidden" name="action" value="${action}">
+                <input type="hidden" name="school_id" value="${schoolId}">
+            `;
+            document.body.appendChild(form);
+            form.submit();
+        }
+        
+        // Enhanced payment form submission
         document.getElementById('paymentForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
             const schoolId = formData.get('school_id');
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Updating...';
+            submitBtn.disabled = true;
             
             fetch(`/sys-admin-2024/payment-api/${schoolId}/`, {
                 method: 'POST',
@@ -532,17 +838,47 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Payment information updated successfully!');
-                    location.reload();
+                    showNotification('Payment information updated successfully!', 'success');
+                    setTimeout(() => location.reload(), 1500);
                 } else {
-                    alert('Error: ' + data.error);
+                    showNotification('Error: ' + data.error, 'error');
                 }
             })
             .catch(error => {
-                alert('Error updating payment: ' + error);
+                showNotification('Error updating payment: ' + error, 'error');
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             });
         });
         
+        // Enhanced notification system
+        function showNotification(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.setAttribute('data-aos', 'fade-down');
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                ${message}
+            `;
+            
+            // Insert after header
+            const header = document.querySelector('.header');
+            header.parentNode.insertBefore(alertDiv, header.nextSibling);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                alertDiv.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 5000);
+            
+            // Reinitialize AOS
+            AOS.refresh();
+        }
+        
+        // Cookie helper function
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -562,9 +898,60 @@
         window.onclick = function(event) {
             const modal = document.getElementById('paymentModal');
             if (event.target === modal) {
-                modal.style.display = 'none';
+                closePaymentModal();
             }
         }
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // ESC to close modal
+            if (e.key === 'Escape') {
+                closePaymentModal();
+            }
+            // Ctrl+K to focus search
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+        });
+        
+        // Add custom animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            @keyframes fadeOut {
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(-10px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Add ripple effect to buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple');
+                    this.appendChild(ripple);
+                    
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+        });
     </script>
 </body>
 </html>

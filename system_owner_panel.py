@@ -34,6 +34,8 @@ def system_owner_dashboard(request):
             return unblock_school_access(request, school_id)
         elif action == 'delete_school':
             return delete_school_and_data(request, school_id)
+        elif action == 'send_message':
+            return send_message_to_school(request, school_id)
     
     # Get all schools with payment and access info
     schools = School.objects.all().order_by('name')
@@ -301,3 +303,79 @@ def school_payment_api(request, school_id):
             })
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+def send_message_to_school(request, school_id):
+    """Send direct message to school admin via email"""
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+        
+        school = School.objects.get(id=school_id)
+        message_subject = request.POST.get('message_subject', '').strip()
+        message_body = request.POST.get('message_body', '').strip()
+        
+        if not message_subject or not message_body:
+            messages.error(request, 'Subject and message body are required')
+            return redirect('system_owner_dashboard')
+        
+        # Get all admin users for this school
+        admin_users = User.objects.filter(
+            userprofile__school=school,
+            userprofile__role__in=['admin', 'system_admin', 'director'],
+            is_active=True
+        )
+        
+        if not admin_users.exists():
+            messages.error(request, f'No admin users found for {school.name}')
+            return redirect('system_owner_dashboard')
+        
+        # Collect all admin emails
+        recipient_emails = [user.email for user in admin_users if user.email]
+        
+        if not recipient_emails:
+            messages.error(request, f'No email addresses found for {school.name} admins')
+            return redirect('system_owner_dashboard')
+        
+        # Prepare email
+        full_message = f"""
+Dear {school.name} Administration,
+
+{message_body}
+
+---
+This is an official message from the School Management System.
+
+If you have any questions, please contact support.
+
+Best regards,
+System Administrator
+"""
+        
+        # Send email
+        try:
+            send_mail(
+                subject=f'[School System] {message_subject}',
+                message=full_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=recipient_emails,
+                fail_silently=False,
+            )
+            
+            messages.success(
+                request,
+                f'Message sent successfully to {len(recipient_emails)} admin(s) at {school.name}'
+            )
+            
+        except Exception as email_error:
+            messages.error(
+                request,
+                f'Failed to send email: {str(email_error)}. Email may not be configured.'
+            )
+        
+    except School.DoesNotExist:
+        messages.error(request, 'School not found')
+    except Exception as e:
+        messages.error(request, f'Error sending message: {str(e)}')
+    
+    return redirect('system_owner_dashboard')

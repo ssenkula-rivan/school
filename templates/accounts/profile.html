@@ -3,17 +3,137 @@
 
 {% block title %}My Profile - School Management System{% endblock %}
 
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+    }
+    
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid rgba(255,255,255,0.3);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .profile-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    }
+    
+    .stat-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        color: white;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    
+    .stat-card .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: rgba(255,255,255,0.9);
+    }
+    
+    .stat-card .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-card .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+    
+    .info-item {
+        background: rgba(255,255,255,0.05);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid rgba(255,255,255,0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .info-item:hover {
+        background: rgba(255,255,255,0.1);
+        transform: translateX(5px);
+    }
+    
+    .info-item .info-label {
+        font-size: 0.85rem;
+        opacity: 0.7;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-item .info-value {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .badge-glow {
+        box-shadow: 0 0 20px rgba(255,255,255,0.3);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12 mb-4">
-            <h2><i class="fas fa-user-circle me-2"></i>My Profile</h2>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Profile</li>
-                </ol>
-            </nav>
+    <div class="profile-header" data-aos="fade-down">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2"><i class="fas fa-user-circle me-3"></i>My Profile</h1>
+                    <p class="mb-0 opacity-75">Manage your personal information and account settings</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-md-end mb-0">
+                            <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}" class="text-white">Dashboard</a></li>
+                            <li class="breadcrumb-item active text-white">Profile</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -29,52 +149,75 @@
     <div class="row">
         <!-- Profile Information Card -->
         <div class="col-md-4 mb-4">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm" data-aos="fade-right" data-aos-delay="100">
                 <div class="card-body text-center">
                     {% if user_profile.profile_picture %}
-                        <img src="{{ user_profile.profile_picture.url }}" alt="Profile" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                        <img src="{{ user_profile.profile_picture.url }}" alt="Profile" class="profile-avatar mb-3">
                     {% else %}
-                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px; font-size: 3rem;">
+                        <div class="profile-avatar bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="font-size: 3rem;">
                             {{ user.first_name.0|default:"U" }}{{ user.last_name.0|default:"" }}
                         </div>
                     {% endif %}
                     
                     <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
-                    <p class="text-muted mb-2">{{ user_profile.role|title }}</p>
-                    <p class="text-muted small mb-3">
+                    <p class="text-white mb-2">{{ user_profile.role|title }}</p>
+                    <p class="text-white small mb-3">
                         <i class="fas fa-id-badge me-1"></i>{{ user_profile.employee_id }}
                     </p>
                     
                     <div class="d-grid gap-2">
-                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-primary">
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-light">
                             <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
                         </a>
                     </div>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mt-3">
+            <!-- Statistics Cards -->
+            <div class="row g-3 mt-2">
+                <div class="col-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-value">
+                            {% if user_profile.hire_date %}{{ user_profile.hire_date|timesince }}{% else %}N/A{% endif %}
+                        </div>
+                        <div class="stat-label">Time Here</div>
+                    </div>
+                </div>
+                <div class="col-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="stat-value">{{ user_profile.department|default:"N/A"|truncatechars:10 }}</div>
+                        <div class="stat-label">Department</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Info Card -->
+            <div class="card border-0 shadow-sm mt-3" data-aos="fade-right" data-aos-delay="400">
                 <div class="card-body">
-                    <h6 class="mb-3"><i class="fas fa-info-circle me-2"></i>Quick Info</h6>
-                    <div class="mb-2">
-                        <small class="text-muted">Department</small>
-                        <p class="mb-0"><strong>{{ user_profile.department|default:"Not Assigned" }}</strong></p>
+                    <h6 class="mb-3 text-white"><i class="fas fa-info-circle me-2"></i>Quick Info</h6>
+                    <div class="info-item">
+                        <div class="info-label">Department</div>
+                        <div class="info-value">{{ user_profile.department|default:"Not Assigned" }}</div>
                     </div>
-                    <hr>
-                    <div class="mb-2">
-                        <small class="text-muted">Hire Date</small>
-                        <p class="mb-0"><strong>{{ user_profile.hire_date|date:"M d, Y"|default:"Not Set" }}</strong></p>
+                    <div class="info-item">
+                        <div class="info-label">Hire Date</div>
+                        <div class="info-value">{{ user_profile.hire_date|date:"M d, Y"|default:"Not Set" }}</div>
                     </div>
-                    <hr>
-                    <div class="mb-0">
-                        <small class="text-muted">Status</small>
-                        <p class="mb-0">
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value">
                             {% if user_profile.is_active_employee %}
-                                <span class="badge bg-success">Active</span>
+                                <span class="badge bg-success badge-glow">Active</span>
                             {% else %}
                                 <span class="badge bg-secondary">Inactive</span>
                             {% endif %}
-                        </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -82,7 +225,7 @@
 
         <!-- Profile Edit Form -->
         <div class="col-md-8">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm" data-aos="fade-left" data-aos-delay="100">
                 <div class="card-header bg-white">
                     <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Profile Information</h5>
                 </div>
@@ -91,71 +234,71 @@
                         {% csrf_token %}
                         
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">First Name</label>
+                            <div class="col-md-6 mb-3" data-aos="fade-up" data-aos-delay="200">
+                                <label class="form-label text-white">First Name</label>
                                 <input type="text" class="form-control" value="{{ user.first_name }}" readonly>
-                                <small class="text-muted">Contact admin to change</small>
+                                <small class="text-white opacity-75">Contact admin to change</small>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Last Name</label>
+                            <div class="col-md-6 mb-3" data-aos="fade-up" data-aos-delay="300">
+                                <label class="form-label text-white">Last Name</label>
                                 <input type="text" class="form-control" value="{{ user.last_name }}" readonly>
-                                <small class="text-muted">Contact admin to change</small>
+                                <small class="text-white opacity-75">Contact admin to change</small>
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Email</label>
+                            <div class="col-md-6 mb-3" data-aos="fade-up" data-aos-delay="400">
+                                <label class="form-label text-white">Email</label>
                                 <input type="email" class="form-control" value="{{ user.email }}" readonly>
-                                <small class="text-muted">Contact admin to change</small>
+                                <small class="text-white opacity-75">Contact admin to change</small>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Employee ID</label>
+                            <div class="col-md-6 mb-3" data-aos="fade-up" data-aos-delay="500">
+                                <label class="form-label text-white">Employee ID</label>
                                 <input type="text" class="form-control" value="{{ user_profile.employee_id }}" readonly>
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                            <div class="col-md-6 mb-3" data-aos="fade-up" data-aos-delay="600">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label text-white">Phone Number</label>
                                 {{ form.phone }}
                                 {% if form.phone.errors %}
-                                    <div class="text-danger small">{{ form.phone.errors }}</div>
+                                    <div class="text-white small">{{ form.phone.errors }}</div>
                                 {% endif %}
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.department.id_for_label }}" class="form-label">Department</label>
+                            <div class="col-md-6 mb-3" data-aos="fade-up" data-aos-delay="700">
+                                <label for="{{ form.department.id_for_label }}" class="form-label text-white">Department</label>
                                 {{ form.department }}
-                                <small class="text-muted">Contact admin to change</small>
+                                <small class="text-white opacity-75">Contact admin to change</small>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                        <div class="mb-3" data-aos="fade-up" data-aos-delay="800">
+                            <label for="{{ form.address.id_for_label }}" class="form-label text-white">Address</label>
                             {{ form.address }}
                             {% if form.address.errors %}
-                                <div class="text-danger small">{{ form.address.errors }}</div>
+                                <div class="text-white small">{{ form.address.errors }}</div>
                             {% endif %}
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
+                            <div class="col-md-6 mb-3" data-aos="fade-up" data-aos-delay="900">
+                                <label for="{{ form.profile_picture.id_for_label }}" class="form-label text-white">Profile Picture</label>
                                 {{ form.profile_picture }}
                                 {% if form.profile_picture.errors %}
-                                    <div class="text-danger small">{{ form.profile_picture.errors }}</div>
+                                    <div class="text-white small">{{ form.profile_picture.errors }}</div>
                                 {% endif %}
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.hire_date.id_for_label }}" class="form-label">Hire Date</label>
+                            <div class="col-md-6 mb-3" data-aos="fade-up" data-aos-delay="1000">
+                                <label for="{{ form.hire_date.id_for_label }}" class="form-label text-white">Hire Date</label>
                                 {{ form.hire_date }}
                                 {% if form.hire_date.errors %}
-                                    <div class="text-danger small">{{ form.hire_date.errors }}</div>
+                                    <div class="text-white small">{{ form.hire_date.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
 
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end" data-aos="fade-up" data-aos-delay="1100">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>Save Changes
                             </button>
@@ -165,18 +308,18 @@
             </div>
 
             <!-- Change Password Section -->
-            <div class="card border-0 shadow-sm mt-4">
+            <div class="card border-0 shadow-sm mt-4" data-aos="fade-left" data-aos-delay="1200">
                 <div class="card-header bg-white">
                     <h5 class="mb-0"><i class="fas fa-key me-2"></i>Security</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted mb-3">Manage your account security and password.</p>
+                    <p class="text-white mb-3 opacity-75">Manage your account security and password.</p>
                     <div class="d-grid gap-2">
                         <a href="{% url 'accounts:password_change' %}" class="btn btn-warning">
                             <i class="fas fa-key me-2"></i>Change Password
                         </a>
-                        <small class="text-muted text-center">
-                            Forgot your password? <a href="{% url 'accounts:password_reset' %}">Reset it here</a>
+                        <small class="text-white opacity-75 text-center">
+                            Forgot your password? <a href="{% url 'accounts:password_reset' %}" class="text-white">Reset it here</a>
                         </small>
                     </div>
                 </div>
@@ -184,4 +327,74 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effects to stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.querySelector('.stat-icon').style.transform = 'scale(1.2) rotate(10deg)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.querySelector('.stat-icon').style.transform = 'scale(1) rotate(0deg)';
+        });
+    });
+    
+    // Add ripple effect to info items
+    const infoItems = document.querySelectorAll('.info-item');
+    infoItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            const ripple = document.createElement('span');
+            ripple.classList.add('info-ripple');
+            this.appendChild(ripple);
+            
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            setTimeout(() => ripple.remove(), 600);
+        });
+    });
+});
+
+// Add info ripple effect CSS
+const style = document.createElement('style');
+style.textContent = `
+    .info-ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(0);
+        animation: info-ripple-animation 0.6s ease-out;
+        pointer-events: none;
+    }
+    
+    @keyframes info-ripple-animation {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+    
+    .info-item {
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    
+    .stat-icon {
+        transition: transform 0.3s ease;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}
 {% endblock %}
