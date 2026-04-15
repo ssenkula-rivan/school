@@ -51,15 +51,8 @@ urlpatterns = [
     # Authentication URLs
     path('login/', views.CustomLoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('logout/', custom_logout, name='logout'),
-    path('register/', views.register, name='register'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('lockout/', TemplateView.as_view(template_name='accounts/lockout.html'), name='lockout'),
-    
-    # User Management (Admin only)
-    path('manage-users/', manage_users, name='manage_users'),
-    path('reset-password/<int:user_id>/', reset_employee_password, name='reset_employee_password'),
-    path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
-    path('change-role/<int:user_id>/', views.change_user_role, name='change_user_role'),
     
     # User Management (Admin only)
     path('manage-users/', manage_users, name='manage_users'),
