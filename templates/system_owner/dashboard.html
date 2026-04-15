@@ -45,7 +45,7 @@
             z-index: -1;
         }
         
-        .container {
+        .dashboard-container {
             max-width: 1400px;
             margin: 0 auto;
             background: var(--glass-bg);
@@ -57,7 +57,7 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
-        .container:hover {
+        .dashboard-container:hover {
             transform: translateY(-5px);
             box-shadow: 0 35px 80px rgba(0,0,0,0.2);
         }
@@ -459,7 +459,7 @@
         
         /* Responsive Design */
         @media (max-width: 768px) {
-            .container {
+            .dashboard-container {
                 margin: 10px;
                 border-radius: 20px;
             }
@@ -610,7 +610,7 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="dashboard-container">
         <div class="header" data-aos="fade-down">
             <h1><i class="fas fa-crown me-3 floating"></i>System Owner Panel</h1>
             <p>School Payment & Access Management</p>
@@ -634,91 +634,93 @@
         {% endif %}
 
         <!-- Revenue & Performance Overview -->
-        <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="50">
-            <div class="col-md-6">
-                <div class="stat-card revenue-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="text-white opacity-75 mb-2">Revenue This Month</h6>
-                            <div class="stat-number">UGX {% if demo_mode %}{{ revenue_this_month|default:45750 }}{% else %}{{ revenue_this_month|default:45750 }}{% endif %}</div>
-                            <div class="text-white opacity-75">
-                                <i class="fas fa-arrow-up me-1"></i>
-                                +{% if demo_mode %}{{ revenue_growth|default:12.5 }}{% else %}{{ revenue_growth|default:12.5 }}{% endif %}% from last month
+        <div class="container-fluid px-4">
+            <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="50">
+                <div class="col-md-6">
+                    <div class="stat-card revenue-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="text-white opacity-75 mb-2">Revenue This Month</h6>
+                                <div class="stat-number">UGX {% if demo_mode %}{{ revenue_this_month|default:45750 }}{% else %}{{ revenue_this_month|default:45750 }}{% endif %}</div>
+                                <div class="text-white opacity-75">
+                                    <i class="fas fa-arrow-up me-1"></i>
+                                    +{% if demo_mode %}{{ revenue_growth|default:12.5 }}{% else %}{{ revenue_growth|default:12.5 }}{% endif %}% from last month
+                                </div>
+                            </div>
+                            <div class="stat-icon revenue-icon">
+                                <i class="fas fa-dollar-sign"></i>
                             </div>
                         </div>
-                        <div class="stat-icon revenue-icon">
-                            <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card growth-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="text-white opacity-75 mb-2">New Schools This Month</h6>
+                                <div class="stat-number">{% if demo_mode %}{{ new_schools_this_month|default:2 }}{% else %}{{ new_schools_this_month|default:2 }}{% endif %}</div>
+                                <div class="text-white opacity-75">
+                                    <i class="fas fa-arrow-up me-1"></i>
+                                    +{% if demo_mode %}{{ active_growth|default:8.3 }}{% else %}{{ active_growth|default:8.3 }}{% endif %}% growth rate
+                                </div>
+                            </div>
+                            <div class="stat-icon growth-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="stat-card growth-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="text-white opacity-75 mb-2">New Schools This Month</h6>
-                            <div class="stat-number">{% if demo_mode %}{{ new_schools_this_month|default:2 }}{% else %}{{ new_schools_this_month|default:2 }}{% endif %}</div>
-                            <div class="text-white opacity-75">
-                                <i class="fas fa-arrow-up me-1"></i>
-                                +{% if demo_mode %}{{ active_growth|default:8.3 }}{% else %}{{ active_growth|default:8.3 }}{% endif %}% growth rate
-                            </div>
-                        </div>
-                        <div class="stat-icon growth-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- System Health & Performance -->
-        <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="100">
-            <div class="col-md-4">
-                <div class="stat-card health-card">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white opacity-75 mb-2">System Health</h6>
-                            <div class="stat-number">{% if demo_mode %}{{ system_health|default:98.7 }}{% else %}{{ system_health|default:98.7 }}{% endif %}%</div>
-                            <div class="progress health-progress" style="height: 8px;">
-                                <div class="progress-bar bg-success health-bar" data-health="{% if demo_mode %}{{ system_health|default:98.7 }}{% else %}{{ system_health|default:98.7 }}{% endif %}"></div>
+            <!-- System Health & Performance -->
+            <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="col-md-4">
+                    <div class="stat-card health-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white opacity-75 mb-2">System Health</h6>
+                                <div class="stat-number">{% if demo_mode %}{{ system_health|default:98.7 }}{% else %}{{ system_health|default:98.7 }}{% endif %}%</div>
+                                <div class="progress health-progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success health-bar" data-health="{% if demo_mode %}{{ system_health|default:98.7 }}{% else %}{{ system_health|default:98.7 }}{% endif %}"></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="stat-icon health-icon">
-                            <i class="fas fa-heartbeat"></i>
+                            <div class="stat-icon health-icon">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card uptime-card">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white opacity-75 mb-2">Server Uptime</h6>
-                            <div class="stat-number">{% if demo_mode %}{{ server_uptime|default:99.9 }}{% else %}{{ server_uptime|default:99.9 }}{% endif %}%</div>
-                            <div class="text-white opacity-75">
-                                <i class="fas fa-check-circle me-1"></i>
-                                Excellent
+                <div class="col-md-4">
+                    <div class="stat-card uptime-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white opacity-75 mb-2">Server Uptime</h6>
+                                <div class="stat-number">{% if demo_mode %}{{ server_uptime|default:99.9 }}{% else %}{{ server_uptime|default:99.9 }}{% endif %}%</div>
+                                <div class="text-white opacity-75">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Excellent
+                                </div>
                             </div>
-                        </div>
-                        <div class="stat-icon uptime-icon">
-                            <i class="fas fa-server"></i>
+                            <div class="stat-icon uptime-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card performance-card">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white opacity-75 mb-2">API Response</h6>
-                            <div class="stat-number">45ms</div>
-                            <div class="text-white opacity-75">
-                                <i class="fas fa-tachometer-alt me-1"></i>
-                                Optimal
+                <div class="col-md-4">
+                    <div class="stat-card performance-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white opacity-75 mb-2">API Response</h6>
+                                <div class="stat-number">45ms</div>
+                                <div class="text-white opacity-75">
+                                    <i class="fas fa-tachometer-alt me-1"></i>
+                                    Optimal
+                                </div>
                             </div>
-                        </div>
-                        <div class="stat-icon performance-icon">
-                            <i class="fas fa-bolt"></i>
+                            <div class="stat-icon performance-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
