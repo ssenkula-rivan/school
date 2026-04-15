@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,20 +12,32 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --success-gradient: linear-gradient(135deg, #13B497 0%, #59D4A8 100%);
-            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #fa709a 100%);
+            --success-gradient: linear-gradient(135deg, #13B497 0%, #59D4A8 50%, #4facfe 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 50%, #f093fb 100%);
+            --neon-gradient: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff);
+            --holographic-gradient: linear-gradient(45deg, #ff006e, #fb5607, #ffbe0b, #8ac926, #3a86ff, #8338ec, #ff006e);
             --glass-bg: rgba(255, 255, 255, 0.1);
             --glass-border: rgba(255, 255, 255, 0.2);
+            --neon-glow: 0 0 20px rgba(255, 0, 110, 0.5);
+            --holographic-shadow: 0 0 40px rgba(131, 56, 236, 0.3);
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-attachment: fixed;
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c, #fa709a, #fee140);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         body::before {
@@ -39,15 +51,271 @@
             background-size: cover;
             pointer-events: none;
             z-index: -1;
+            animation: waveAnimation 20s linear infinite;
+        }
+        
+        @keyframes waveAnimation {
+            0% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(-50px) translateY(-20px); }
+            100% { transform: translateX(0) translateY(0); }
         }
         
         .navbar {
             background: var(--glass-bg);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1), var(--neon-glow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
         }
+        
+        .navbar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.8s;
+        }
+        
+        .navbar:hover::before {
+            left: 100%;
+        }
+        
+        .navbar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15), var(--holographic-shadow);
+        }
+        
+        /* Spectacular Button Effects */
+        .btn {
+            border-radius: 15px;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6), var(--neon-glow);
+        }
+        
+        /* Eye-catching Card Effects */
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--holographic-gradient);
+            background-size: 200% 200%;
+            animation: holographicShift 3s ease infinite;
+        }
+        
+        @keyframes holographicShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15), var(--holographic-shadow);
+        }
+        
+        /* Spectacular Form Effects */
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            color: white;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3), var(--neon-glow);
+            transform: translateY(-2px);
+        }
+        
+        /* Particle System Container */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatParticle 10s infinite linear;
+        }
+        
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(100vh) translateX(0) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: translateY(90vh) translateX(10px) scale(1);
+            }
+            90% {
+                opacity: 1;
+                transform: translateY(10vh) translateX(-10px) scale(1);
+            }
+            100% {
+                transform: translateY(0) translateX(0) scale(0);
+                opacity: 0;
+            }
+        }
+        
+        /* Eye-catching Text Effects */
+        .neon-text {
+            text-shadow: 0 0 10px rgba(255, 0, 110, 0.8), 0 0 20px rgba(255, 0, 110, 0.6), 0 0 30px rgba(255, 0, 110, 0.4);
+            animation: neonPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes neonPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        /* Spectacular Loading Animation */
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--neon-gradient);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: var(--neon-glow);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Holographic Effect */
+        .holographic {
+            background: var(--holographic-gradient);
+            background-size: 200% 200%;
+            animation: holographicShift 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Magnetic Button Effect */
+        .magnetic-btn {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        /* Liquid Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s ease-out;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* 3D Card Flip Effect */
+        .flip-card {
+            perspective: 1000px;
+        }
+        
+        .flip-card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        /* Glowing Border Effect */
+        .glowing-border {
+            position: relative;
+            border: 2px solid transparent;
+            background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff);
+            background-clip: padding-box;
+            border-radius: 15px;
+        }
+        
+        .glowing-border::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #ff006e);
+            border-radius: 15px;
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+        }
+        
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+    </style>
         
         .navbar:hover {
             box-shadow: 0 12px 40px rgba(0,0,0,0.15);
@@ -518,7 +786,309 @@
             }
         `;
         document.head.appendChild(style);
+        
+        // ========================================
+        // SPECTACULAR PARTICLE SYSTEM
+        // ========================================
+        class ParticleSystem {
+            constructor() {
+                this.particles = [];
+                this.container = document.createElement('div');
+                this.container.className = 'particles';
+                document.body.appendChild(this.container);
+                this.init();
+            }
+            
+            init() {
+                // Create initial particles
+                for (let i = 0; i < 50; i++) {
+                    this.createParticle();
+                }
+                
+                // Continuously create new particles
+                setInterval(() => this.createParticle(), 300);
+            }
+            
+            createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random properties
+                const size = Math.random() * 6 + 2;
+                const duration = Math.random() * 10 + 5;
+                const delay = Math.random() * 2;
+                const startX = Math.random() * window.innerWidth;
+                
+                particle.style.cssText = `
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${startX}px;
+                    animation-duration: ${duration}s;
+                    animation-delay: ${delay}s;
+                    background: hsl(${Math.random() * 360}, 70%, 60%);
+                    box-shadow: 0 0 10px currentColor;
+                `;
+                
+                this.container.appendChild(particle);
+                
+                // Remove particle after animation
+                setTimeout(() => particle.remove(), (duration + delay) * 1000);
+            }
+        }
+        
+        // ========================================
+        // MAGNETIC BUTTON EFFECT
+        // ========================================
+        class MagneticButton {
+            constructor(element) {
+                this.element = element;
+                this.init();
+            }
+            
+            init() {
+                this.element.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.element.addEventListener('mouseleave', () => this.handleMouseLeave());
+            }
+            
+            handleMouseMove(e) {
+                const rect = this.element.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                
+                this.element.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px) scale(1.05)`;
+            }
+            
+            handleMouseLeave() {
+                this.element.style.transform = 'translate(0, 0) scale(1)';
+            }
+        }
+        
+        // ========================================
+        // NEON GLOW EFFECT
+        // ========================================
+        class NeonGlow {
+            constructor() {
+                this.init();
+            }
+            
+            init() {
+                document.querySelectorAll('.btn-primary, .card').forEach(element => {
+                    element.addEventListener('mouseenter', () => this.addGlow(element));
+                    element.addEventListener('mouseleave', () => this.removeGlow(element));
+                });
+            }
+            
+            addGlow(element) {
+                element.style.boxShadow = '0 0 30px rgba(255, 0, 110, 0.8), 0 0 60px rgba(131, 56, 236, 0.6)';
+            }
+            
+            removeGlow(element) {
+                element.style.boxShadow = '';
+            }
+        }
+        
+        // ========================================
+        // 3D CARD HOVER EFFECT
+        // ========================================
+        class Card3D {
+            constructor(element) {
+                this.element = element;
+                this.init();
+            }
+            
+            init() {
+                this.element.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.element.addEventListener('mouseleave', () => this.handleMouseLeave());
+            }
+            
+            handleMouseMove(e) {
+                const rect = this.element.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = (y - centerY) / 10;
+                const rotateY = (centerX - x) / 10;
+                
+                this.element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+            }
+            
+            handleMouseLeave() {
+                this.element.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+            }
+        }
+        
+        // ========================================
+        // CURSOR TRAIL EFFECT
+        // ========================================
+        let cursorTrail = [];
+        const maxTrailLength = 20;
+        
+        document.addEventListener('mousemove', (e) => {
+            // Create trail particle
+            const trail = document.createElement('div');
+            trail.style.cssText = `
+                position: fixed;
+                width: 8px;
+                height: 8px;
+                background: radial-gradient(circle, rgba(255, 0, 110, 0.8), transparent);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 9999;
+                left: ${e.clientX}px;
+                top: ${e.clientY}px;
+                transform: translate(-50%, -50%);
+                animation: trailFade 1s ease-out forwards;
+            `;
+            
+            document.body.appendChild(trail);
+            cursorTrail.push(trail);
+            
+            // Remove old trail particles
+            if (cursorTrail.length > maxTrailLength) {
+                const oldTrail = cursorTrail.shift();
+                oldTrail.remove();
+            }
+            
+            // Remove particle after animation
+            setTimeout(() => trail.remove(), 1000);
+        });
+        
+        // Add trail fade animation
+        const trailStyle = document.createElement('style');
+        trailStyle.textContent = `
+            @keyframes trailFade {
+                0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            }
+        `;
+        document.head.appendChild(trailStyle);
+        
+        // ========================================
+        // INTERACTIVE CLICK EXPLOSIONS
+        // ========================================
+        document.addEventListener('click', (e) => {
+            // Create explosion effect at click position
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                const angle = (Math.PI * 2 * i) / 15;
+                const velocity = Math.random() * 200 + 100;
+                const size = Math.random() * 8 + 4;
+                
+                particle.style.cssText = `
+                    position: fixed;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: hsl(${Math.random() * 360}, 70%, 60%);
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 9999;
+                    left: ${e.clientX}px;
+                    top: ${e.clientY}px;
+                    transform: translate(-50%, -50%);
+                    animation: explode 1s ease-out forwards;
+                    --tx: ${Math.cos(angle) * velocity}px;
+                    --ty: ${Math.sin(angle) * velocity}px;
+                `;
+                
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 1000);
+            }
+        });
+        
+        // Add explosion animation
+        const explodeStyle = document.createElement('style');
+        explodeStyle.textContent = `
+            @keyframes explode {
+                0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+                100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(explodeStyle);
+        
+        // ========================================
+        // EYE-CATCHING NOTIFICATIONS
+        // ========================================
+        function showEyeCatchingNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 20px 30px;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: white;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                z-index: 10000;
+                animation: slideInRight 0.5s ease-out;
+                font-weight: 600;
+                max-width: 300px;
+            `;
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.5s ease-in';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+        
+        // Add notification animations
+        const notificationStyle = document.createElement('style');
+        notificationStyle.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(notificationStyle);
+        
+        // ========================================
+        // INITIALIZE ALL EFFECTS
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize AOS
+            AOS.init({
+                duration: 1000,
+                once: true,
+                offset: 100,
+                easing: 'ease-in-out'
+            });
+            
+            // Initialize particle system
+            new ParticleSystem();
+            
+            // Initialize magnetic buttons
+            document.querySelectorAll('.btn').forEach(btn => {
+                new MagneticButton(btn);
+            });
+            
+            // Initialize neon glow
+            new NeonGlow();
+            
+            // Initialize 3D cards
+            document.querySelectorAll('.card').forEach(card => {
+                new Card3D(card);
+            });
+            
+            // Show welcome notification
+            setTimeout(() => {
+                showEyeCatchingNotification('Welcome to the Amazing School System! Click anywhere to see magic!'); 
+            }, 3000);
+        });
+        
+        // Make functions global
+        window.showEyeCatchingNotification = showEyeCatchingNotification;
+        
     </script>
-    {% block extra_js %}{% endblock %}
+{% block extra_js %}{% endblock %}
 </body>
 </html>

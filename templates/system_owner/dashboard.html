@@ -727,39 +727,40 @@
 
         <!-- Main Statistics Grid -->
         <div class="stats-grid">
+            <!-- DEBUG: total_schools={{ total_schools }}, active_schools={{ active_schools }}, blocked_schools={{ blocked_schools }} -->
             <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
                 <div class="stat-icon">
                     <i class="fas fa-school"></i>
                 </div>
-                <div class="stat-number">{{ total_schools }}</div>
+                <div class="stat-number">{{ total_schools|default:"0" }}</div>
                 <div class="stat-label">Total Schools</div>
             </div>
             <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
                 <div class="stat-icon">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <div class="stat-number">{{ active_schools }}</div>
+                <div class="stat-number">{{ active_schools|default:"0" }}</div>
                 <div class="stat-label">Active Schools</div>
             </div>
             <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
                 <div class="stat-icon">
                     <i class="fas fa-ban"></i>
                 </div>
-                <div class="stat-number">{{ blocked_schools }}</div>
+                <div class="stat-number">{{ blocked_schools|default:"0" }}</div>
                 <div class="stat-label">Blocked Schools</div>
             </div>
             <div class="stat-card" data-aos="fade-up" data-aos-delay="400">
                 <div class="stat-icon">
                     <i class="fas fa-clock"></i>
                 </div>
-                <div class="stat-number">{{ unpaid_schools }}</div>
+                <div class="stat-number">{{ unpaid_schools|default:"0" }}</div>
                 <div class="stat-label">Unpaid Schools</div>
             </div>
             <div class="stat-card" data-aos="fade-up" data-aos-delay="500">
                 <div class="stat-icon">
                     <i class="fas fa-users"></i>
                 </div>
-                <div class="stat-number">{{ total_users }}</div>
+                <div class="stat-number">{{ total_users|default:"0" }}</div>
                 <div class="stat-label">Total Users</div>
             </div>
         </div>
@@ -777,6 +778,7 @@
             </div>
             
             <div class="table-responsive" data-aos="fade-up" data-aos-delay="800">
+                <!-- DEBUG: schools count={{ schools|length }} -->
                 <table class="schools-table" id="schoolsTable">
                     <thead>
                         <tr>
@@ -789,69 +791,79 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for school in schools %}
-                        <tr class="school-row" data-name="{{ school.name|lower }}" data-code="{{ school.code|lower }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:900 }}">
-                            <td>
-                                <div><strong>{{ school.name }}</strong></div>
-                                <div class="school-info">
-                                    <span><i class="fas fa-envelope me-1"></i>{{ school.email }}</span>
-                                    <span><i class="fas fa-phone me-1"></i>{{ school.phone }}</span>
-                                    <span><i class="fas fa-user me-1"></i>{{ school.contact_person }}</span>
-                                    <span><i class="fas fa-hashtag me-1"></i>{{ school.code }}</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div>{{ school.active_users }}/{{ school.user_count }}</div>
-                                <div style="font-size: 0.8em; opacity: 0.7;">Active/Total</div>
-                            </td>
-                            <td>
-                                {% if school.last_payment %}
-                                    <i class="fas fa-check-circle me-1"></i>{{ school.last_payment }}
-                                {% else %}
-                                    <span style="opacity: 0.5;"><i class="fas fa-times-circle me-1"></i>No payment</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if school.next_payment_due %}
-                                    {% if school.days_overdue > 0 %}
-                                        <span class="overdue pulse"><i class="fas fa-exclamation-triangle me-1"></i>{{ school.next_payment_due }} ({{ school.days_overdue }} days overdue)</span>
+                        {% if schools %}
+                            {% for school in schools %}
+                            <tr class="school-row" data-name="{{ school.name|lower }}" data-code="{{ school.code|lower }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:900 }}">
+                                <td>
+                                    <div><strong>{{ school.name }}</strong></div>
+                                    <div class="school-info">
+                                        <span><i class="fas fa-envelope me-1"></i>{{ school.email }}</span>
+                                        <span><i class="fas fa-phone me-1"></i>{{ school.phone }}</span>
+                                        <span><i class="fas fa-user me-1"></i>{{ school.contact_person }}</span>
+                                        <span><i class="fas fa-hashtag me-1"></i>{{ school.code }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>{{ school.active_users }}/{{ school.user_count }}</div>
+                                    <div style="font-size: 0.8em; opacity: 0.7;">Active/Total</div>
+                                </td>
+                                <td>
+                                    {% if school.last_payment %}
+                                        <i class="fas fa-check-circle me-1"></i>{{ school.last_payment }}
                                     {% else %}
-                                        <i class="fas fa-calendar me-1"></i>{{ school.next_payment_due }}
+                                        <span style="opacity: 0.5;"><i class="fas fa-times-circle me-1"></i>No payment</span>
                                     {% endif %}
-                                {% else %}
-                                    <span style="opacity: 0.5;"><i class="fas fa-clock me-1"></i>Not set</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if school.is_blocked %}
-                                    <span class="status-badge status-blocked pulse"><i class="fas fa-ban me-1"></i>Blocked</span>
-                                {% elif school.payment_status == 'paid' %}
-                                    <span class="status-badge status-paid"><i class="fas fa-check me-1"></i>Paid</span>
-                                {% else %}
-                                    <span class="status-badge status-unpaid"><i class="fas fa-clock me-1"></i>Unpaid</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-primary" onclick="openPaymentModal({{ school.id }}, '{{ school.name }}', '{{ school.last_payment }}', '{{ school.next_payment_due }}', '{{ school.payment_status }}')">
-                                        <i class="fas fa-credit-card me-1"></i>Payment
-                                    </button>
+                                </td>
+                                <td>
+                                    {% if school.next_payment_due %}
+                                        {% if school.days_overdue > 0 %}
+                                            <span class="overdue pulse"><i class="fas fa-exclamation-triangle me-1"></i>{{ school.next_payment_due }} ({{ school.days_overdue }} days overdue)</span>
+                                        {% else %}
+                                            <i class="fas fa-calendar me-1"></i>{{ school.next_payment_due }}
+                                        {% endif %}
+                                    {% else %}
+                                        <span style="opacity: 0.5;"><i class="fas fa-clock me-1"></i>Not set</span>
+                                    {% endif %}
+                                </td>
+                                <td>
                                     {% if school.is_blocked %}
-                                        <button class="btn btn-success" onclick="unblockSchool({{ school.id }}, '{{ school.name }}')">
-                                            <i class="fas fa-unlock me-1"></i>Unblock
-                                        </button>
+                                        <span class="status-badge status-blocked pulse"><i class="fas fa-ban me-1"></i>Blocked</span>
+                                    {% elif school.payment_status == 'paid' %}
+                                        <span class="status-badge status-paid"><i class="fas fa-check me-1"></i>Paid</span>
                                     {% else %}
-                                        <button class="btn btn-danger" onclick="blockSchool({{ school.id }}, '{{ school.name }}')">
-                                            <i class="fas fa-lock me-1"></i>Block
-                                        </button>
+                                        <span class="status-badge status-unpaid"><i class="fas fa-clock me-1"></i>Unpaid</span>
                                     {% endif %}
-                                    <button class="btn btn-danger" onclick="deleteSchool({{ school.id }}, '{{ school.name }}', {{ school.user_count }})" style="background: linear-gradient(135deg, #8b0000 0%, #dc3545 100%);">
-                                        <i class="fas fa-trash me-1"></i>Delete
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-primary" onclick="openPaymentModal({{ school.id }}, '{{ school.name }}', '{{ school.last_payment }}', '{{ school.next_payment_due }}', '{{ school.payment_status }}')">
+                                            <i class="fas fa-credit-card me-1"></i>Payment
+                                        </button>
+                                        {% if school.is_blocked %}
+                                            <button class="btn btn-success" onclick="unblockSchool({{ school.id }}, '{{ school.name }}')">
+                                                <i class="fas fa-unlock me-1"></i>Unblock
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-danger" onclick="blockSchool({{ school.id }}, '{{ school.name }}')">
+                                                <i class="fas fa-lock me-1"></i>Block
+                                            </button>
+                                        {% endif %}
+                                        <button class="btn btn-danger" onclick="deleteSchool({{ school.id }}, '{{ school.name }}', {{ school.user_count }})" style="background: linear-gradient(135deg, #8b0000 0%, #dc3545 100%);">
+                                            <i class="fas fa-trash me-1"></i>Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+                                    <i class="fas fa-inbox fa-3x mb-3" style="opacity: 0.5;"></i>
+                                    <div style="font-size: 1.2em;">No schools registered yet</div>
+                                    <div style="font-size: 0.9em; margin-top: 10px;">Schools will appear here once they register</div>
+                                </td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>

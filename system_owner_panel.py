@@ -160,22 +160,27 @@ def system_owner_dashboard(request):
         payment_info = get_school_payment_info(school)
         
         # Get user count for this school
-        user_count = UserProfile.objects.filter(school=school).count()
-        active_users = User.objects.filter(
-            userprofile__school=school, 
-            is_active=True
-        ).count()
+        try:
+            user_count = UserProfile.objects.filter(school=school).count()
+            active_users = User.objects.filter(
+                userprofile__school=school, 
+                is_active=True
+            ).count()
+        except Exception as e:
+            print(f"DEBUG: Error counting users for {school.name}: {e}")
+            user_count = 0
+            active_users = 0
         
         # Check if school is blocked
         is_blocked = payment_info.get('is_blocked', False)
         
-        school_data.append({
+        school_dict = {
             'id': school.id,
             'name': school.name,
             'code': school.code,
-            'email': school.email_domain,  # Fixed: use email_domain instead of email
-            'phone': school.phone,
-            'contact_person': school.contact_person,
+            'email': school.email or school.email_domain,  # Use email first, fallback to email_domain
+            'phone': school.phone or 'N/A',
+            'contact_person': school.contact_person or 'N/A',
             'is_active': school.is_active,
             'created_at': school.created_at.strftime('%Y-%m-%d') if school.created_at else '',
             'user_count': user_count,
@@ -185,7 +190,10 @@ def system_owner_dashboard(request):
             'payment_status': payment_info.get('payment_status', 'unpaid'),
             'is_blocked': is_blocked,
             'days_overdue': calculate_days_overdue(payment_info.get('next_payment_due')),
-        })
+        }
+        
+        print(f"DEBUG: School data for {school.name}: {school_dict}")
+        school_data.append(school_dict)
     
     # Always include performance metrics
     performance_metrics = {
@@ -210,11 +218,22 @@ def system_owner_dashboard(request):
     }
     
     # Debug: Print context data
-    print(f"DEBUG: Context keys: {list(context.keys())}")
-    print(f"DEBUG: Revenue this month: {context.get('revenue_this_month', 'MISSING')}")
-    print(f"DEBUG: New schools this month: {context.get('new_schools_this_month', 'MISSING')}")
-    print(f"DEBUG: System health: {context.get('system_health', 'MISSING')}")
-    print(f"DEBUG: Demo mode: {context.get('demo_mode', 'MISSING')}")
+    print(f"\n{'='*60}")
+    print(f"SYSTEM OWNER DASHBOARD CONTEXT DEBUG")
+    print(f"{'='*60}")
+    print(f"Total Schools: {context['total_schools']}")
+    print(f"Active Schools: {context['active_schools']}")
+    print(f"Blocked Schools: {context['blocked_schools']}")
+    print(f"Unpaid Schools: {context['unpaid_schools']}")
+    print(f"Total Users: {context['total_users']}")
+    print(f"Revenue This Month: {context['revenue_this_month']}")
+    print(f"New Schools This Month: {context['new_schools_this_month']}")
+    print(f"System Health: {context['system_health']}")
+    print(f"Demo Mode: {context['demo_mode']}")
+    print(f"Number of school records: {len(school_data)}")
+    if school_data:
+        print(f"First school sample: {school_data[0]}")
+    print(f"{'='*60}\n")
     
     # Ensure all required variables are present
     required_vars = {
